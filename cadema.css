@@ -95,7 +95,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 15px;
   color: var(--gray-900);
   background: var(--white);
@@ -386,65 +386,253 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
   border-radius: 99px; background: var(--blue-light); color: var(--blue);
 }
 
-/* ── Planificateur d'itinéraire ── */
+/* ══════════════════════════════════════════════════
+   PLANIFICATEUR D'ITINÉRAIRE
+══════════════════════════════════════════════════ */
 .itinerary-box {
   background: rgba(255,255,255,.97);
   border-radius: var(--r-xl);
-  padding: 20px;
-  max-width: 540px;
-  box-shadow: 0 8px 40px rgba(6,26,53,.5), 0 0 0 1px rgba(255,255,255,.2);
-  display: flex; flex-direction: column; gap: 12px;
+  padding: 18px;
+  max-width: 500px;
+  box-shadow: 0 12px 48px rgba(6,26,53,.55), 0 0 0 1px rgba(255,255,255,.25);
+  display: flex; flex-direction: column; gap: 6px;
 }
 
-.itinerary-row {
-  display: flex; align-items: center; gap: 10px;
-}
+/* Champ avec dropdown */
+.itin-field-wrap { position: relative; }
 
 .itin-field {
-  flex: 1; display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 10px;
   background: var(--gray-50); border: 1.5px solid var(--gray-200);
-  border-radius: var(--r-md); padding: 11px 14px;
-  transition: border-color .15s, box-shadow .15s;
+  border-radius: var(--r-md); padding: 12px 14px;
+  transition: border-color .15s, box-shadow .15s, background .15s;
 }
 .itin-field:focus-within {
   border-color: var(--blue-mid);
-  box-shadow: 0 0 0 3px rgba(26,86,196,.12);
+  box-shadow: 0 0 0 3px rgba(26,86,196,.14);
   background: #fff;
 }
 .itin-field input {
   flex: 1; border: none; outline: none; background: transparent;
-  font-size: 14px; color: var(--gray-900); font-family: inherit;
+  font-size: 14px; font-weight: 500; color: var(--gray-900);
+  font-family: 'Inter', sans-serif;
 }
-.itin-field input::placeholder { color: var(--gray-400); }
+.itin-field input::placeholder { color: var(--gray-400); font-weight: 400; }
 
-.itin-dot {
-  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+.itin-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.itin-dot-from { background: var(--blue-mid); box-shadow: 0 0 0 3px rgba(26,86,196,.22); }
+.itin-dot-to   { background: var(--gold);     box-shadow: 0 0 0 3px rgba(245,158,11,.28); }
+
+.itin-clear {
+  background: none; border: none; cursor: pointer;
+  color: var(--gray-300); font-size: 14px; padding: 0 2px;
+  border-radius: 50%; width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .15s, background .15s;
 }
-.itin-dot-from { background: var(--blue-mid); box-shadow: 0 0 0 3px rgba(26,86,196,.2); }
-.itin-dot-to   { background: var(--gold);     box-shadow: 0 0 0 3px rgba(245,158,11,.25); }
+.itin-clear:hover { color: var(--gray-600); background: var(--gray-100); }
 
+/* Dropdown suggestions */
+.itin-suggestions {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 200;
+  background: #fff; border: 1px solid var(--gray-200);
+  border-radius: var(--r-md); box-shadow: var(--shadow-xl);
+  overflow: hidden; max-height: 240px; overflow-y: auto;
+}
+.itin-suggestions.open { display: block; animation: fadeDown .14s var(--ease-out); }
+
+.itin-suggestion-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; cursor: pointer;
+  border-bottom: 1px solid var(--gray-100);
+  transition: background .1s;
+  font-size: 13px; color: var(--gray-800);
+}
+.itin-suggestion-item:last-child { border-bottom: none; }
+.itin-suggestion-item:hover,
+.itin-suggestion-item.focused { background: var(--blue-xlight); color: var(--blue); }
+
+.itin-suggestion-item .sug-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--blue-light); color: var(--blue-mid);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 14px;
+}
+.itin-suggestion-item .sug-name { font-weight: 600; }
+.itin-suggestion-item .sug-line {
+  margin-left: auto; font-size: 10px; font-weight: 800;
+  background: var(--blue-light); color: var(--blue-mid);
+  padding: 2px 7px; border-radius: 99px; white-space: nowrap;
+}
+
+/* Ligne de connexion entre les 2 champs + bouton swap */
+.itin-swap-row {
+  display: flex; align-items: center; gap: 8px; padding: 0 14px;
+}
+.itin-connector-line {
+  flex: 1; height: 1px;
+  background: repeating-linear-gradient(90deg, var(--gray-300) 0, var(--gray-300) 4px, transparent 4px, transparent 8px);
+}
 .itin-swap {
-  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
   background: var(--gray-100); border: 1.5px solid var(--gray-200);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  color: var(--gray-500); transition: all .2s var(--spring);
+  color: var(--gray-500); transition: all .25s var(--spring);
 }
-.itin-swap:hover { background: var(--blue-light); border-color: var(--blue-mid); color: var(--blue-mid); transform: rotate(180deg); }
-.itin-swap svg { width: 16px; height: 16px; }
+.itin-swap:hover {
+  background: var(--blue-light); border-color: var(--blue-mid);
+  color: var(--blue-mid); transform: rotate(180deg);
+}
 
 .itin-btn {
-  width: 100%;
+  width: 100%; margin-top: 6px;
   background: linear-gradient(135deg, var(--blue-mid) 0%, var(--blue) 100%);
   color: #fff; border: none; border-radius: var(--r-md);
-  padding: 13px 20px; font-size: 15px; font-weight: 800;
-  cursor: pointer; font-family: inherit;
+  padding: 14px 20px; font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
   display: flex; align-items: center; justify-content: center; gap: 9px;
-  letter-spacing: .3px;
-  transition: all .2s var(--ease);
-  box-shadow: 0 4px 16px rgba(13,59,138,.4);
+  letter-spacing: .2px; transition: all .2s var(--ease);
+  box-shadow: 0 4px 18px rgba(13,59,138,.4);
 }
-.itin-btn:hover { filter: brightness(1.12); box-shadow: var(--shadow-blue); transform: translateY(-1px); }
+.itin-btn:hover { filter: brightness(1.1); box-shadow: var(--shadow-blue); transform: translateY(-1px); }
 .itin-btn:active { transform: scale(.98); }
+
+/* ══════════════════════════════════════════════════
+   SECTION RÉSULTATS ITINÉRAIRE
+══════════════════════════════════════════════════ */
+.itin-result-section {
+  display: none;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  animation: pageIn .35s var(--ease-out);
+}
+.itin-result-section.visible { display: block; }
+
+.itin-result-inner {
+  max-width: var(--max-w); margin: 0 auto;
+  padding: 0 32px;
+  display: grid; grid-template-columns: 400px 1fr;
+  min-height: 560px;
+}
+
+/* ── Panneau gauche ── */
+.itin-result-left {
+  border-right: 1px solid var(--gray-200);
+  padding: 28px 28px 28px 0;
+  display: flex; flex-direction: column; gap: 20px;
+  overflow-y: auto; max-height: 560px;
+}
+
+.itin-result-header { display: flex; flex-direction: column; gap: 12px; }
+
+.itin-back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--gray-500);
+  font-family: 'Inter', sans-serif; padding: 0;
+  transition: color .15s;
+}
+.itin-back-btn:hover { color: var(--blue-mid); }
+
+.itin-route-title {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.itin-route-from, .itin-route-to {
+  font-size: 16px; font-weight: 800; color: var(--gray-900);
+}
+.itin-route-title svg { color: var(--gray-400); flex-shrink: 0; }
+
+/* ── Modes de transport ── */
+.itin-modes {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;
+}
+
+.mode-card {
+  border: 2px solid var(--gray-200);
+  border-radius: var(--r-lg); padding: 14px 10px;
+  text-align: center; cursor: pointer;
+  transition: all .2s var(--ease); background: #fff;
+}
+.mode-card:hover { border-color: var(--blue-mid); }
+.mode-card.active { border-color: transparent; box-shadow: var(--shadow-md); }
+
+.mode-bus.active  { background: linear-gradient(135deg, var(--blue) 0%, var(--blue-mid) 100%); color: #fff; }
+.mode-bike.active { background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%); color: #fff; }
+.mode-walk.active { background: linear-gradient(135deg, #059669 0%, #34d399 100%); color: #fff; }
+
+.mode-icon { font-size: 22px; margin-bottom: 6px; }
+.mode-time {
+  font-size: 20px; font-weight: 900; line-height: 1;
+  letter-spacing: -.5px; margin-bottom: 4px;
+}
+.mode-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; opacity: .75; }
+
+/* ── Détail du trajet ── */
+.itin-trip-detail { display: flex; flex-direction: column; gap: 0; }
+
+.trip-step {
+  display: flex; gap: 14px;
+  position: relative;
+}
+.trip-step-left {
+  display: flex; flex-direction: column; align-items: center;
+  width: 32px; flex-shrink: 0; padding-top: 4px;
+}
+.trip-step-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--blue-mid); border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--blue-mid); flex-shrink: 0; z-index: 1;
+}
+.trip-step-dot.stop { background: var(--gray-400); box-shadow: 0 0 0 2px var(--gray-400); width: 8px; height: 8px; }
+.trip-step-dot.end  { background: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+.trip-step-line {
+  flex: 1; width: 2px; background: var(--blue-light); margin: 2px 0;
+  min-height: 28px;
+}
+.trip-step-line.dashed {
+  background: repeating-linear-gradient(180deg, var(--gray-300) 0, var(--gray-300) 4px, transparent 4px, transparent 8px);
+}
+
+.trip-step-body { flex: 1; padding: 0 0 16px; }
+.trip-step-label { font-size: 13px; font-weight: 700; color: var(--gray-900); margin-bottom: 2px; }
+.trip-step-meta  { font-size: 12px; color: var(--gray-400); font-weight: 500; }
+.trip-step-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 800; padding: 3px 9px;
+  border-radius: 99px; background: var(--blue-light); color: var(--blue-mid);
+  margin-top: 6px;
+}
+
+/* ── Carte ── */
+.itin-map-panel { position: relative; }
+#itin-map {
+  width: 100%; height: 100%; min-height: 560px;
+  z-index: 1;
+}
+.leaflet-container { font-family: 'Inter', sans-serif !important; }
+
+/* Marqueurs custom */
+.map-marker-from, .map-marker-to {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  font-size: 13px; font-weight: 900; color: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  border: 3px solid #fff;
+}
+.map-marker-from { background: var(--blue); }
+.map-marker-to   { background: var(--gold); }
+.map-marker-stop {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--blue-mid);
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
+
+@media (max-width: 900px) {
+  .itin-result-inner { grid-template-columns: 1fr; }
+  .itin-result-left  { border-right: none; border-bottom: 1px solid var(--gray-200); max-height: none; padding: 20px 0; }
+  #itin-map          { min-height: 320px; }
+}
 
 /* Hero KPIs */
 .hero-kpis {

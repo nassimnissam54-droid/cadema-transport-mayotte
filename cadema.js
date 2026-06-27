@@ -219,41 +219,313 @@ const heroObserver = new IntersectionObserver(entries => {
   });
 }, { threshold:.3 });
 
-// ── Planificateur d'itinéraire ──────────────────────
+// ══════════════════════════════════════════════════
+//  PLANIFICATEUR D'ITINÉRAIRE — Autocomplete + Carte
+// ══════════════════════════════════════════════════
+
+// Base d'arrêts réels de Mayotte
+const stops = [
+  { name:'Mamoudzou Centre',           lat:-12.7806, lng:45.2278, lines:['L1','L2','L3','L4','L5'], icon:'🏙️' },
+  { name:'Mamoudzou Marché Couvert',   lat:-12.7795, lng:45.2260, lines:['L1','L2'],                icon:'🏪' },
+  { name:'Mamoudzou Hôpital',          lat:-12.7855, lng:45.2295, lines:['L1','L3'],                icon:'🏥' },
+  { name:'Mamoudzou Mairie',           lat:-12.7800, lng:45.2270, lines:['L1','L2','L5'],           icon:'🏛️' },
+  { name:'Kawéni Lycée',               lat:-12.7650, lng:45.2100, lines:['L1','L2'],                icon:'🎓' },
+  { name:'Kawéni Zone Industrielle',   lat:-12.7620, lng:45.2070, lines:['L1'],                     icon:'🏭' },
+  { name:'Majicavo Carrefour',         lat:-12.7500, lng:45.2180, lines:['L1'],                     icon:'🚏' },
+  { name:'Koungou',                    lat:-12.7301, lng:45.2019, lines:['L1'],                     icon:'🏘️' },
+  { name:'Koungou Village',            lat:-12.7280, lng:45.1990, lines:['L1'],                     icon:'🚏' },
+  { name:'Longoni Port',               lat:-12.7170, lng:45.1640, lines:['L1','L2'],                icon:'⚓' },
+  { name:'Mtsangamouji',               lat:-12.7400, lng:45.1600, lines:['L7'],                     icon:'🚏' },
+  { name:'Bandraboua',                 lat:-12.7100, lng:45.1980, lines:['L2'],                     icon:'🏘️' },
+  { name:'Dzoumogné',                  lat:-12.7080, lng:45.1820, lines:['L2'],                     icon:'🚏' },
+  { name:'Tsoundzou',                  lat:-12.7950, lng:45.2380, lines:['L4','L5'],                icon:'🚏' },
+  { name:'Passamaïnty',                lat:-12.7970, lng:45.2420, lines:['L4'],                     icon:'🚏' },
+  { name:'Bouéni',                     lat:-12.9500, lng:45.0800, lines:['L3'],                     icon:'🏝️' },
+  { name:'Kani-Kéli',                  lat:-12.9200, lng:45.1000, lines:['L4'],                     icon:'🚏' },
+  { name:'Sada',                       lat:-12.8500, lng:45.1100, lines:['L5'],                     icon:'🏘️' },
+  { name:'Chiconi',                    lat:-12.8700, lng:45.1200, lines:['L5'],                     icon:'🚏' },
+  { name:'Tsingoni',                   lat:-12.8900, lng:45.1150, lines:['L4','L5'],                icon:'🚏' },
+  { name:'Ouangani',                   lat:-12.8600, lng:45.1500, lines:['L8'],                     icon:'🏘️' },
+  { name:'Dzaoudzi Centre',            lat:-12.7860, lng:45.2620, lines:['L6'],                     icon:'🏙️' },
+  { name:'Pamandzi',                   lat:-12.8030, lng:45.2700, lines:['L6'],                     icon:'🚏' },
+  { name:'Labattoir',                  lat:-12.7900, lng:45.2680, lines:['L6'],                     icon:'🚏' },
+  { name:'Aéroport Dzaoudzi-Pamandzi', lat:-12.8060, lng:45.2814, lines:['L6'],                     icon:'✈️' },
+  { name:'Chirongui',                  lat:-12.9300, lng:45.0950, lines:['L3','L4'],                icon:'🚏' },
+  { name:'Bouéni Village',             lat:-12.9550, lng:45.0770, lines:['L3'],                     icon:'🚏' },
+  { name:'M\'Tsapéré',                  lat:-12.7730, lng:45.2240, lines:['L3','L5'],               icon:'🚏' },
+  { name:'Cavani',                     lat:-12.7760, lng:45.2300, lines:['L2','L4'],                icon:'🚏' },
+  { name:'Koropa',                     lat:-12.7580, lng:45.2140, lines:['L1'],                     icon:'🚏' },
+];
+
+// Indice de focus pour navigation clavier
+let itinFocusIdx = { from: -1, to: -1 };
+
+function itinAutocomplete(side, val) {
+  const box = document.getElementById(`suggestions-${side}`);
+  const clearBtn = document.getElementById(`clear-${side}`);
+  if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
+  itinFocusIdx[side] = -1;
+
+  if (!val.trim()) { box.classList.remove('open'); return; }
+  const q = val.toLowerCase();
+  const hits = stops.filter(s => s.name.toLowerCase().includes(q)).slice(0, 7);
+  if (!hits.length) { box.classList.remove('open'); return; }
+
+  box.innerHTML = hits.map((s, i) => `
+    <div class="itin-suggestion-item" data-idx="${i}"
+      onmousedown="selectItinStop('${side}','${s.name.replace(/'/g,"\\'")}')">
+      <div class="sug-icon">${s.icon}</div>
+      <span class="sug-name">${highlight(s.name, val)}</span>
+      ${s.lines.length ? `<span class="sug-line">${s.lines.slice(0,2).join(' · ')}</span>` : ''}
+    </div>`).join('');
+  box.classList.add('open');
+}
+
+function highlight(text, query) {
+  const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return text.replace(re, '<strong>$1</strong>');
+}
+
+function selectItinStop(side, name) {
+  document.getElementById(`itin-${side}`).value = name;
+  document.getElementById(`suggestions-${side}`).classList.remove('open');
+  const clearBtn = document.getElementById(`clear-${side}`);
+  if (clearBtn) clearBtn.style.display = 'flex';
+  itinFocusIdx[side] = -1;
+}
+
+function clearItin(side) {
+  document.getElementById(`itin-${side}`).value = '';
+  document.getElementById(`suggestions-${side}`).classList.remove('open');
+  document.getElementById(`clear-${side}`).style.display = 'none';
+  document.getElementById(`itin-${side}`).focus();
+}
+
+function itinKey(e, side) {
+  const box = document.getElementById(`suggestions-${side}`);
+  const items = box.querySelectorAll('.itin-suggestion-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    itinFocusIdx[side] = Math.min(itinFocusIdx[side]+1, items.length-1);
+    items.forEach((el,i) => el.classList.toggle('focused', i===itinFocusIdx[side]));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    itinFocusIdx[side] = Math.max(itinFocusIdx[side]-1, 0);
+    items.forEach((el,i) => el.classList.toggle('focused', i===itinFocusIdx[side]));
+  } else if (e.key === 'Enter') {
+    if (itinFocusIdx[side] >= 0 && items[itinFocusIdx[side]]) {
+      items[itinFocusIdx[side]].dispatchEvent(new MouseEvent('mousedown'));
+    } else {
+      searchItinerary();
+    }
+  } else if (e.key === 'Escape') {
+    box.classList.remove('open');
+  }
+}
+
 function swapItinerary() {
   const from = document.getElementById('itin-from');
   const to   = document.getElementById('itin-to');
-  const tmp  = from.value;
-  from.value = to.value;
-  to.value   = tmp;
+  [from.value, to.value] = [to.value, from.value];
+  ['from','to'].forEach(s => {
+    const cb = document.getElementById(`clear-${s}`);
+    if (cb) cb.style.display = document.getElementById(`itin-${s}`).value ? 'flex' : 'none';
+  });
+}
+
+// Haversine distance (km)
+function haversine(a, b) {
+  const R = 6371, dLat = (b.lat-a.lat)*Math.PI/180, dLng = (b.lng-a.lng)*Math.PI/180;
+  const x = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+}
+
+function fmt(min) {
+  if (min < 60) return `${Math.round(min)} min`;
+  return `${Math.floor(min/60)}h${String(Math.round(min%60)).padStart(2,'0')}`;
+}
+
+// Carte Leaflet
+let itinMap = null;
+let itinLayers = [];
+
+function initItinMap() {
+  if (itinMap) return;
+  itinMap = L.map('itin-map', { zoomControl: true, attributionControl: true })
+    .setView([-12.83, 45.15], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(itinMap);
+}
+
+function clearMapLayers() {
+  itinLayers.forEach(l => l.remove());
+  itinLayers = [];
+}
+
+function makeIcon(html, size=36) {
+  return L.divIcon({ html, className: '', iconSize:[size,size], iconAnchor:[size/2,size/2] });
+}
+
+let currentMode = 'bus';
+
+function selectMode(mode) {
+  currentMode = mode;
+  ['bus','bike','walk'].forEach(m => {
+    document.getElementById(`mode-${m}`).classList.toggle('active', m===mode);
+  });
 }
 
 function searchItinerary() {
-  const from = document.getElementById('itin-from').value.trim();
-  const to   = document.getElementById('itin-to').value.trim();
-  if (!from || !to) {
+  const fromVal = document.getElementById('itin-from').value.trim();
+  const toVal   = document.getElementById('itin-to').value.trim();
+
+  if (!fromVal || !toVal) {
     showToast('Veuillez renseigner le départ et la destination.', 'warning', '📍');
     return;
   }
-  // Cherche une ligne correspondante dans les données
-  const q = (s) => s.toLowerCase();
-  const match = lines.find(l =>
-    (q(l.from).includes(q(from)) || q(l.name).includes(q(from))) &&
-    (q(l.to).includes(q(to)) || q(l.name).includes(q(to)))
+
+  const fromStop = stops.find(s => s.name.toLowerCase() === fromVal.toLowerCase())
+    || stops.find(s => s.name.toLowerCase().includes(fromVal.toLowerCase()));
+  const toStop   = stops.find(s => s.name.toLowerCase() === toVal.toLowerCase())
+    || stops.find(s => s.name.toLowerCase().includes(toVal.toLowerCase()));
+
+  if (!fromStop || !toStop) {
+    showToast('Arrêt non trouvé. Choisissez dans les suggestions.', 'warning', '🔍');
+    return;
+  }
+  if (fromStop.name === toStop.name) {
+    showToast('Le départ et la destination sont identiques.', 'warning', '📍');
+    return;
+  }
+
+  const dist = haversine(fromStop, toStop);
+  const busMins  = Math.round(dist / 25 * 60 + 3);   // 25 km/h + attente
+  const bikeMins = Math.round(dist / 15 * 60);        // 15 km/h
+  const walkMins = Math.round(dist / 5  * 60);        // 5 km/h
+
+  // Trouver ligne commune
+  const commonLine = lines.find(l =>
+    fromStop.lines.includes(l.num) && toStop.lines.includes(l.num)
   ) || lines.find(l =>
-    q(l.name).includes(q(from)) || q(l.name).includes(q(to)) ||
-    q(l.from).includes(q(from)) || q(l.to).includes(q(to))
+    fromStop.lines.includes(l.num) || toStop.lines.includes(l.num)
   );
 
-  if (match) {
-    showToast(`Itinéraire trouvé : ${match.num} — ${match.name} (toutes les ${match.freq} min)`, 'success', '🗺️');
-    showSection('lignes');
-    const inp = document.getElementById('lines-search');
-    if (inp) { inp.value = match.num; filterLines(match.num); }
-  } else {
-    showToast(`Aucune ligne directe trouvée entre "${from}" et "${to}".`, 'warning', '🔍');
-  }
+  // Arrêts intermédiaires sur la ligne
+  const routeStops = buildRoute(fromStop, toStop, commonLine);
+
+  // Affichage
+  document.getElementById('res-from').textContent = fromStop.name;
+  document.getElementById('res-to').textContent   = toStop.name;
+  document.getElementById('time-bus').textContent  = fmt(busMins);
+  document.getElementById('time-bike').textContent = `~${fmt(bikeMins)}`;
+  document.getElementById('time-walk').textContent = fmt(walkMins);
+
+  selectMode('bus');
+  renderTripDetail(fromStop, toStop, routeStops, commonLine, busMins);
+  showItinResult();
+
+  // Carte
+  setTimeout(() => {
+    initItinMap();
+    clearMapLayers();
+    renderItinMap(fromStop, toStop, routeStops);
+  }, 80);
 }
+
+function buildRoute(from, to, line) {
+  // Arrêts intermédiaires approximatifs sur la ligne
+  const allOnLine = line ? stops.filter(s => s.lines.includes(line.num)) : [];
+  // Tri par distance depuis départ
+  allOnLine.sort((a,b) => haversine(from,a) - haversine(from,b));
+  const intermediates = allOnLine.filter(s =>
+    s.name !== from.name && s.name !== to.name &&
+    haversine(from,s) < haversine(from,to)
+  ).slice(0, 5);
+  return [from, ...intermediates, to];
+}
+
+function renderTripDetail(from, to, route, line, busMins) {
+  const el = document.getElementById('itin-trip-detail');
+  const lineBadge = line ? `<span class="trip-step-badge">🚌 ${line.num} · Toutes les ${line.freq} min</span>` : '';
+  let html = '';
+
+  route.forEach((stop, i) => {
+    const isFirst = i === 0;
+    const isLast  = i === route.length - 1;
+    const dotClass = isFirst ? '' : isLast ? 'end' : 'stop';
+    const time = isFirst ? 'Départ'
+               : isLast  ? `+${busMins} min`
+               : `+${Math.round(busMins * i/(route.length-1))} min`;
+    html += `
+      <div class="trip-step">
+        <div class="trip-step-left">
+          <div class="trip-step-dot ${dotClass}"></div>
+          ${!isLast ? `<div class="trip-step-line ${dotClass==='stop'?'dashed':''}"></div>` : ''}
+        </div>
+        <div class="trip-step-body">
+          <div class="trip-step-label">${stop.name}</div>
+          <div class="trip-step-meta">${time}</div>
+          ${isFirst ? lineBadge : ''}
+        </div>
+      </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderItinMap(from, to, route) {
+  // Polyline du trajet
+  const latlngs = route.map(s => [s.lat, s.lng]);
+  const poly = L.polyline(latlngs, {
+    color: '#1a56c4', weight: 5, opacity: .9,
+    dashArray: null, lineJoin: 'round', lineCap: 'round'
+  }).addTo(itinMap);
+  itinLayers.push(poly);
+
+  // Arrêts intermédiaires
+  route.slice(1,-1).forEach(s => {
+    const m = L.marker([s.lat, s.lng], {
+      icon: makeIcon(`<div class="map-marker-stop"></div>`, 12)
+    }).addTo(itinMap).bindPopup(`<b>${s.name}</b>`);
+    itinLayers.push(m);
+  });
+
+  // Marqueur départ
+  const mFrom = L.marker([from.lat, from.lng], {
+    icon: makeIcon(`<div class="map-marker-from">D</div>`)
+  }).addTo(itinMap).bindPopup(`<b>Départ</b><br>${from.name}`).openPopup();
+  itinLayers.push(mFrom);
+
+  // Marqueur arrivée
+  const mTo = L.marker([to.lat, to.lng], {
+    icon: makeIcon(`<div class="map-marker-to">A</div>`)
+  }).addTo(itinMap).bindPopup(`<b>Arrivée</b><br>${to.name}`);
+  itinLayers.push(mTo);
+
+  // Zoom sur le trajet
+  itinMap.fitBounds(poly.getBounds(), { padding: [40, 40] });
+  setTimeout(() => itinMap.invalidateSize(), 100);
+}
+
+function showItinResult() {
+  const sec = document.getElementById('itin-result-section');
+  sec.classList.add('visible');
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeItinResult() {
+  document.getElementById('itin-result-section').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Fermer suggestions au clic extérieur
+document.addEventListener('click', e => {
+  if (!e.target.closest('.itin-field-wrap')) {
+    document.querySelectorAll('.itin-suggestions').forEach(b => b.classList.remove('open'));
+  }
+});
 
 // ── Lines table ───────────────────────────────────
 let linesTextFilter   = '';

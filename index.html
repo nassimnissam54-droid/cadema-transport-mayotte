@@ -4,8 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CADEMA — Réseau de Transport de Mayotte</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <link rel="stylesheet" href="cadema.css">
   <link rel="stylesheet" href="portails.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -79,22 +84,41 @@
 
         <!-- Planificateur d'itinéraire -->
         <div class="itinerary-box">
-          <div class="itinerary-row">
+          <div class="itin-field-wrap">
             <div class="itin-field">
               <span class="itin-dot itin-dot-from"></span>
-              <input type="text" id="itin-from" placeholder="Point de départ (ex : Mamoudzou Centre)" autocomplete="off">
+              <input type="text" id="itin-from" placeholder="Point de départ…" autocomplete="off"
+                oninput="itinAutocomplete('from',this.value)"
+                onfocus="itinAutocomplete('from',this.value)"
+                onkeydown="itinKey(event,'from')">
+              <button class="itin-clear" id="clear-from" onclick="clearItin('from')" tabindex="-1">✕</button>
             </div>
-            <button class="itin-swap" onclick="swapItinerary()" title="Inverser">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+            <div class="itin-suggestions" id="suggestions-from"></div>
+          </div>
+
+          <div class="itin-swap-row">
+            <div class="itin-connector-line"></div>
+            <button class="itin-swap" onclick="swapItinerary()" title="Inverser départ / arrivée">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
             </button>
+            <div class="itin-connector-line"></div>
+          </div>
+
+          <div class="itin-field-wrap">
             <div class="itin-field">
               <span class="itin-dot itin-dot-to"></span>
-              <input type="text" id="itin-to" placeholder="Destination (ex : Koungou)" autocomplete="off">
+              <input type="text" id="itin-to" placeholder="Destination…" autocomplete="off"
+                oninput="itinAutocomplete('to',this.value)"
+                onfocus="itinAutocomplete('to',this.value)"
+                onkeydown="itinKey(event,'to')">
+              <button class="itin-clear" id="clear-to" onclick="clearItin('to')" tabindex="-1">✕</button>
             </div>
+            <div class="itin-suggestions" id="suggestions-to"></div>
           </div>
+
           <button class="itin-btn" onclick="searchItinerary()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/></svg>
-            Trouver un itinéraire
+            Trouver mon itinéraire
           </button>
         </div>
 
@@ -107,6 +131,55 @@
           <div class="hero-kpi-sep"></div>
           <div class="hero-kpi"><strong>24</strong><span>Agents en service</span></div>
         </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ RÉSULTATS ITINÉRAIRE ══ -->
+  <section class="itin-result-section" id="itin-result-section">
+    <div class="itin-result-inner">
+
+      <!-- Panneau gauche -->
+      <div class="itin-result-left">
+        <div class="itin-result-header">
+          <button class="itin-back-btn" onclick="closeItinResult()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            Retour
+          </button>
+          <div class="itin-route-title">
+            <span class="itin-route-from" id="res-from">—</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <span class="itin-route-to" id="res-to">—</span>
+          </div>
+        </div>
+
+        <!-- Modes de transport -->
+        <div class="itin-modes">
+          <div class="mode-card mode-bus" id="mode-bus" onclick="selectMode('bus')">
+            <div class="mode-icon">🚌</div>
+            <div class="mode-time" id="time-bus">—</div>
+            <div class="mode-label">Bus</div>
+          </div>
+          <div class="mode-card mode-bike" id="mode-bike" onclick="selectMode('bike')">
+            <div class="mode-icon">🚲</div>
+            <div class="mode-time" id="time-bike">—</div>
+            <div class="mode-label">Vélo</div>
+          </div>
+          <div class="mode-card mode-walk" id="mode-walk" onclick="selectMode('walk')">
+            <div class="mode-icon">🚶</div>
+            <div class="mode-time" id="time-walk">—</div>
+            <div class="mode-label">À pied</div>
+          </div>
+        </div>
+
+        <!-- Détail du trajet -->
+        <div class="itin-trip-detail" id="itin-trip-detail"></div>
+      </div>
+
+      <!-- Carte Leaflet -->
+      <div class="itin-map-panel">
+        <div id="itin-map"></div>
       </div>
 
     </div>
