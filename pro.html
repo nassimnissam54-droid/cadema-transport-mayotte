@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CADEMA — Portail Professionnel</title>
+  <link rel="stylesheet" href="cadema.css">
+  <link rel="stylesheet" href="portails.css">
+</head>
+<body class="portal-body-wrap">
+
+<!-- HEADER PRO -->
+<header class="portal-header pro-header">
+  <div class="portal-header-inner">
+    <a href="index.html" class="portal-back">← Accueil</a>
+    <div class="portal-logo">
+      <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
+        <rect width="44" height="44" rx="10" fill="rgba(255,255,255,0.2)"/>
+        <rect x="10" y="22" width="6" height="10" rx="1.5" fill="#fff"/>
+        <rect x="19" y="18" width="6" height="14" rx="1.5" fill="#fff"/>
+        <rect x="28" y="25" width="6" height="7" rx="1.5" fill="#fff"/>
+        <circle cx="22" cy="9" r="4" fill="#f59e0b"/>
+      </svg>
+      <div>
+        <div class="portal-logo-name">CADEMA</div>
+        <div class="portal-logo-sub">Portail Professionnel</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="portal-clock" id="pro-clock">--:--:--</div>
+      <button class="dark-toggle" onclick="toggleDark()" id="pro-dark-btn" title="Mode sombre">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="pro-main">
+
+  <!-- KPI BAR -->
+  <div class="pro-kpi-bar">
+    <div class="pro-kpi"><span class="pro-kpi-val" id="pkpi-todo">0</span><span class="pro-kpi-label">À faire</span></div>
+    <div class="pro-kpi-sep"></div>
+    <div class="pro-kpi"><span class="pro-kpi-val" id="pkpi-inprogress">0</span><span class="pro-kpi-label">En cours</span></div>
+    <div class="pro-kpi-sep"></div>
+    <div class="pro-kpi"><span class="pro-kpi-val" id="pkpi-done">0</span><span class="pro-kpi-label">Terminées</span></div>
+    <div class="pro-kpi-sep"></div>
+    <div class="pro-kpi"><span class="pro-kpi-val" id="pkpi-urgent">0</span><span class="pro-kpi-label">Urgentes</span></div>
+    <div class="pro-kpi-actions">
+      <button class="btn-portal btn-pro-primary" onclick="openTaskModal()">+ Nouvelle tâche</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="pro-tabs">
+    <button class="pro-tab active" onclick="switchTab('kanban', this)">📋 Tableau Kanban</button>
+    <button class="pro-tab" onclick="switchTab('liste', this)">📄 Liste des tâches</button>
+    <button class="pro-tab" onclick="switchTab('agents', this)">👥 Agents &amp; Affectations</button>
+    <button class="pro-tab" onclick="switchTab('signalements', this)">🚨 Signalements chauffeurs</button>
+  </div>
+
+  <!-- ── KANBAN ── -->
+  <div id="tab-kanban" class="pro-tab-content active">
+    <div class="kanban-board">
+      <div class="kanban-col">
+        <div class="kanban-col-header todo-header">
+          <span>📥 À faire</span>
+          <span class="kanban-count" id="k-todo-count">0</span>
+        </div>
+        <div class="kanban-cards" id="k-todo" ondragover="event.preventDefault()" ondrop="dropCard(event,'todo')"></div>
+        <button class="kanban-add-btn" onclick="openTaskModal('todo')">+ Ajouter une tâche</button>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header inprog-header">
+          <span>⚙️ En cours</span>
+          <span class="kanban-count" id="k-inprogress-count">0</span>
+        </div>
+        <div class="kanban-cards" id="k-inprogress" ondragover="event.preventDefault()" ondrop="dropCard(event,'inprogress')"></div>
+        <button class="kanban-add-btn" onclick="openTaskModal('inprogress')">+ Ajouter</button>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header done-header">
+          <span>✅ Terminé</span>
+          <span class="kanban-count" id="k-done-count">0</span>
+        </div>
+        <div class="kanban-cards" id="k-done" ondragover="event.preventDefault()" ondrop="dropCard(event,'done')"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LISTE ── -->
+  <div id="tab-liste" class="pro-tab-content">
+    <div class="pro-toolbar">
+      <input class="search-input" type="text" placeholder="Rechercher une tâche…" oninput="filterTasks(this.value)">
+      <select class="filter-select" onchange="filterTasksByStatus(this.value)">
+        <option value="all">Tous les statuts</option>
+        <option value="todo">À faire</option>
+        <option value="inprogress">En cours</option>
+        <option value="done">Terminé</option>
+      </select>
+      <select class="filter-select" onchange="filterTasksByPriority(this.value)">
+        <option value="all">Toutes priorités</option>
+        <option value="high">🔴 Urgente</option>
+        <option value="medium">🟡 Normale</option>
+        <option value="low">🟢 Basse</option>
+      </select>
+    </div>
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Tâche</th>
+            <th>Catégorie</th>
+            <th>Assigné à</th>
+            <th>Priorité</th>
+            <th>Échéance</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tasks-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── AGENTS ── -->
+  <div id="tab-agents" class="pro-tab-content">
+    <div class="agents-grid" id="agents-grid"></div>
+  </div>
+
+  <!-- ── SIGNALEMENTS CHAUFFEURS ── -->
+  <div id="tab-signalements" class="pro-tab-content">
+    <div class="sig-toolbar">
+      <select class="filter-select" onchange="filterSignalements(this.value)">
+        <option value="all">Tous les signalements</option>
+        <option value="open">🔴 Non traités</option>
+        <option value="resolved">✅ Traités</option>
+      </select>
+    </div>
+    <div class="signalements-list" id="signalements-list"></div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Modal nouvelle tâche -->
+<div class="modal-overlay" id="task-modal" onclick="if(event.target===this)closeTaskModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="task-modal-title">Nouvelle tâche</h3>
+      <button onclick="closeTaskModal()">&times;</button>
+    </div>
+    <form onsubmit="saveTask(event)">
+      <div class="form-group">
+        <label>Intitulé de la tâche</label>
+        <input type="text" id="t-titre" placeholder="ex: Vérification freins bus n°14" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Catégorie</label>
+          <select id="t-categorie">
+            <option value="maintenance">🔧 Maintenance</option>
+            <option value="controle">🔍 Contrôle</option>
+            <option value="admin">📄 Administratif</option>
+            <option value="formation">🎓 Formation</option>
+            <option value="terrain">🗺️ Terrain</option>
+            <option value="securite">🛡️ Sécurité</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priorité</label>
+          <select id="t-priorite">
+            <option value="low">🟢 Basse</option>
+            <option value="medium" selected>🟡 Normale</option>
+            <option value="high">🔴 Urgente</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Assigné à</label>
+          <select id="t-agent">
+            <option value="Non assigné">— Non assigné —</option>
+            <option value="Marie Abdallah">Marie Abdallah</option>
+            <option value="Omar Soilihi">Omar Soilihi</option>
+            <option value="Fatouma Nassuf">Fatouma Nassuf</option>
+            <option value="Said Hamidou">Said Hamidou</option>
+            <option value="Zoubeida Ali">Zoubeida Ali</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Échéance</label>
+          <input type="date" id="t-echeance">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="t-desc" rows="3" placeholder="Détails supplémentaires…"></textarea>
+      </div>
+      <input type="hidden" id="t-status" value="todo">
+      <input type="hidden" id="t-edit-id" value="">
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Annuler</button>
+        <button type="submit" class="btn btn-primary" id="t-submit-btn">Créer la tâche</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── Clock & Dark mode ──
+setInterval(() => {
+  const el = document.getElementById('pro-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('fr-FR');
+}, 1000);
+
+function toggleDark() {
+  const html = document.documentElement;
+  const dark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('pro-dark-btn').textContent = dark ? '🌙' : '☀️';
+}
+
+// ── Données ──
+let taskIdCtr = 0;
+const catIcons = { maintenance:'🔧', controle:'🔍', admin:'📄', formation:'🎓', terrain:'🗺️', securite:'🛡️' };
+
+let tasks = [
+  { id:++taskIdCtr, titre:'Vérification freins bus n°14',       categorie:'maintenance', priorite:'high',   agent:'Marie Abdallah',  echeance:'2026-06-28', desc:'Suite à signalement chauffeur. Intervention prioritaire.', status:'todo' },
+  { id:++taskIdCtr, titre:'Formation sécurité incendie',         categorie:'formation',   priorite:'medium', agent:'Omar Soilihi',    echeance:'2026-07-05', desc:'Session obligatoire pour les nouvelles recrues.', status:'todo' },
+  { id:++taskIdCtr, titre:'Audit arrêts accessibilité PMR',      categorie:'controle',    priorite:'medium', agent:'Fatouma Nassuf',  echeance:'2026-07-10', desc:'Vérifier la conformité de 12 arrêts prioritaires.', status:'inprogress' },
+  { id:++taskIdCtr, titre:'Renouvellement permis D — Said H.',   categorie:'admin',       priorite:'high',   agent:'Said Hamidou',    echeance:'2026-07-01', desc:'Permis expirant le 01/07. Démarches en cours.', status:'inprogress' },
+  { id:++taskIdCtr, titre:'Nettoyage et désinfection bus n°8',   categorie:'maintenance', priorite:'low',    agent:'Zoubeida Ali',    echeance:'2026-06-30', desc:'Désinfection mensuelle réglementaire.', status:'done' },
+  { id:++taskIdCtr, titre:'Rapport ponctualité juin 2026',       categorie:'admin',       priorite:'medium', agent:'Marie Abdallah',  echeance:'2026-07-03', desc:'Synthèse mensuelle à envoyer à la direction.', status:'todo' },
+  { id:++taskIdCtr, titre:'Remplacement pneus bus n°6',          categorie:'maintenance', priorite:'high',   agent:'Omar Soilihi',    echeance:'2026-06-29', desc:'Usure critique constatée lors du dernier contrôle.', status:'todo' },
+  { id:++taskIdCtr, titre:'Mise à jour affichages en bus',        categorie:'terrain',    priorite:'low',    agent:'Fatouma Nassuf',  echeance:'2026-07-15', desc:'Nouveaux horaires estivaux à afficher.', status:'done' },
+];
+
+const agents = [
+  { nom:'Marie Abdallah',  role:'Responsable maintenance', avatar:'MA', actif:true  },
+  { nom:'Omar Soilihi',    role:'Agent technique',          avatar:'OS', actif:true  },
+  { nom:'Fatouma Nassuf',  role:'Contrôleur réseau',        avatar:'FN', actif:true  },
+  { nom:'Said Hamidou',    role:'Chauffeur / Agent terrain', avatar:'SH', actif:false },
+  { nom:'Zoubeida Ali',    role:'Agente d\'entretien',      avatar:'ZA', actif:true  },
+];
+
+const signalements = [
+  { id:'SIG-001', time:'07:42', chauffeur:'Ahmed Ben Said', badge:'CH-008', ligne:'L3', bus:'BUS-03', type:'retard',    urgence:'medium', lieu:'RN1 — km 4 Dembéni',      desc:'Accident sur la RN1 bloquant la circulation. Retard estimé 25 min.', status:'open' },
+  { id:'SIG-002', time:'09:15', chauffeur:'Noura Abdou',    badge:'CH-014', ligne:'L7', bus:'BUS-07', type:'route',     urgence:'high',   lieu:'Route Koungou — Tsoundzou', desc:'Route impraticable suite aux pluies. Demande de suspension temporaire.', status:'open' },
+  { id:'SIG-003', time:'11:03', chauffeur:'Ismail Saïd',   badge:'CH-042', ligne:'L1', bus:'BUS-14', type:'panne',     urgence:'high',   lieu:'Arrêt Kawéni Nord',         desc:'Panne mécanique — moteur surchauffé. Bus immobilisé. Remplacement demandé.', status:'open' },
+  { id:'SIG-004', time:'14:30', chauffeur:'Halima Attoumani', badge:'CH-021', ligne:'L2', bus:'BUS-05', type:'passager', urgence:'low', lieu:'Mamoudzou Centre',          desc:'Passager sans titre de transport refusant de descendre. Incident clos.', status:'resolved' },
+];
+
+// ── Tabs ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.pro-tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pro-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'kanban')        renderKanban();
+  if (id === 'liste')         renderTasksList();
+  if (id === 'agents')        renderAgents();
+  if (id === 'signalements')  renderSignalements();
+}
+
+// ── KPIs ──
+function updateKPIs() {
+  document.getElementById('pkpi-todo').textContent       = tasks.filter(t=>t.status==='todo').length;
+  document.getElementById('pkpi-inprogress').textContent = tasks.filter(t=>t.status==='inprogress').length;
+  document.getElementById('pkpi-done').textContent       = tasks.filter(t=>t.status==='done').length;
+  document.getElementById('pkpi-urgent').textContent     = tasks.filter(t=>t.priorite==='high'&&t.status!=='done').length;
+}
+
+// ── Kanban ──
+function renderKanban() {
+  const cols = ['todo','inprogress','done'];
+  cols.forEach(status => {
+    const el   = document.getElementById('k-' + status);
+    const cnt  = document.getElementById('k-' + status + '-count');
+    const list = tasks.filter(t => t.status === status);
+    if (cnt) cnt.textContent = list.length;
+    if (!el) return;
+    el.innerHTML = list.map(t => `
+      <div class="kanban-card prio-${t.priorite}" draggable="true"
+           ondragstart="dragCard(event,${t.id})" onclick="editTask(${t.id})">
+        <div class="kc-header">
+          <span class="kc-cat">${catIcons[t.categorie]||'📋'} ${t.categorie}</span>
+          <span class="kc-prio prio-pill-${t.priorite}">${t.priorite==='high'?'🔴':t.priorite==='medium'?'🟡':'🟢'}</span>
+        </div>
+        <div class="kc-titre">${t.titre}</div>
+        ${t.desc ? `<div class="kc-desc">${t.desc.slice(0,60)}${t.desc.length>60?'…':''}</div>` : ''}
+        <div class="kc-footer">
+          <span class="kc-agent" title="${t.agent}">👤 ${t.agent.split(' ')[0]}</span>
+          ${t.echeance ? `<span class="kc-date ${isOverdue(t)&&t.status!=='done'?'overdue':''}">${fmtDate(t.echeance)}</span>` : ''}
+        </div>
+        <div class="kc-actions" onclick="event.stopPropagation()">
+          ${status !== 'inprogress' && status !== 'done' ? `<button class="kc-btn" onclick="moveTask(${t.id},'inprogress')">▶ En cours</button>` : ''}
+          ${status === 'inprogress' ? `<button class="kc-btn kc-btn-green" onclick="moveTask(${t.id},'done')">✓ Terminer</button>` : ''}
+          <button class="kc-btn kc-btn-red" onclick="deleteTask(${t.id})">🗑</button>
+        </div>
+      </div>`).join('') || `<div class="kanban-empty">Aucune tâche</div>`;
+  });
+}
+
+let draggedId = null;
+function dragCard(e, id)  { draggedId = id; e.dataTransfer.effectAllowed = 'move'; }
+function dropCard(e, status) {
+  if (!draggedId) return;
+  const t = tasks.find(t => t.id === draggedId);
+  if (t) { t.status = status; renderKanban(); updateKPIs(); toast(`Tâche déplacée vers "${statusLabel(status)}".`, 'info'); }
+  draggedId = null;
+}
+
+function moveTask(id, status) {
+  const t = tasks.find(t => t.id === id);
+  if (t) { t.status = status; renderKanban(); renderTasksList(); updateKPIs(); toast(`Tâche "${t.titre.slice(0,30)}" → ${statusLabel(status)}`, 'success'); }
+}
+
+function statusLabel(s) { return s==='todo'?'À faire':s==='inprogress'?'En cours':'Terminé'; }
+
+// ── Liste tâches ──
+let listText = '', listStatus = 'all', listPriority = 'all';
+
+function renderTasksList() {
+  const tbody = document.getElementById('tasks-tbody');
+  if (!tbody) return;
+  let list = tasks;
+  if (listText)               list = list.filter(t => t.titre.toLowerCase().includes(listText.toLowerCase()) || t.agent.toLowerCase().includes(listText.toLowerCase()));
+  if (listStatus !== 'all')   list = list.filter(t => t.status === listStatus);
+  if (listPriority !== 'all') list = list.filter(t => t.priorite === listPriority);
+  if (!list.length) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--gray-400)">Aucune tâche trouvée.</td></tr>`; return; }
+  const prioLabel = { high:'<span class="pill pill-red">🔴 Urgente</span>', medium:'<span class="pill pill-orange">🟡 Normale</span>', low:'<span class="pill pill-green">🟢 Basse</span>' };
+  const stLabel   = { todo:'<span class="pill pill-gray">À faire</span>', inprogress:'<span class="pill pill-blue">En cours</span>', done:'<span class="pill pill-green">Terminé</span>' };
+  tbody.innerHTML = list.map(t => `
+    <tr>
+      <td style="font-weight:600;max-width:200px">${catIcons[t.categorie]||'📋'} ${t.titre}</td>
+      <td>${t.categorie}</td>
+      <td>👤 ${t.agent}</td>
+      <td>${prioLabel[t.priorite]||t.priorite}</td>
+      <td class="${isOverdue(t)&&t.status!=='done'?'overdue-text':''}">${t.echeance ? fmtDate(t.echeance) : '—'}</td>
+      <td>${stLabel[t.status]||t.status}</td>
+      <td>
+        <button class="btn btn-sm btn-secondary" onclick="editTask(${t.id})">✏</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteTask(${t.id})" style="margin-left:4px">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterTasks(v)          { listText = v;     renderTasksList(); }
+function filterTasksByStatus(v)  { listStatus = v;   renderTasksList(); }
+function filterTasksByPriority(v){ listPriority = v; renderTasksList(); }
+
+// ── Agents ──
+function renderAgents() {
+  const el = document.getElementById('agents-grid');
+  if (!el) return;
+  el.innerHTML = agents.map(a => {
+    const myTasks = tasks.filter(t => t.agent === a.nom && t.status !== 'done');
+    return `
+    <div class="agent-card">
+      <div class="agent-card-top">
+        <div class="agent-card-avatar">${a.avatar}</div>
+        <div>
+          <div class="agent-card-name">${a.nom}</div>
+          <div class="agent-card-role">${a.role}</div>
+        </div>
+        <span class="agent-status-dot ${a.actif ? 'actif':'inactif'}">${a.actif?'En service':'Hors service'}</span>
+      </div>
+      <div class="agent-tasks-label">Tâches en cours (${myTasks.length})</div>
+      <div class="agent-tasks-list">
+        ${myTasks.length
+          ? myTasks.map(t => `<div class="agent-task-item prio-${t.priorite}"><span>${catIcons[t.categorie]||''} ${t.titre}</span><span class="kc-prio prio-pill-${t.priorite}">${t.priorite==='high'?'🔴':t.priorite==='medium'?'🟡':'🟢'}</span></div>`).join('')
+          : '<div class="agent-no-task">Aucune tâche active</div>'}
+      </div>
+      <button class="btn-portal btn-sm btn-outline" style="width:100%;margin-top:12px" onclick="openTaskModal('todo','${a.nom}')">+ Assigner une tâche</button>
+    </div>`}).join('');
+}
+
+// ── Signalements chauffeurs ──
+let sigFilter = 'all';
+function renderSignalements(filter) {
+  if (filter !== undefined) sigFilter = filter;
+  const el = document.getElementById('signalements-list');
+  if (!el) return;
+  const list = sigFilter === 'all' ? signalements : signalements.filter(s => s.status === sigFilter);
+  const typeLabels = { retard:'⏱ Retard', route:'🚧 Route bloquée', panne:'🔧 Panne', passager:'👤 Incident passager', accident:'🚨 Accident', autre:'📝 Autre' };
+  el.innerHTML = list.map(s => `
+    <div class="sig-card ${s.status==='resolved'?'sig-resolved':''}">
+      <div class="sig-card-header">
+        <span class="sig-id">${s.id}</span>
+        <span class="sig-type">${typeLabels[s.type]||s.type}</span>
+        <span class="urg-pill urg-${s.urgence}">${s.urgence==='high'?'🔴 Urgent':s.urgence==='medium'?'🟡 Moyen':'🟢 Faible'}</span>
+        <span class="sig-time">${s.time}</span>
+        <span class="sig-status-badge ${s.status==='resolved'?'resolved':'open'}">${s.status==='resolved'?'✅ Traité':'🔴 Non traité'}</span>
+      </div>
+      <div class="sig-chauffeur">🚌 ${s.chauffeur} · ${s.badge} · Ligne ${s.ligne} · ${s.bus}</div>
+      <div class="sig-lieu">📍 ${s.lieu}</div>
+      <div class="sig-desc">${s.desc}</div>
+      ${s.status === 'open' ? `
+      <div class="sig-actions">
+        <button class="btn-portal btn-sm btn-pro-primary" onclick="resolveSignalement('${s.id}')">✓ Marquer traité</button>
+        <button class="btn-portal btn-sm btn-outline" onclick="createTaskFromSig('${s.id}')">📋 Créer une tâche</button>
+      </div>` : ''}
+    </div>`).join('') || `<div style="text-align:center;padding:32px;color:var(--gray-400)">Aucun signalement.</div>`;
+}
+
+function filterSignalements(v) { renderSignalements(v); }
+
+function resolveSignalement(id) {
+  const s = signalements.find(s=>s.id===id);
+  if (s) { s.status = 'resolved'; renderSignalements(); toast(`Signalement ${id} marqué traité.`, 'success'); }
+}
+
+function createTaskFromSig(id) {
+  const s = signalements.find(s=>s.id===id);
+  if (!s) return;
+  openTaskModal();
+  setTimeout(() => {
+    document.getElementById('t-titre').value = `Intervention suite ${s.id} — ${s.type}`;
+    document.getElementById('t-desc').value  = `${s.desc} (${s.chauffeur} · ${s.ligne})`;
+    document.getElementById('t-priorite').value = s.urgence;
+  }, 100);
+}
+
+// ── Modal tâche ──
+function openTaskModal(defaultStatus='todo', defaultAgent='') {
+  document.getElementById('t-status').value    = defaultStatus;
+  document.getElementById('t-edit-id').value   = '';
+  document.getElementById('task-modal-title').textContent = 'Nouvelle tâche';
+  document.getElementById('t-submit-btn').textContent     = 'Créer la tâche';
+  document.querySelector('#task-modal form').reset();
+  document.getElementById('t-status').value  = defaultStatus;
+  if (defaultAgent) document.getElementById('t-agent').value = defaultAgent;
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function editTask(id) {
+  const t = tasks.find(t=>t.id===id);
+  if (!t) return;
+  document.getElementById('t-edit-id').value   = id;
+  document.getElementById('task-modal-title').textContent = 'Modifier la tâche';
+  document.getElementById('t-submit-btn').textContent     = 'Enregistrer';
+  document.getElementById('t-titre').value      = t.titre;
+  document.getElementById('t-categorie').value  = t.categorie;
+  document.getElementById('t-priorite').value   = t.priorite;
+  document.getElementById('t-agent').value      = t.agent;
+  document.getElementById('t-echeance').value   = t.echeance || '';
+  document.getElementById('t-desc').value       = t.desc || '';
+  document.getElementById('t-status').value     = t.status;
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function closeTaskModal() { document.getElementById('task-modal').classList.remove('open'); }
+
+function saveTask(e) {
+  e.preventDefault();
+  const editId = parseInt(document.getElementById('t-edit-id').value);
+  const data = {
+    titre:     document.getElementById('t-titre').value,
+    categorie: document.getElementById('t-categorie').value,
+    priorite:  document.getElementById('t-priorite').value,
+    agent:     document.getElementById('t-agent').value,
+    echeance:  document.getElementById('t-echeance').value,
+    desc:      document.getElementById('t-desc').value,
+    status:    document.getElementById('t-status').value,
+  };
+  if (editId) {
+    const t = tasks.find(t=>t.id===editId);
+    if (t) Object.assign(t, data);
+    toast('Tâche mise à jour.', 'success');
+  } else {
+    tasks.push({ id:++taskIdCtr, ...data });
+    toast('Tâche créée.', 'success');
+  }
+  closeTaskModal();
+  renderKanban();
+  renderTasksList();
+  renderAgents();
+  updateKPIs();
+}
+
+function deleteTask(id) {
+  if (!confirm('Supprimer cette tâche ?')) return;
+  tasks = tasks.filter(t=>t.id!==id);
+  renderKanban(); renderTasksList(); renderAgents(); updateKPIs();
+  toast('Tâche supprimée.', 'info');
+}
+
+// ── Helpers ──
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) : ''; }
+function isOverdue(t) { return t.echeance && new Date(t.echeance) < new Date(); }
+
+function toast(msg, type='success') {
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', ()=>el.remove()); }, 3500);
+}
+
+// ── Init ──
+updateKPIs();
+renderKanban();
+renderTasksList();
+renderAgents();
+renderSignalements();
+</script>
+</body>
+</html>

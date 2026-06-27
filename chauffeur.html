@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CADEMA — Portail Chauffeur</title>
+  <link rel="stylesheet" href="cadema.css">
+  <link rel="stylesheet" href="portails.css">
+</head>
+<body class="portal-body-wrap">
+
+<!-- HEADER CHAUFFEUR -->
+<header class="portal-header driver-header">
+  <div class="portal-header-inner">
+    <a href="index.html" class="portal-back">← Accueil</a>
+    <div class="portal-logo">
+      <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
+        <rect width="44" height="44" rx="10" fill="rgba(255,255,255,0.2)"/>
+        <rect x="10" y="22" width="6" height="10" rx="1.5" fill="#fff"/>
+        <rect x="19" y="18" width="6" height="14" rx="1.5" fill="#fff"/>
+        <rect x="28" y="25" width="6" height="7" rx="1.5" fill="#fff"/>
+        <circle cx="22" cy="9" r="4" fill="#f59e0b"/>
+      </svg>
+      <div>
+        <div class="portal-logo-name">CADEMA</div>
+        <div class="portal-logo-sub">Portail Chauffeur</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="portal-clock" id="driver-clock">--:--:--</div>
+      <button class="dark-toggle" onclick="toggleDark()" id="ch-dark-btn" title="Mode sombre">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="portal-main">
+
+  <!-- IDENTIFICATION -->
+  <section class="driver-id-section" id="driver-id-section">
+    <div class="driver-id-card">
+      <div class="driver-id-icon">🚌</div>
+      <h2>Identification chauffeur</h2>
+      <p>Connectez-vous pour accéder à votre espace de signalement</p>
+      <form class="driver-id-form" onsubmit="loginDriver(event)">
+        <div class="form-group">
+          <label>Votre nom</label>
+          <input type="text" id="d-nom" placeholder="Prénom NOM" required autocomplete="name">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>N° badge</label>
+            <input type="text" id="d-badge" placeholder="ex: CH-042" required>
+          </div>
+          <div class="form-group">
+            <label>Ligne affectée</label>
+            <select id="d-ligne">
+              <option value="L1">L1 — Mamoudzou / Koungou</option>
+              <option value="L2">L2 — Mamoudzou / Bandraboua</option>
+              <option value="L3">L3 — Mamoudzou / Bouéni</option>
+              <option value="L4">L4 — Mamoudzou / Kani-Kéli</option>
+              <option value="L5">L5 — Mamoudzou / Sada</option>
+              <option value="L6">L6 — Dzaoudzi / Pamandzi</option>
+              <option value="L7">L7 — Koungou / Mtsangamouji</option>
+              <option value="L8">L8 — Mamoudzou / Ouangani</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>N° de véhicule</label>
+          <input type="text" id="d-bus" placeholder="ex: BUS-14" required>
+        </div>
+        <button type="submit" class="btn-portal btn-driver-primary">
+          <span>✓</span> Confirmer et accéder
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- DASHBOARD CHAUFFEUR (caché jusqu'à connexion) -->
+  <div id="driver-dashboard" class="driver-dashboard hidden">
+
+    <!-- Profil actif -->
+    <div class="driver-profile-bar">
+      <div class="driver-profile-info">
+        <div class="driver-avatar" id="d-avatar-display">CH</div>
+        <div>
+          <strong id="d-nom-display">—</strong>
+          <span id="d-meta-display">—</span>
+        </div>
+      </div>
+      <div class="driver-shift">
+        <span class="shift-badge" id="shift-badge">⬤ Prise de service</span>
+        <button class="btn-portal btn-sm btn-outline" onclick="toggleShift()">Fin de service</button>
+      </div>
+    </div>
+
+    <!-- Signalement rapide -->
+    <section class="quick-report-section">
+      <h3 class="section-label">⚡ Signalement rapide</h3>
+      <div class="quick-btns">
+        <button class="quick-btn qb-panne" onclick="quickReport('panne')">
+          <span class="quick-icon">🔧</span>
+          <span>Panne véhicule</span>
+        </button>
+        <button class="quick-btn qb-retard" onclick="quickReport('retard')">
+          <span class="quick-icon">⏱</span>
+          <span>Retard trajet</span>
+        </button>
+        <button class="quick-btn qb-passager" onclick="quickReport('passager')">
+          <span class="quick-icon">👤</span>
+          <span>Incident passager</span>
+        </button>
+        <button class="quick-btn qb-route" onclick="quickReport('route')">
+          <span class="quick-icon">🚧</span>
+          <span>Route bloquée</span>
+        </button>
+        <button class="quick-btn qb-accident" onclick="quickReport('accident')">
+          <span class="quick-icon">🚨</span>
+          <span>Accident</span>
+        </button>
+        <button class="quick-btn qb-autre" onclick="quickReport('autre')">
+          <span class="quick-icon">📝</span>
+          <span>Autre signalement</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Formulaire de signalement détaillé -->
+    <section class="report-form-section">
+      <h3 class="section-label">📋 Signalement détaillé</h3>
+      <form class="report-form" onsubmit="submitReport(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type d'incident</label>
+            <select id="r-type" required>
+              <option value="">— Sélectionnez —</option>
+              <option value="panne">🔧 Panne mécanique</option>
+              <option value="retard">⏱ Retard de trajet</option>
+              <option value="passager">👤 Incident passager</option>
+              <option value="route">🚧 Route bloquée / Travaux</option>
+              <option value="accident">🚨 Accident</option>
+              <option value="porte">🚪 Problème de porte</option>
+              <option value="climatisation">❄️ Climatisation en panne</option>
+              <option value="autre">📝 Autre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Niveau d'urgence</label>
+            <select id="r-urgence">
+              <option value="low">🟢 Faible — signalement informatif</option>
+              <option value="medium">🟡 Moyen — gêne sur le service</option>
+              <option value="high">🔴 Élevé — arrêt ou danger</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Localisation actuelle</label>
+          <input type="text" id="r-lieu" placeholder="ex: Entre Kawéni et Mamoudzou Centre, RN1 km 4" required>
+        </div>
+        <div class="form-group">
+          <label>Description de la situation</label>
+          <textarea id="r-desc" rows="4" placeholder="Décrivez précisément ce qui se passe. Nombre de passagers à bord si pertinent…" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Besoin de renforts ?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="renfort" value="non" checked> Non, je gère</label>
+            <label><input type="radio" name="renfort" value="oui"> Oui, envoyez un bus de remplacement</label>
+            <label><input type="radio" name="renfort" value="urgence"> 🚨 Urgence — secours nécessaires</label>
+          </div>
+        </div>
+        <div class="report-actions">
+          <button type="button" class="btn-portal btn-outline" onclick="resetForm()">Annuler</button>
+          <button type="submit" class="btn-portal btn-driver-primary">
+            📤 Envoyer le signalement
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Historique des signalements de la session -->
+    <section class="reports-history">
+      <h3 class="section-label">🕐 Signalements de la session</h3>
+      <div id="reports-list">
+        <div class="no-reports">Aucun signalement envoyé pour l'instant.</div>
+      </div>
+    </section>
+
+    <!-- Messages de la régulation -->
+    <section class="messages-section">
+      <h3 class="section-label">📡 Messages de la régulation</h3>
+      <div class="messages-list" id="messages-list">
+        <div class="message-item msg-info">
+          <div class="msg-icon">ℹ️</div>
+          <div>
+            <div class="msg-text">Travaux RN1 prévus demain matin 07h–09h. Prévoir itinéraire de remplacement via M'Tsapéré.</div>
+            <div class="msg-time">Aujourd'hui à 08:30 · Régulation</div>
+          </div>
+        </div>
+        <div class="message-item msg-warning">
+          <div class="msg-icon">⚠️</div>
+          <div>
+            <div class="msg-text">Arrêt Kawéni temporairement fermé — déposez les passagers à l'arrêt suivant Majicavo.</div>
+            <div class="msg-time">Aujourd'hui à 06:15 · Régulation</div>
+          </div>
+        </div>
+        <div class="message-item msg-ok">
+          <div class="msg-icon">✅</div>
+          <div>
+            <div class="msg-text">Bonne prise de service à tous ! Météo favorable aujourd'hui sur l'ensemble de Mayotte.</div>
+            <div class="msg-time">Aujourd'hui à 05:00 · Direction</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Toast -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// Clock
+setInterval(() => {
+  const el = document.getElementById('driver-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('fr-FR');
+}, 1000);
+
+function toggleDark() {
+  const html = document.documentElement;
+  const dark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('ch-dark-btn').textContent = dark ? '🌙' : '☀️';
+}
+
+let driverInfo = {};
+let sessionReports = [];
+let shiftActive = false;
+
+function loginDriver(e) {
+  e.preventDefault();
+  driverInfo = {
+    nom:   document.getElementById('d-nom').value,
+    badge: document.getElementById('d-badge').value,
+    ligne: document.getElementById('d-ligne').value,
+    bus:   document.getElementById('d-bus').value,
+  };
+  document.getElementById('d-avatar-display').textContent = driverInfo.nom.slice(0,2).toUpperCase();
+  document.getElementById('d-nom-display').textContent    = driverInfo.nom;
+  document.getElementById('d-meta-display').textContent   = `${driverInfo.badge} · ${driverInfo.ligne} · ${driverInfo.bus}`;
+  document.getElementById('driver-id-section').classList.add('hidden');
+  document.getElementById('driver-dashboard').classList.remove('hidden');
+  shiftActive = true;
+  toast(`Bonne prise de service, ${driverInfo.nom.split(' ')[0]} !`, 'success');
+}
+
+function toggleShift() {
+  if (confirm('Confirmer la fin de service ?')) {
+    shiftActive = false;
+    document.getElementById('shift-badge').textContent = '⬤ Fin de service';
+    document.getElementById('shift-badge').style.background = '#fee2e2';
+    document.getElementById('shift-badge').style.color = '#b91c1c';
+    toast('Fin de service enregistrée. Bonne journée !', 'info');
+  }
+}
+
+function quickReport(type) {
+  const labels = {
+    panne:    '🔧 Panne mécanique',
+    retard:   '⏱ Retard de trajet',
+    passager: '👤 Incident passager',
+    route:    '🚧 Route bloquée',
+    accident: '🚨 Accident',
+    autre:    '📝 Autre signalement',
+  };
+  document.getElementById('r-type').value = type;
+  document.querySelector('.report-form-section').scrollIntoView({ behavior:'smooth' });
+  toast(`Type "${labels[type]}" pré-sélectionné.`, 'info');
+}
+
+function submitReport(e) {
+  e.preventDefault();
+  const renfort = document.querySelector('input[name="renfort"]:checked')?.value || 'non';
+  const report = {
+    id:       'SIG-' + String(sessionReports.length + 1).padStart(3,'0'),
+    time:     new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }),
+    type:     document.getElementById('r-type').value,
+    urgence:  document.getElementById('r-urgence').value,
+    lieu:     document.getElementById('r-lieu').value,
+    desc:     document.getElementById('r-desc').value,
+    renfort,
+    chauffeur: driverInfo,
+  };
+  sessionReports.unshift(report);
+  renderReports();
+  e.target.reset();
+
+  const urgLabel = { low:'Faible', medium:'Moyen', high:'Élevé' };
+  const toastType = report.urgence === 'high' ? 'error' : report.urgence === 'medium' ? 'warning' : 'success';
+  toast(`Signalement ${report.id} envoyé · Urgence : ${urgLabel[report.urgence]}`, toastType);
+}
+
+function renderReports() {
+  const el = document.getElementById('reports-list');
+  if (!sessionReports.length) { el.innerHTML = '<div class="no-reports">Aucun signalement envoyé.</div>'; return; }
+  const typeLabels = { panne:'🔧 Panne', retard:'⏱ Retard', passager:'👤 Incident passager', route:'🚧 Route bloquée', accident:'🚨 Accident', porte:'🚪 Porte', climatisation:'❄️ Clim', autre:'📝 Autre' };
+  const urgClass  = { low:'urg-low', medium:'urg-medium', high:'urg-high' };
+  el.innerHTML = sessionReports.map(r => `
+    <div class="report-card">
+      <div class="report-card-header">
+        <span class="report-id">${r.id}</span>
+        <span class="report-type">${typeLabels[r.type] || r.type}</span>
+        <span class="urgence-pill ${urgClass[r.urgence]}">${r.urgence === 'high' ? '🔴 Élevé' : r.urgence === 'medium' ? '🟡 Moyen' : '🟢 Faible'}</span>
+        <span class="report-time">${r.time}</span>
+      </div>
+      <div class="report-lieu">📍 ${r.lieu}</div>
+      <div class="report-desc">${r.desc}</div>
+      ${r.renfort !== 'non' ? `<div class="renfort-badge">${r.renfort === 'urgence' ? '🚨 Secours demandés' : '🚌 Bus de remplacement demandé'}</div>` : ''}
+    </div>`).join('');
+}
+
+function resetForm() {
+  document.querySelector('.report-form').reset();
+}
+
+function toast(msg, type='success') {
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', ()=>el.remove()); }, 3500);
+}
+</script>
+</body>
+</html>
