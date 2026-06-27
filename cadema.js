@@ -219,45 +219,41 @@ const heroObserver = new IntersectionObserver(entries => {
   });
 }, { threshold:.3 });
 
-// ── Hero search autocomplete ──────────────────────
-function heroSearch(val) {
-  const box = document.getElementById('search-suggestions');
-  if (!val.trim()) { box.classList.remove('open'); return; }
-  const q  = val.toLowerCase();
-  const hits = lines.filter(l =>
-    l.num.toLowerCase().includes(q) ||
-    l.name.toLowerCase().includes(q) ||
-    l.from.toLowerCase().includes(q) ||
-    l.to.toLowerCase().includes(q)
-  ).slice(0, 5);
-  if (!hits.length) { box.classList.remove('open'); return; }
-  box.innerHTML = hits.map(l => `
-    <div class="suggestion-item" onclick="selectSuggestion('${l.num}')">
-      <span class="suggestion-badge">${l.num}</span>
-      <span>${l.name}</span>
-      ${statusPill(l.status)}
-    </div>`).join('');
-  box.classList.add('open');
+// ── Planificateur d'itinéraire ──────────────────────
+function swapItinerary() {
+  const from = document.getElementById('itin-from');
+  const to   = document.getElementById('itin-to');
+  const tmp  = from.value;
+  from.value = to.value;
+  to.value   = tmp;
 }
 
-function selectSuggestion(num) {
-  document.getElementById('search-suggestions').classList.remove('open');
-  document.getElementById('hero-search-input').value = num;
-  showSection('lignes');
-  const inp = document.getElementById('lines-search');
-  if (inp) { inp.value = num; filterLines(num); }
-}
+function searchItinerary() {
+  const from = document.getElementById('itin-from').value.trim();
+  const to   = document.getElementById('itin-to').value.trim();
+  if (!from || !to) {
+    showToast('Veuillez renseigner le départ et la destination.', 'warning', '📍');
+    return;
+  }
+  // Cherche une ligne correspondante dans les données
+  const q = (s) => s.toLowerCase();
+  const match = lines.find(l =>
+    (q(l.from).includes(q(from)) || q(l.name).includes(q(from))) &&
+    (q(l.to).includes(q(to)) || q(l.name).includes(q(to)))
+  ) || lines.find(l =>
+    q(l.name).includes(q(from)) || q(l.name).includes(q(to)) ||
+    q(l.from).includes(q(from)) || q(l.to).includes(q(to))
+  );
 
-function goToSearch() {
-  const val = document.getElementById('hero-search-input').value;
-  document.getElementById('search-suggestions').classList.remove('open');
-  showSection('lignes');
-  if (val.trim()) { const inp = document.getElementById('lines-search'); if(inp){ inp.value=val; filterLines(val); } }
+  if (match) {
+    showToast(`Itinéraire trouvé : ${match.num} — ${match.name} (toutes les ${match.freq} min)`, 'success', '🗺️');
+    showSection('lignes');
+    const inp = document.getElementById('lines-search');
+    if (inp) { inp.value = match.num; filterLines(match.num); }
+  } else {
+    showToast(`Aucune ligne directe trouvée entre "${from}" et "${to}".`, 'warning', '🔍');
+  }
 }
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('.search-box')) document.getElementById('search-suggestions').classList.remove('open');
-});
 
 // ── Lines table ───────────────────────────────────
 let linesTextFilter   = '';

@@ -75,15 +75,27 @@
           Espace opérateur · CADEMA Mayotte
         </div>
         <h1 class="hero-title">Le réseau de transport<br>de <span>Mayotte</span></h1>
-        <p class="hero-sub">Pilotez les lignes, suivez les incidents et analysez la fréquentation en temps réel. Plateforme dédiée aux agents et opérateurs du réseau CADEMA.</p>
+        <p class="hero-sub">Pilotez les lignes, suivez les incidents et analysez la fréquentation en temps réel.</p>
 
-        <div style="position:relative">
-          <div class="search-box">
-            <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
-            <input type="text" id="hero-search-input" placeholder="Rechercher une ligne (ex : L1, Mamoudzou…)" oninput="heroSearch(this.value)" autocomplete="off">
-            <button onclick="goToSearch()">Rechercher</button>
+        <!-- Planificateur d'itinéraire -->
+        <div class="itinerary-box">
+          <div class="itinerary-row">
+            <div class="itin-field">
+              <span class="itin-dot itin-dot-from"></span>
+              <input type="text" id="itin-from" placeholder="Point de départ (ex : Mamoudzou Centre)" autocomplete="off">
+            </div>
+            <button class="itin-swap" onclick="swapItinerary()" title="Inverser">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+            </button>
+            <div class="itin-field">
+              <span class="itin-dot itin-dot-to"></span>
+              <input type="text" id="itin-to" placeholder="Destination (ex : Koungou)" autocomplete="off">
+            </div>
           </div>
-          <div class="search-suggestions" id="search-suggestions"></div>
+          <button class="itin-btn" onclick="searchItinerary()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/></svg>
+            Trouver un itinéraire
+          </button>
         </div>
 
         <div class="hero-kpis">
@@ -97,14 +109,6 @@
         </div>
       </div>
 
-      <!-- Live status card (TFL style) -->
-      <div class="hero-status-card">
-        <div class="status-card-title">
-          <span class="status-live-dot"></span>
-          État du réseau en direct
-        </div>
-        <div class="status-lines" id="hero-status-lines"></div>
-      </div>
     </div>
   </section>
 
