@@ -7,8 +7,12 @@
 let incIdCounter = 5;
 
 // ── Lignes CARIBUS réelles (source PDFs officiels) ──
-// routeCoords = waypoints GPS suivant les routes réelles (RN1, routes secondaires)
-// Source géographique : réseau routier Mayotte, PDFs Caribus officiels
+// ══════════════════════════════════════════════════════════════
+//  TRACÉS CARIBUS — coordonnées GPS calées sur la carte officielle
+//  Référence : caribus.mobilite.yt (carte schématique officielle)
+//  Axe RN1 côtier : Barge Passot lng≈45.228, route va SSW (lng diminue légèrement)
+//  Les arrêts RESTENT SUR TERRE — côte Est de Mamoudzou à lng≈45.232 max
+// ══════════════════════════════════════════════════════════════
 const lines = [
   {
     num:'1N', name:'Hauts-Vallons → Barge Passot',
@@ -16,14 +20,14 @@ const lines = [
     freq:10, freqHC:20, freqSam:30, status:'active', ponct:93,
     horaires:{ sem:'05h00–21h00 · Pointe: 10 min · Creuse: 20 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
     stopNames:['Hauts-Vallons','Massakini','Collège K2','Cité judiciaire','Trésor public','Barge Passot'],
-    // Route depuis les collines NW vers le centre (descente sinueuse)
+    // Descente sinueuse depuis les collines NW (Hauts-Vallons) vers Mamoudzou centre
     routeCoords:[
-      [-12.7558,45.2072],[-12.7572,45.2088],[-12.7592,45.2108],[-12.7612,45.2128],
-      [-12.7632,45.2138],[-12.7648,45.2152],[-12.7665,45.2165],[-12.7688,45.2188],
-      [-12.7705,45.2202],[-12.7718,45.2212],[-12.7730,45.2220],[-12.7740,45.2228],
-      [-12.7750,45.2235],[-12.7758,45.2242],[-12.7762,45.2248],
-      [-12.7768,45.2252],[-12.7775,45.2258],[-12.7780,45.2265],[-12.7785,45.2270],
-      [-12.7790,45.2275],[-12.7793,45.2278]
+      [-12.7558,45.2048],[-12.7575,45.2065],[-12.7595,45.2082],
+      [-12.7618,45.2102],[-12.7632,45.2115],[-12.7648,45.2128],
+      [-12.7662,45.2140],[-12.7675,45.2152],[-12.7688,45.2162],
+      [-12.7702,45.2172],[-12.7715,45.2182],[-12.7728,45.2192],
+      [-12.7740,45.2202],[-12.7750,45.2210],[-12.7760,45.2218],
+      [-12.7770,45.2224],[-12.7778,45.2230],[-12.7783,45.2278]
     ]
   },
   {
@@ -32,17 +36,17 @@ const lines = [
     freq:10, freqHC:20, freqSam:30, status:'active', ponct:91,
     horaires:{ sem:'05h00–21h00 · Pointe: 10 min · Creuse: 20 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
     stopNames:['Barge Passot','Manguier','Baobab — complexe sportif','Halle de pêche','Mairie annexe Harouna Tavanday','Boina Hamissi','Doujani — Écoles','Anratabe','PEM Passamainty'],
-    // RN1 axe côtier Sud — route quasi-rectiligne légèrement vers l'Est
+    // RN1 axe côtier Sud — la route longe la côte vers SSW (lng diminue légèrement)
     routeCoords:[
-      [-12.7793,45.2278],[-12.7800,45.2280],[-12.7808,45.2282],
-      [-12.7818,45.2285],[-12.7828,45.2288],[-12.7838,45.2291],
-      [-12.7845,45.2295],[-12.7855,45.2300],[-12.7862,45.2305],
-      [-12.7870,45.2310],[-12.7880,45.2315],[-12.7888,45.2318],
-      [-12.7895,45.2322],[-12.7902,45.2325],[-12.7908,45.2328],
-      [-12.7915,45.2332],[-12.7922,45.2335],[-12.7928,45.2338],
-      [-12.7938,45.2342],[-12.7948,45.2348],[-12.7958,45.2355],
-      [-12.7968,45.2362],[-12.7978,45.2370],[-12.7988,45.2378],
-      [-12.8000,45.2385],[-12.8008,45.2388]
+      [-12.7793,45.2278],[-12.7800,45.2275],[-12.7808,45.2272],
+      [-12.7815,45.2268],[-12.7822,45.2265],[-12.7830,45.2262],
+      [-12.7838,45.2258],[-12.7845,45.2255],[-12.7852,45.2252],
+      [-12.7860,45.2248],[-12.7868,45.2245],[-12.7875,45.2242],
+      [-12.7882,45.2238],[-12.7890,45.2235],[-12.7898,45.2232],
+      [-12.7906,45.2228],[-12.7914,45.2225],[-12.7922,45.2222],
+      [-12.7930,45.2220],[-12.7938,45.2218],[-12.7946,45.2216],
+      [-12.7955,45.2215],[-12.7965,45.2215],[-12.7975,45.2215],
+      [-12.7988,45.2215],[-12.8000,45.2215],[-12.8010,45.2215]
     ]
   },
   {
@@ -51,21 +55,24 @@ const lines = [
     freq:20, freqHC:30, freqSam:30, status:'active', ponct:88,
     horaires:{ sem:'04h30–21h00 · Pointe: 20 min · Creuse: 30 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
     stopNames:['Barge Passot','Manguier','Baobab — complexe sportif','Halle de pêche','Mairie annexe Harouna Tavanday','Boina Hamissi','Doujani — Écoles','Anratabe','PEM Passamainty','Tsoundzou 1','Tsoundzou 2','Ironi Bé','Marché Tsararano','Mairie Dembéni','CUFR','Hajangoua'],
-    // RN1 Sud (même axe que 1S) + continue vers Tsoundzou, vire SO vers Dembéni
+    // Axe 1S puis continue S vers Tsoundzou/Tsararano, vire SO vers Dembéni
     routeCoords:[
-      [-12.7793,45.2278],[-12.7808,45.2282],[-12.7818,45.2285],[-12.7838,45.2291],
-      [-12.7845,45.2295],[-12.7862,45.2305],[-12.7880,45.2315],[-12.7888,45.2318],
-      [-12.7908,45.2328],[-12.7928,45.2338],[-12.7948,45.2348],[-12.8008,45.2388],
-      [-12.8028,45.2395],[-12.8048,45.2402],[-12.8068,45.2408],
-      [-12.8088,45.2415],[-12.8108,45.2420],[-12.8128,45.2428],
-      [-12.8155,45.2438],[-12.8178,45.2445],[-12.8198,45.2450],
-      [-12.8218,45.2455],[-12.8238,45.2458],[-12.8258,45.2458],
-      // Virage SO vers Dembéni après Tsararano
-      [-12.8285,45.2452],[-12.8318,45.2442],[-12.8355,45.2428],
-      [-12.8395,45.2408],[-12.8435,45.2385],[-12.8468,45.2362],
-      [-12.8505,45.2342],[-12.8530,45.2330],[-12.8558,45.2318],
-      [-12.8585,45.2305],[-12.8615,45.2290],[-12.8628,45.2288],
-      [-12.8655,45.2272],[-12.8698,45.2258]
+      [-12.7793,45.2278],[-12.7808,45.2272],[-12.7822,45.2265],
+      [-12.7838,45.2258],[-12.7852,45.2252],[-12.7868,45.2245],
+      [-12.7882,45.2238],[-12.7898,45.2232],[-12.7914,45.2225],
+      [-12.7930,45.2220],[-12.7955,45.2215],[-12.8010,45.2215],
+      // Continue Sud → Tsoundzou
+      [-12.8025,45.2212],[-12.8040,45.2210],[-12.8055,45.2208],
+      [-12.8075,45.2205],[-12.8095,45.2202],[-12.8115,45.2200],
+      [-12.8135,45.2198],[-12.8155,45.2195],[-12.8178,45.2192],
+      [-12.8198,45.2190],[-12.8218,45.2188],[-12.8238,45.2188],
+      [-12.8258,45.2188],
+      // Virage SO vers Dembéni
+      [-12.8285,45.2182],[-12.8315,45.2172],[-12.8348,45.2158],
+      [-12.8382,45.2142],[-12.8415,45.2125],[-12.8448,45.2108],
+      [-12.8478,45.2092],[-12.8505,45.2078],[-12.8528,45.2068],
+      [-12.8548,45.2060],[-12.8568,45.2052],[-12.8598,45.2042],
+      [-12.8628,45.2032],[-12.8658,45.2022],[-12.8688,45.2012]
     ]
   },
   {
@@ -74,18 +81,19 @@ const lines = [
     freq:30, freqHC:60, freqSam:30, status:'active', ponct:86,
     horaires:{ sem:'05h00–21h00 · Pointe: 30 min · Creuse: 60 min', sam:'06h00–20h50 · 30 min', dim:'08h00–19h00 · 60 min' },
     stopNames:['Barge Passot','Manguier','Baobab — complexe sportif','Halle de pêche','Mairie annexe Harouna Tavanday','Boina Hamissi','Doujani — Écoles','Anratabe','PEM Passamainty','Tsoundzou 1','Tsoundzou 2','Ironi Bé','Marché Tsararano','Tsararano Village','Ongojou'],
-    // Même tronçon que 2H jusqu'à Tsararano, puis bifurcation Ouest vers Ongojou
+    // Identique 2H jusqu'à Tsararano, puis bifurcation plein Ouest vers Ongojou
     routeCoords:[
-      [-12.7793,45.2278],[-12.7808,45.2282],[-12.7818,45.2285],[-12.7838,45.2291],
-      [-12.7845,45.2295],[-12.7862,45.2305],[-12.7880,45.2315],[-12.7888,45.2318],
-      [-12.7908,45.2328],[-12.7928,45.2338],[-12.7948,45.2348],[-12.8008,45.2388],
-      [-12.8028,45.2395],[-12.8048,45.2402],[-12.8068,45.2408],
-      [-12.8088,45.2415],[-12.8108,45.2420],[-12.8128,45.2428],
-      [-12.8155,45.2438],[-12.8178,45.2445],[-12.8198,45.2450],
-      [-12.8218,45.2455],[-12.8238,45.2458],[-12.8258,45.2458],
-      // Bifurcation Ouest vers Ongojou
-      [-12.8275,45.2448],[-12.8288,45.2418],
-      [-12.8308,45.2392],[-12.8332,45.2368],[-12.8355,45.2342],[-12.8378,45.2318]
+      [-12.7793,45.2278],[-12.7808,45.2272],[-12.7822,45.2265],
+      [-12.7838,45.2258],[-12.7852,45.2252],[-12.7868,45.2245],
+      [-12.7882,45.2238],[-12.7898,45.2232],[-12.7914,45.2225],
+      [-12.7930,45.2220],[-12.7955,45.2215],[-12.8010,45.2215],
+      [-12.8040,45.2210],[-12.8075,45.2205],[-12.8115,45.2200],
+      [-12.8155,45.2195],[-12.8198,45.2190],[-12.8238,45.2188],
+      [-12.8258,45.2188],
+      // Bifurcation Ouest vers Ongojou (route secondaire)
+      [-12.8272,45.2175],[-12.8285,45.2155],[-12.8298,45.2130],
+      [-12.8312,45.2105],[-12.8325,45.2078],[-12.8340,45.2052],
+      [-12.8358,45.2028]
     ]
   },
   {
@@ -94,17 +102,17 @@ const lines = [
     freq:10, freqHC:20, freqSam:30, status:'active', ponct:90,
     horaires:{ sem:'05h00–21h00 · Pointe: 10 min · Creuse: 20 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
     stopNames:['Doujani — Collège','Doujani — Mosquée',"M'tsapéré",'Dispensaire','Belvédère','École primaire','Briqueterie','Tamarins','Tribunal Administratif','Hôpital de Mayotte','Jacaranda','Barge Passot'],
-    // Route depuis les hauts de Mamoudzou (Doujani/M'tsapéré à l'Ouest) vers le centre
+    // Ligne 3 : hauts de Mamoudzou (Doujani/M'tsapéré à l'Ouest) → descente vers centre
     routeCoords:[
-      [-12.8018,45.2188],[-12.8005,45.2195],[-12.7998,45.2205],
-      [-12.7988,45.2195],[-12.7978,45.2185],[-12.7968,45.2178],
-      [-12.7962,45.2172],[-12.7952,45.2178],[-12.7942,45.2185],
-      [-12.7938,45.2188],[-12.7928,45.2192],[-12.7918,45.2196],
-      [-12.7912,45.2198],[-12.7902,45.2202],[-12.7888,45.2208],
-      [-12.7875,45.2215],[-12.7865,45.2218],[-12.7852,45.2225],
-      [-12.7842,45.2232],[-12.7832,45.2240],[-12.7822,45.2248],
-      [-12.7815,45.2255],[-12.7808,45.2258],[-12.7800,45.2265],
-      [-12.7798,45.2268],[-12.7795,45.2272],[-12.7793,45.2278]
+      [-12.8000,45.2125],[-12.7990,45.2132],[-12.7980,45.2140],
+      [-12.7968,45.2148],[-12.7958,45.2152],[-12.7950,45.2148],
+      [-12.7938,45.2142],[-12.7925,45.2138],[-12.7912,45.2138],
+      [-12.7900,45.2140],[-12.7888,45.2142],[-12.7876,45.2148],
+      [-12.7865,45.2155],[-12.7855,45.2162],[-12.7845,45.2170],
+      [-12.7835,45.2178],[-12.7825,45.2188],[-12.7818,45.2198],
+      [-12.7812,45.2208],[-12.7808,45.2218],[-12.7805,45.2228],
+      [-12.7802,45.2242],[-12.7800,45.2255],[-12.7796,45.2265],
+      [-12.7793,45.2278]
     ]
   },
   {
@@ -113,19 +121,24 @@ const lines = [
     freq:10, freqHC:30, freqSam:30, status:'active', ponct:94,
     horaires:{ sem:'04h30–21h00 · Pointe: 10 min · Creuse: 30 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
     stopNames:['PEM Passamainty','Stade de Cavani','Collège de Kawéni','Vahibé Mariage','Vahibé Chendra'],
-    // RN1 Nord : remonte de Passamainty vers Mamoudzou puis Kawéni et Vahibé
+    // Ligne 4 : de PEM Passamainty remonte vers Nord (Mamoudzou → Kawéni → Vahibé)
+    // RN1 côté Nord — Kawéni et Vahibé sont au NORD de Mamoudzou
     routeCoords:[
-      [-12.8008,45.2388],[-12.7998,45.2382],[-12.7985,45.2375],
-      [-12.7972,45.2368],[-12.7958,45.2362],[-12.7942,45.2358],
-      [-12.7930,45.2355],[-12.7915,45.2352],[-12.7905,45.2350],
-      [-12.7888,45.2348],[-12.7870,45.2342],[-12.7855,45.2338],
-      [-12.7835,45.2332],[-12.7818,45.2328],[-12.7800,45.2322],
-      [-12.7785,45.2318],[-12.7770,45.2318],[-12.7758,45.2318],
-      [-12.7742,45.2315],[-12.7725,45.2308],[-12.7708,45.2298],
-      [-12.7692,45.2290],[-12.7672,45.2282],[-12.7652,45.2275],
-      [-12.7632,45.2272],[-12.7615,45.2270],[-12.7608,45.2268],
-      [-12.7592,45.2262],[-12.7575,45.2252],[-12.7558,45.2242],
-      [-12.7535,45.2232],[-12.7515,45.2228],[-12.7498,45.2228]
+      [-12.8010,45.2215],[-12.7998,45.2218],[-12.7985,45.2220],
+      [-12.7970,45.2222],[-12.7955,45.2225],[-12.7940,45.2228],
+      [-12.7922,45.2230],[-12.7905,45.2232],[-12.7888,45.2235],
+      // Stade Cavani (Mamoudzou centre)
+      [-12.7870,45.2238],[-12.7852,45.2240],[-12.7835,45.2242],
+      [-12.7818,45.2245],[-12.7800,45.2248],[-12.7783,45.2250],
+      // Vers Kawéni (Nord)
+      [-12.7765,45.2252],[-12.7748,45.2252],[-12.7730,45.2250],
+      [-12.7712,45.2248],[-12.7695,45.2245],[-12.7678,45.2242],
+      // Kawéni
+      [-12.7660,45.2238],[-12.7645,45.2235],[-12.7628,45.2232],
+      // Vers Vahibé
+      [-12.7610,45.2228],[-12.7592,45.2225],[-12.7575,45.2222],
+      [-12.7558,45.2220],[-12.7540,45.2218],[-12.7522,45.2215],
+      [-12.7505,45.2212]
     ]
   },
 ];
@@ -336,61 +349,62 @@ const heroObserver = new IntersectionObserver(entries => {
 //  PLANIFICATEUR D'ITINÉRAIRE — Autocomplete + Carte
 // ══════════════════════════════════════════════════
 
-// ── Arrêts réels CARIBUS Mayotte — coordonnées GPS corrigées ──
-// Géographie confirmée : Vahibé (N) → Kawéni → Mamoudzou → Passamainty → Tsoundzou → Dembéni (S)
-// Hauts-Vallons : quartier en colline NW. M'tsapéré/Doujani : quartiers OUEST.
+// ── Arrêts CARIBUS Mayotte — coordonnées calées sur routeCoords ──
+// IMPORTANT : tous les arrêts sont sur terre ferme (lng ≤ 45.230 côte Est Mamoudzou)
+// Axe Sud (1S/2H/2O) : RN1 longe côte SSW → lng diminue de 45.228 à 45.215
+// Axe Nord (Ligne 4) : RN1 monte vers Kawéni/Vahibé → lng ≈ 45.221 à 45.228
 const stops = [
-  // ── LIGNE 1N — Hauts-Vallons (collines NW) → Barge Passot ──
-  { name:'Hauts-Vallons',                  lat:-12.7558, lng:45.2072, lines:['1N'],                   icon:'🏘️' },
-  { name:'Massakini',                      lat:-12.7632, lng:45.2138, lines:['1N'],                   icon:'🚏' },
-  { name:'Collège K2',                     lat:-12.7688, lng:45.2188, lines:['1N'],                   icon:'🎓' },
-  { name:'Cité judiciaire',               lat:-12.7732, lng:45.2222, lines:['1N'],                   icon:'⚖️' },
-  { name:'Trésor public',                  lat:-12.7762, lng:45.2248, lines:['1N'],                   icon:'🏛️' },
-  { name:'Barge Passot',                   lat:-12.7793, lng:45.2278, lines:['1N','1S','2H','2O','3'], icon:'⛴️' },
+  // ── LIGNE 1N — collines NW → Mamoudzou centre ──
+  { name:'Hauts-Vallons',                  lat:-12.7558, lng:45.2048, lines:['1N'],                    icon:'🏘️' },
+  { name:'Massakini',                      lat:-12.7632, lng:45.2115, lines:['1N'],                    icon:'🚏' },
+  { name:'Collège K2',                     lat:-12.7688, lng:45.2162, lines:['1N'],                    icon:'🎓' },
+  { name:'Cité judiciaire',               lat:-12.7740, lng:45.2202, lines:['1N'],                    icon:'⚖️' },
+  { name:'Trésor public',                  lat:-12.7778, lng:45.2230, lines:['1N'],                    icon:'🏛️' },
+  { name:'Barge Passot',                   lat:-12.7793, lng:45.2278, lines:['1N','1S','2H','2O','3'],  icon:'⛴️' },
 
-  // ── LIGNES 1S / 2H / 2O — axe côtier Sud (RN1) ──
-  { name:'Manguier',                       lat:-12.7818, lng:45.2285, lines:['1S','2H','2O'],         icon:'🚏' },
-  { name:'Baobab — complexe sportif',      lat:-12.7845, lng:45.2295, lines:['1S','2H','2O'],         icon:'🏟️' },
-  { name:'Halle de pêche',                 lat:-12.7868, lng:45.2308, lines:['1S','2H','2O'],         icon:'🐟' },
-  { name:'Mairie annexe Harouna Tavanday', lat:-12.7888, lng:45.2318, lines:['1S','2H','2O'],         icon:'🏛️' },
-  { name:'Boina Hamissi',                  lat:-12.7908, lng:45.2328, lines:['1S','2H','2O'],         icon:'🚏' },
-  { name:'Doujani — Écoles',              lat:-12.7928, lng:45.2338, lines:['1S','2H','2O'],         icon:'🏫' },
-  { name:'Anratabe',                       lat:-12.7948, lng:45.2348, lines:['1S','2H','2O'],         icon:'🚏' },
-  { name:'PEM Passamainty',                lat:-12.8008, lng:45.2388, lines:['1S','2H','2O','4'],     icon:'🚉' },
+  // ── LIGNES 1S/2H/2O — RN1 axe côtier Sud (route longe côte SSW, lng ↘) ──
+  { name:'Manguier',                       lat:-12.7815, lng:45.2268, lines:['1S','2H','2O'],          icon:'🚏' },
+  { name:'Baobab — complexe sportif',      lat:-12.7838, lng:45.2258, lines:['1S','2H','2O'],          icon:'🏟️' },
+  { name:'Halle de pêche',                 lat:-12.7860, lng:45.2248, lines:['1S','2H','2O'],          icon:'🐟' },
+  { name:'Mairie annexe Harouna Tavanday', lat:-12.7882, lng:45.2238, lines:['1S','2H','2O'],          icon:'🏛️' },
+  { name:'Boina Hamissi',                  lat:-12.7906, lng:45.2228, lines:['1S','2H','2O'],          icon:'🚏' },
+  { name:'Doujani — Écoles',              lat:-12.7922, lng:45.2222, lines:['1S','2H','2O'],          icon:'🏫' },
+  { name:'Anratabe',                       lat:-12.7946, lng:45.2216, lines:['1S','2H','2O'],          icon:'🚏' },
+  { name:'PEM Passamainty',                lat:-12.8010, lng:45.2215, lines:['1S','2H','2O','4'],      icon:'🚉' },
 
-  // ── LIGNES 2H / 2O — suite Sud (RN1 Tsoundzou → Tsararano) ──
-  { name:'Tsoundzou 1',                    lat:-12.8068, lng:45.2408, lines:['2H','2O'],              icon:'🚏' },
-  { name:'Tsoundzou 2',                    lat:-12.8128, lng:45.2428, lines:['2H','2O'],              icon:'🚏' },
-  { name:'Ironi Bé',                       lat:-12.8198, lng:45.2448, lines:['2H','2O'],              icon:'🚏' },
-  { name:'Marché Tsararano',               lat:-12.8258, lng:45.2458, lines:['2H','2O'],              icon:'🏪' },
+  // ── 2H/2O — suite RN1 Sud vers Tsoundzou/Tsararano ──
+  { name:'Tsoundzou 1',                    lat:-12.8055, lng:45.2208, lines:['2H','2O'],               icon:'🚏' },
+  { name:'Tsoundzou 2',                    lat:-12.8115, lng:45.2200, lines:['2H','2O'],               icon:'🚏' },
+  { name:'Ironi Bé',                       lat:-12.8178, lng:45.2192, lines:['2H','2O'],               icon:'🚏' },
+  { name:'Marché Tsararano',               lat:-12.8238, lng:45.2188, lines:['2H','2O'],               icon:'🏪' },
 
-  // ── LIGNE 2H — Sud-Ouest vers Dembéni ──
-  { name:'Mairie Dembéni',                 lat:-12.8558, lng:45.2318, lines:['2H'],                   icon:'🏛️' },
-  { name:'CUFR',                           lat:-12.8628, lng:45.2288, lines:['2H'],                   icon:'🎓' },
-  { name:'Hajangoua',                      lat:-12.8698, lng:45.2258, lines:['2H'],                   icon:'🏘️' },
+  // ── LIGNE 2H — continue SO vers Dembéni/Hajangoua ──
+  { name:'Mairie Dembéni',                 lat:-12.8478, lng:45.2092, lines:['2H'],                    icon:'🏛️' },
+  { name:'CUFR',                           lat:-12.8548, lng:45.2060, lines:['2H'],                    icon:'🎓' },
+  { name:'Hajangoua',                      lat:-12.8688, lng:45.2012, lines:['2H'],                    icon:'🏘️' },
 
   // ── LIGNE 2O — bifurcation Ouest vers Ongojou ──
-  { name:'Tsararano Village',              lat:-12.8288, lng:45.2418, lines:['2O'],                   icon:'🚏' },
-  { name:'Ongojou',                        lat:-12.8378, lng:45.2318, lines:['2O'],                   icon:'🏘️' },
+  { name:'Tsararano Village',              lat:-12.8285, lng:45.2155, lines:['2O'],                    icon:'🚏' },
+  { name:'Ongojou',                        lat:-12.8358, lng:45.2028, lines:['2O'],                    icon:'🏘️' },
 
-  // ── LIGNE 3 — Doujani/M'tsapéré (quartiers Ouest) → Barge Passot ──
-  { name:'Doujani — Collège',             lat:-12.8018, lng:45.2188, lines:['3'],                    icon:'🎓' },
-  { name:'Doujani — Mosquée',             lat:-12.7998, lng:45.2205, lines:['3'],                    icon:'🕌' },
-  { name:"M'tsapéré",                      lat:-12.7962, lng:45.2172, lines:['3'],                    icon:'🚏' },
-  { name:'Dispensaire',                    lat:-12.7938, lng:45.2188, lines:['3'],                    icon:'🏥' },
-  { name:'Belvédère',                      lat:-12.7912, lng:45.2198, lines:['3'],                    icon:'🚏' },
-  { name:'École primaire',                 lat:-12.7888, lng:45.2208, lines:['3'],                    icon:'🏫' },
-  { name:'Briqueterie',                    lat:-12.7865, lng:45.2218, lines:['3'],                    icon:'🚏' },
-  { name:'Tamarins',                       lat:-12.7842, lng:45.2232, lines:['3'],                    icon:'🌳' },
-  { name:'Tribunal Administratif',         lat:-12.7822, lng:45.2248, lines:['3'],                    icon:'⚖️' },
-  { name:'Hôpital de Mayotte',            lat:-12.7808, lng:45.2258, lines:['3'],                    icon:'🏥' },
-  { name:'Jacaranda',                      lat:-12.7798, lng:45.2268, lines:['3'],                    icon:'🌸' },
+  // ── LIGNE 3 — Doujani/M'tsapéré (Ouest) → Barge Passot ──
+  { name:'Doujani — Collège',             lat:-12.8000, lng:45.2125, lines:['3'],                     icon:'🎓' },
+  { name:'Doujani — Mosquée',             lat:-12.7980, lng:45.2140, lines:['3'],                     icon:'🕌' },
+  { name:"M'tsapéré",                      lat:-12.7950, lng:45.2148, lines:['3'],                     icon:'🚏' },
+  { name:'Dispensaire',                    lat:-12.7925, lng:45.2138, lines:['3'],                     icon:'🏥' },
+  { name:'Belvédère',                      lat:-12.7900, lng:45.2140, lines:['3'],                     icon:'🚏' },
+  { name:'École primaire',                 lat:-12.7876, lng:45.2148, lines:['3'],                     icon:'🏫' },
+  { name:'Briqueterie',                    lat:-12.7855, lng:45.2162, lines:['3'],                     icon:'🚏' },
+  { name:'Tamarins',                       lat:-12.7835, lng:45.2178, lines:['3'],                     icon:'🌳' },
+  { name:'Tribunal Administratif',         lat:-12.7818, lng:45.2198, lines:['3'],                     icon:'⚖️' },
+  { name:'Hôpital de Mayotte',            lat:-12.7808, lng:45.2218, lines:['3'],                     icon:'🏥' },
+  { name:'Jacaranda',                      lat:-12.7800, lng:45.2255, lines:['3'],                     icon:'🌸' },
 
-  // ── LIGNE 4 — PEM Passamainty → Vahibé (axe côtier Nord, RN1) ──
-  { name:'Stade de Cavani',                lat:-12.7888, lng:45.2348, lines:['4'],                    icon:'🏟️' },
-  { name:'Collège de Kawéni',             lat:-12.7758, lng:45.2318, lines:['4'],                    icon:'🎓' },
-  { name:'Vahibé Mariage',                 lat:-12.7608, lng:45.2268, lines:['4'],                    icon:'🚏' },
-  { name:'Vahibé Chendra',                 lat:-12.7498, lng:45.2228, lines:['4'],                    icon:'🏘️' },
+  // ── LIGNE 4 — PEM Passamainty → Nord (Stade Cavani → Kawéni → Vahibé) ──
+  { name:'Stade de Cavani',                lat:-12.7888, lng:45.2235, lines:['4'],                     icon:'🏟️' },
+  { name:'Collège de Kawéni',             lat:-12.7660, lng:45.2238, lines:['4'],                     icon:'🎓' },
+  { name:'Vahibé Mariage',                 lat:-12.7575, lng:45.2222, lines:['4'],                     icon:'🚏' },
+  { name:'Vahibé Chendra',                 lat:-12.7505, lng:45.2212, lines:['4'],                     icon:'🏘️' },
 ];
 
 // Index rapide nom → objet stop
