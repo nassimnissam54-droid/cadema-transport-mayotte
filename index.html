@@ -45,6 +45,7 @@
         Incidents <span class="nav-badge" id="nav-inc-count">3</span>
       </a>
       <a class="nav-link" href="#" onclick="showSection('stats',this)">Statistiques</a>
+      <a class="nav-link" href="#" onclick="showSection('tarifs',this)">Tarifs & Abonnements</a>
       <a class="nav-link" href="#" onclick="showSection('compte',this)">Mon Compte</a>
     </nav>
 
@@ -117,6 +118,11 @@
     <a class="drawer-item" id="ditem-stats" onclick="showSection('stats');closeDrawer()">
       <span class="drawer-item-icon">📊</span>
       <span class="drawer-item-label">Statistiques</span>
+    </a>
+
+    <a class="drawer-item" id="ditem-tarifs" onclick="showSection('tarifs');closeDrawer()">
+      <span class="drawer-item-icon">🎫</span>
+      <span class="drawer-item-label">Tarifs &amp; Abonnements</span>
     </a>
 
     <a class="drawer-item" id="ditem-compte" onclick="showSection('compte');closeDrawer()">
@@ -772,6 +778,220 @@
         <button type="submit" class="btn btn-primary">Enregistrer</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TARIFS & ABONNEMENTS
+══════════════════════════════════════ -->
+<div id="section-tarifs" class="page">
+  <div class="inner-page">
+    <div class="section-title-row">
+      <div>
+        <h2 class="section-title">🎫 Tarifs &amp; Abonnements</h2>
+        <p class="section-sub">Grille tarifaire officielle du réseau CADEMA — Mayotte 2026</p>
+      </div>
+    </div>
+
+    <!-- Bandeau promo -->
+    <div class="tarif-promo-banner">
+      <div class="tarif-promo-icon">🎉</div>
+      <div>
+        <div class="tarif-promo-title">Offre de lancement Caribus</div>
+        <div class="tarif-promo-text">Abonnement mensuel à tarif réduit jusqu'au 31 décembre 2026 pour les nouveaux usagers.</div>
+      </div>
+      <a class="tarif-promo-btn" onclick="openModal('add-titre-modal')">S'abonner</a>
+    </div>
+
+    <!-- Tickets à l'unité -->
+    <div class="tarif-section-label">🎟️ Tickets à l'unité</div>
+    <div class="tarif-cards-grid">
+      <div class="tarif-card">
+        <div class="tarif-card-top" style="background:linear-gradient(135deg,#0d3b8a,#1a56c4)">
+          <div class="tarif-card-icon">🚌</div>
+          <div class="tarif-card-name">Ticket unitaire</div>
+          <div class="tarif-card-price">1,00 €</div>
+          <div class="tarif-card-period">par trajet</div>
+        </div>
+        <ul class="tarif-card-features">
+          <li>✓ Valable 1h sur toutes les lignes</li>
+          <li>✓ Correspondances incluses</li>
+          <li>✓ Achat à bord ou aux PEM</li>
+        </ul>
+        <button class="tarif-card-btn" onclick="openModal('add-titre-modal')">Acheter</button>
+      </div>
+
+      <div class="tarif-card">
+        <div class="tarif-card-top" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">
+          <div class="tarif-card-icon">🗒️</div>
+          <div class="tarif-card-name">Carnet 10 voyages</div>
+          <div class="tarif-card-price">8,50 €</div>
+          <div class="tarif-card-period">soit 0,85 € / trajet</div>
+        </div>
+        <ul class="tarif-card-features">
+          <li>✓ 15 % d'économie vs ticket seul</li>
+          <li>✓ Valable 1 an</li>
+          <li>✓ Non nominatif, partageable</li>
+        </ul>
+        <button class="tarif-card-btn" onclick="openModal('add-titre-modal')">Acheter</button>
+      </div>
+
+      <div class="tarif-card">
+        <div class="tarif-card-top" style="background:linear-gradient(135deg,#16a34a,#22c55e)">
+          <div class="tarif-card-icon">☀️</div>
+          <div class="tarif-card-name">Ticket journée</div>
+          <div class="tarif-card-price">3,50 €</div>
+          <div class="tarif-card-period">voyages illimités / jour</div>
+        </div>
+        <ul class="tarif-card-features">
+          <li>✓ Toutes lignes illimitées</li>
+          <li>✓ Idéal visiteurs &amp; touristes</li>
+          <li>✓ Valable jusqu'à minuit</li>
+        </ul>
+        <button class="tarif-card-btn" onclick="openModal('add-titre-modal')">Acheter</button>
+      </div>
+    </div>
+
+    <!-- Abonnements -->
+    <div class="tarif-section-label">📋 Abonnements</div>
+    <div class="tarif-cards-grid">
+      <div class="tarif-card tarif-card-featured">
+        <div class="tarif-featured-badge">⭐ Populaire</div>
+        <div class="tarif-card-top" style="background:linear-gradient(135deg,#e11d48,#f43f5e)">
+          <div class="tarif-card-icon">📅</div>
+          <div class="tarif-card-name">Abonnement mensuel</div>
+          <div class="tarif-card-price">28,00 €</div>
+          <div class="tarif-card-period">par mois · soit ~0,93 €/j</div>
+        </div>
+        <ul class="tarif-card-features">
+          <li>✓ Voyages illimités 30 jours</li>
+          <li>✓ Toutes lignes CADEMA</li>
+          <li>✓ Rechargeable en ligne ou PEM</li>
+          <li>✓ Suspendu en cas de grève</li>
+        </ul>
+        <button class="tarif-card-btn tarif-btn-featured" onclick="openModal('add-titre-modal')">S'abonner</button>
+      </div>
+
+      <div class="tarif-card">
+        <div class="tarif-card-top" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">
+          <div class="tarif-card-icon">📆</div>
+          <div class="tarif-card-name">Abonnement hebdomadaire</div>
+          <div class="tarif-card-price">9,00 €</div>
+          <div class="tarif-card-period">par semaine (lun → dim)</div>
+        </div>
+        <ul class="tarif-card-features">
+          <li>✓ Voyages illimités 7 jours</li>
+          <li>✓ Démarre le lundi</li>
+          <li>✓ Sans engagement</li>
+        </ul>
+        <button class="tarif-card-btn" onclick="openModal('add-titre-modal')">S'abonner</button>
+      </div>
+
+      <div class="tarif-card">
+        <div class="tarif-card-top" style="background:linear-gradient(135deg,#b45309,#f59e0b)">
+          <div class="tarif-card-icon">🗓️</div>
+          <div class="tarif-card-name">Abonnement annuel</div>
+          <div class="tarif-card-price">280,00 €</div>
+          <div class="tarif-card-period">par an · soit 23,33 €/mois</div>
+        </div>
+        <ul class="tarif-card-features">
+          <li>✓ 2 mois offerts vs mensuel</li>
+          <li>✓ Voyages illimités 365 jours</li>
+          <li>✓ Carte nominative plastifiée</li>
+          <li>✓ Priorité service client</li>
+        </ul>
+        <button class="tarif-card-btn" onclick="openModal('add-titre-modal')">S'abonner</button>
+      </div>
+    </div>
+
+    <!-- Tarifs réduits -->
+    <div class="tarif-section-label">🤝 Tarifs réduits &amp; gratuités</div>
+    <div class="tarif-table-wrap">
+      <table class="tarif-table">
+        <thead>
+          <tr>
+            <th>Profil</th>
+            <th>Justificatif</th>
+            <th>Ticket unitaire</th>
+            <th>Mensuel</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tarif-profile-chip chip-blue">👶 Moins de 6 ans</span></td>
+            <td>Aucun</td>
+            <td class="tarif-free">Gratuit</td>
+            <td class="tarif-free">Gratuit</td>
+          </tr>
+          <tr>
+            <td><span class="tarif-profile-chip chip-green">🎓 Scolaire / Étudiant</span></td>
+            <td>Carte scolaire ou étudiant valide</td>
+            <td>0,50 €</td>
+            <td>14,00 €</td>
+          </tr>
+          <tr>
+            <td><span class="tarif-profile-chip chip-orange">👴 Senior (+ 65 ans)</span></td>
+            <td>Pièce d'identité</td>
+            <td>0,50 €</td>
+            <td>14,00 €</td>
+          </tr>
+          <tr>
+            <td><span class="tarif-profile-chip chip-purple">♿ PMR / Handicap</span></td>
+            <td>Carte d'invalidité ≥ 80 %</td>
+            <td class="tarif-free">Gratuit</td>
+            <td class="tarif-free">Gratuit</td>
+          </tr>
+          <tr>
+            <td><span class="tarif-profile-chip chip-red">🏥 Allocataire RSA</span></td>
+            <td>Attestation CAF récente</td>
+            <td>0,20 €</td>
+            <td>7,00 €</td>
+          </tr>
+          <tr>
+            <td><span class="tarif-profile-chip chip-gray">👮 Agent CADEMA</span></td>
+            <td>Badge professionnel</td>
+            <td class="tarif-free">Gratuit</td>
+            <td class="tarif-free">Gratuit</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Points de vente -->
+    <div class="tarif-section-label">📍 Points de vente &amp; rechargement</div>
+    <div class="tarif-points-grid">
+      <div class="tarif-point-card">
+        <div class="tarif-point-icon">🚉</div>
+        <div class="tarif-point-name">PEM Hauts-Vallons</div>
+        <div class="tarif-point-hours">Lun–Sam 05h30–21h00</div>
+      </div>
+      <div class="tarif-point-card">
+        <div class="tarif-point-icon">🚉</div>
+        <div class="tarif-point-name">PEM Barge Passot</div>
+        <div class="tarif-point-hours">Lun–Dim 05h00–21h30</div>
+      </div>
+      <div class="tarif-point-card">
+        <div class="tarif-point-icon">🚉</div>
+        <div class="tarif-point-name">PEM Passamainty</div>
+        <div class="tarif-point-hours">Lun–Sam 05h30–21h00</div>
+      </div>
+      <div class="tarif-point-card">
+        <div class="tarif-point-icon">📱</div>
+        <div class="tarif-point-name">Application mobile</div>
+        <div class="tarif-point-hours">Disponible 24h/24</div>
+      </div>
+      <div class="tarif-point-card">
+        <div class="tarif-point-icon">💳</div>
+        <div class="tarif-point-name">Paiement à bord</div>
+        <div class="tarif-point-hours">Espèces uniquement</div>
+      </div>
+      <div class="tarif-point-card">
+        <div class="tarif-point-icon">🌐</div>
+        <div class="tarif-point-name">Espace en ligne</div>
+        <div class="tarif-point-hours">CB &amp; virement acceptés</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
