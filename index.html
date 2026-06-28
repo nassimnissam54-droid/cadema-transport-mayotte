@@ -55,12 +55,121 @@
         <div class="agent-avatar-sm" id="header-avatar">AG</div>
         <span id="header-name">Agent Réseau</span>
       </div>
-      <button class="burger" id="burger-btn" onclick="toggleNav()">
+      <button class="burger" id="burger-btn" onclick="openDrawer()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
     </div>
   </div>
 </header>
+
+<!-- ── DRAWER OVERLAY ── -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- ── SIDE DRAWER ── -->
+<aside class="side-drawer" id="side-drawer" aria-hidden="true">
+
+  <!-- En-tête drawer -->
+  <div class="drawer-header">
+    <div class="drawer-logo">
+      <svg width="32" height="32" viewBox="0 0 44 44" fill="none">
+        <rect width="44" height="44" rx="10" fill="rgba(255,255,255,0.15)"/>
+        <rect x="10" y="22" width="6" height="10" rx="1.5" fill="#fff"/>
+        <rect x="19" y="18" width="6" height="14" rx="1.5" fill="#fff"/>
+        <rect x="28" y="25" width="6" height="7" rx="1.5" fill="#fff"/>
+        <circle cx="22" cy="9" r="4" fill="#f59e0b"/>
+      </svg>
+      <div>
+        <div class="drawer-logo-name">CADEMA</div>
+        <div class="drawer-logo-sub">Réseau Transport Mayotte</div>
+      </div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Fermer">✕</button>
+  </div>
+
+  <!-- Statut réseau live -->
+  <div class="drawer-status-bar">
+    <span class="drawer-status-dot"></span>
+    <span id="drawer-status-text">Réseau opérationnel</span>
+    <span class="drawer-status-badge" id="drawer-inc-badge">3 incidents</span>
+  </div>
+
+  <!-- Navigation principale -->
+  <nav class="drawer-nav">
+    <div class="drawer-section-label">Navigation</div>
+
+    <a class="drawer-item active" id="ditem-home" onclick="showSection('home');closeDrawer()">
+      <span class="drawer-item-icon">🏠</span>
+      <span class="drawer-item-label">Accueil</span>
+    </a>
+
+    <a class="drawer-item" id="ditem-lignes" onclick="showSection('lignes');closeDrawer()">
+      <span class="drawer-item-icon">🚌</span>
+      <span class="drawer-item-label">Lignes &amp; Horaires</span>
+      <span class="drawer-item-sub">6 lignes actives</span>
+    </a>
+
+    <a class="drawer-item" id="ditem-incidents" onclick="showSection('incidents');closeDrawer()">
+      <span class="drawer-item-icon">⚠️</span>
+      <span class="drawer-item-label">Incidents &amp; Alertes</span>
+      <span class="drawer-item-badge" id="drawer-inc-count">3</span>
+    </a>
+
+    <a class="drawer-item" id="ditem-stats" onclick="showSection('stats');closeDrawer()">
+      <span class="drawer-item-icon">📊</span>
+      <span class="drawer-item-label">Statistiques</span>
+    </a>
+
+    <a class="drawer-item" id="ditem-compte" onclick="showSection('compte');closeDrawer()">
+      <span class="drawer-item-icon">👤</span>
+      <span class="drawer-item-label">Mon Compte</span>
+      <span class="drawer-item-sub" id="drawer-user-name">Agent Réseau</span>
+    </a>
+  </nav>
+
+  <!-- Actions rapides -->
+  <div class="drawer-divider"></div>
+  <div class="drawer-nav">
+    <div class="drawer-section-label">Actions rapides</div>
+
+    <a class="drawer-item drawer-item-action" onclick="closeDrawer();document.getElementById('itin-from').focus()">
+      <span class="drawer-item-icon">🗺️</span>
+      <span class="drawer-item-label">Planifier un itinéraire</span>
+    </a>
+
+    <a class="drawer-item drawer-item-action" onclick="closeDrawer();showSection('incidents');openModal('add-incident-modal')">
+      <span class="drawer-item-icon">🚨</span>
+      <span class="drawer-item-label">Signaler un incident</span>
+    </a>
+
+    <a class="drawer-item drawer-item-action" onclick="closeDrawer();showSection('lignes');openModal('add-line-modal')">
+      <span class="drawer-item-icon">➕</span>
+      <span class="drawer-item-label">Ajouter une ligne</span>
+    </a>
+  </div>
+
+  <!-- Spacer -->
+  <div style="flex:1"></div>
+
+  <!-- Pied du drawer -->
+  <div class="drawer-footer">
+    <div class="drawer-footer-row">
+      <span class="drawer-footer-clock" id="drawer-clock">--:--:--</span>
+      <button class="drawer-dark-btn" onclick="toggleDark()" id="drawer-dark-btn" title="Mode sombre/clair">
+        🌙 Mode sombre
+      </button>
+    </div>
+    <div class="drawer-user-card" onclick="showSection('compte');closeDrawer()">
+      <div class="drawer-user-avatar" id="drawer-avatar">AG</div>
+      <div>
+        <div class="drawer-user-name" id="drawer-full-name">Agent Réseau</div>
+        <div class="drawer-user-role" id="drawer-role">Opérateur CADEMA</div>
+      </div>
+      <span class="drawer-user-arrow">›</span>
+    </div>
+    <div class="drawer-version">CADEMA v2.0 · Mayotte 2026</div>
+  </div>
+
+</aside>
 
 <div class="page-wrapper">
 

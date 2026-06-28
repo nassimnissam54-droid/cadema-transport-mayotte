@@ -212,6 +212,7 @@ function toggleDark() {
   html.setAttribute('data-theme', isDark ? 'light' : 'dark');
   document.getElementById('dark-btn').textContent = isDark ? '🌙' : '☀️';
   localStorage.setItem('cadema_theme', isDark ? 'light' : 'dark');
+  updateDrawerDarkBtn();
 }
 (function initTheme() {
   const saved = localStorage.getItem('cadema_theme');
@@ -242,6 +243,7 @@ function showSection(id, navEl) {
   if (navEl)  navEl.classList.add('active');
   document.getElementById('main-nav').classList.remove('open');
   document.getElementById('burger-btn').classList.remove('open');
+  syncDrawerActive(id);
   window.scrollTo({ top:0, behavior:'smooth' });
   if (id === 'stats' && !chartsRendered) { chartsRendered = true; renderCharts(); }
   if (id === 'stats' && !statsAnimated)  { statsAnimated  = true; animateStats(); }
@@ -251,6 +253,58 @@ function toggleNav() {
   document.getElementById('main-nav').classList.toggle('open');
   document.getElementById('burger-btn').classList.toggle('open');
 }
+
+// ── Side Drawer ───────────────────────────────────
+function openDrawer() {
+  document.getElementById('side-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('burger-btn').classList.add('open');
+  document.getElementById('side-drawer').setAttribute('aria-hidden','false');
+  updateDrawerData();
+}
+function closeDrawer() {
+  document.getElementById('side-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('burger-btn').classList.remove('open');
+  document.getElementById('side-drawer').setAttribute('aria-hidden','true');
+}
+function updateDrawerData() {
+  const openCnt = incidents.filter(i => i.status === 'open').length;
+  const badge = document.getElementById('drawer-inc-badge');
+  const count = document.getElementById('drawer-inc-count');
+  const statusTxt = document.getElementById('drawer-status-text');
+  if (badge) badge.textContent = openCnt + ' incident' + (openCnt > 1 ? 's' : '');
+  if (count) count.textContent = openCnt;
+  if (statusTxt) statusTxt.textContent = openCnt > 0 ? openCnt + ' perturbation(s)' : 'Réseau opérationnel';
+  const nameEl = document.getElementById('drawer-full-name');
+  const roleEl = document.getElementById('drawer-role');
+  const avatarEl = document.getElementById('drawer-avatar');
+  const subEl = document.getElementById('drawer-user-name');
+  if (nameEl) nameEl.textContent = compte.nom || 'Agent Réseau';
+  if (roleEl) roleEl.textContent = compte.role || 'Opérateur CADEMA';
+  if (avatarEl) avatarEl.textContent = (compte.nom || 'AR').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  if (subEl) subEl.textContent = compte.nom || 'Agent Réseau';
+}
+// Sync drawer active item with current section
+function syncDrawerActive(id) {
+  document.querySelectorAll('.drawer-item[id^="ditem-"]').forEach(el => el.classList.remove('active'));
+  const target = document.getElementById('ditem-' + id);
+  if (target) target.classList.add('active');
+}
+// Drawer clock (synced with main clock)
+setInterval(() => {
+  const el = document.getElementById('drawer-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('fr-FR');
+}, 1000);
+// Dark mode button label in drawer
+function updateDrawerDarkBtn() {
+  const btn = document.getElementById('drawer-dark-btn');
+  if (!btn) return;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  btn.innerHTML = isDark ? '☀️ Mode clair' : '🌙 Mode sombre';
+}
+// Close drawer on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
 // ── Pills ─────────────────────────────────────────
 function statusPill(s) {
