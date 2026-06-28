@@ -6,23 +6,58 @@
 // ── Données ──────────────────────────────────────
 let incIdCounter = 5;
 
+// ── Lignes CARIBUS réelles (source PDFs officiels) ──
 const lines = [
-  { num:'L1', name:'Mamoudzou — Koungou',      from:'Mamoudzou', to:'Koungou',      freq:20, status:'active',    ponct:94 },
-  { num:'L2', name:'Mamoudzou — Bandraboua',   from:'Mamoudzou', to:'Bandraboua',   freq:30, status:'active',    ponct:89 },
-  { num:'L3', name:'Mamoudzou — Bouéni',        from:'Mamoudzou', to:'Bouéni',        freq:45, status:'delayed',   ponct:72 },
-  { num:'L4', name:'Mamoudzou — Kani-Kéli',    from:'Mamoudzou', to:'Kani-Kéli',    freq:60, status:'active',    ponct:91 },
-  { num:'L5', name:'Mamoudzou — Sada',          from:'Mamoudzou', to:'Sada',          freq:30, status:'active',    ponct:88 },
-  { num:'L6', name:'Dzaoudzi — Pamandzi',       from:'Dzaoudzi',  to:'Pamandzi',     freq:15, status:'active',    ponct:96 },
-  { num:'L7', name:'Koungou — Mtsangamouji',   from:'Koungou',   to:'Mtsangamouji', freq:40, status:'suspended', ponct:0  },
-  { num:'L8', name:'Mamoudzou — Ouangani',      from:'Mamoudzou', to:'Ouangani',      freq:35, status:'active',    ponct:85 },
+  {
+    num:'1N', name:'Hauts-Vallons → Barge Passot',
+    from:'Hauts-Vallons', to:'Barge Passot', color:'#e11d48',
+    freq:10, freqHC:20, freqSam:30, status:'active', ponct:93,
+    horaires:{ sem:'05h00–21h00 · Pointe: 10 min · Creuse: 20 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
+    stopNames:['Hauts-Vallons','Massakini','Collège K2','Cité judiciaire','Trésor public','Barge Passot']
+  },
+  {
+    num:'1S', name:'Barge Passot → PEM Passamainty',
+    from:'Barge Passot', to:'PEM Passamainty', color:'#e11d48',
+    freq:10, freqHC:20, freqSam:30, status:'active', ponct:91,
+    horaires:{ sem:'05h00–21h00 · Pointe: 10 min · Creuse: 20 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
+    stopNames:['Barge Passot','Manguier','Baobab — complexe sportif','Halle de pêche','Mairie annexe Harouna Tavanday','Boina Hamissi','Doujani — Écoles','Anratabe','PEM Passamainty']
+  },
+  {
+    num:'2H', name:'Barge Passot → Hajangoua',
+    from:'Barge Passot', to:'Hajangoua', color:'#16a34a',
+    freq:20, freqHC:30, freqSam:30, status:'active', ponct:88,
+    horaires:{ sem:'04h30–21h00 · Pointe: 20 min · Creuse: 30 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
+    stopNames:['Barge Passot','Manguier','Baobab — complexe sportif','Halle de pêche','Mairie annexe Harouna Tavanday','Boina Hamissi','Doujani — Écoles','Anratabe','PEM Passamainty','Tsoundzou 1','Tsoundzou 2','Ironi Bé','Marché Tsararano','Mairie Dembéni','CUFR','Hajangoua']
+  },
+  {
+    num:'2O', name:'Barge Passot → Ongojou',
+    from:'Barge Passot', to:'Ongojou', color:'#16a34a',
+    freq:30, freqHC:60, freqSam:30, status:'active', ponct:86,
+    horaires:{ sem:'05h00–21h00 · Pointe: 30 min · Creuse: 60 min', sam:'06h00–20h50 · 30 min', dim:'08h00–19h00 · 60 min' },
+    stopNames:['Barge Passot','Manguier','Baobab — complexe sportif','Halle de pêche','Mairie annexe Harouna Tavanday','Boina Hamissi','Doujani — Écoles','Anratabe','PEM Passamainty','Tsoundzou 1','Tsoundzou 2','Ironi Bé','Marché Tsararano','Tsararano Village','Ongojou']
+  },
+  {
+    num:'3', name:'Doujani Collège → Barge Passot',
+    from:'Doujani — Collège', to:'Barge Passot', color:'#ea580c',
+    freq:10, freqHC:20, freqSam:30, status:'active', ponct:90,
+    horaires:{ sem:'05h00–21h00 · Pointe: 10 min · Creuse: 20 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
+    stopNames:['Doujani — Collège','Doujani — Mosquée','M\'tsapéré','Dispensaire','Belvédère','École primaire','Briqueterie','Tamarins','Tribunal Administratif','Hôpital de Mayotte','Jacaranda','Barge Passot']
+  },
+  {
+    num:'4', name:'PEM Passamainty → Vahibé',
+    from:'PEM Passamainty', to:'Vahibé Chendra', color:'#2563eb',
+    freq:10, freqHC:30, freqSam:30, status:'active', ponct:94,
+    horaires:{ sem:'04h30–21h00 · Pointe: 10 min · Creuse: 30 min', sam:'06h00–21h00 · 30 min', dim:'08h00–19h00 · 60 min' },
+    stopNames:['PEM Passamainty','Stade de Cavani','Collège de Kawéni','Vahibé Mariage','Vahibé Chendra']
+  },
 ];
 
 const incidents = [
-  { id:'INC-001', date:'2026-06-27', time:'07:42', line:'L3', desc:'Retard important — accident sur la RN1 à Dembéni',          severity:'high',   status:'open' },
-  { id:'INC-002', date:'2026-06-27', time:'09:15', line:'L7', desc:'Suspension temporaire — route impraticable suite aux pluies', severity:'high',   status:'open' },
-  { id:'INC-003', date:'2026-06-27', time:'11:03', line:'L1', desc:'Panne mécanique bus n°14 — remplacement en cours',           severity:'medium', status:'open' },
-  { id:'INC-004', date:'2026-06-26', time:'14:30', line:'L2', desc:'Retard 15 min — manifestation à Kawéni',                     severity:'low',    status:'resolved' },
-  { id:'INC-005', date:'2026-06-25', time:'08:00', line:'L5', desc:'Arrêt Sada fermé temporairement — travaux voirie',           severity:'medium', status:'resolved' },
+  { id:'INC-001', date:'2026-06-28', time:'07:42', line:'2H', desc:'Retard important — accident sur la RN1 à Dembéni, entre Ironi Bé et Mairie Dembéni', severity:'high',   status:'open' },
+  { id:'INC-002', date:'2026-06-28', time:'09:15', line:'2O', desc:'Suspension temporaire — route impraticable entre Tsararano Village et Ongojou', severity:'high',   status:'open' },
+  { id:'INC-003', date:'2026-06-28', time:'11:03', line:'1N', desc:'Panne mécanique bus n°14 entre Massakini et Collège K2 — remplacement en cours', severity:'medium', status:'open' },
+  { id:'INC-004', date:'2026-06-27', time:'14:30', line:'3',  desc:'Retard 15 min — manifestation à M\'tsapéré, arrêt décalé',  severity:'low',    status:'resolved' },
+  { id:'INC-005', date:'2026-06-27', time:'08:00', line:'4',  desc:'Arrêt Vahibé Mariage fermé temporairement — travaux de voirie', severity:'medium', status:'resolved' },
 ];
 
 // ── Compte (localStorage) ────────────────────────
@@ -38,20 +73,20 @@ function defaultCompte() {
       { id:2, type:'carnet',  num:'MAY-2026-0099', expiry:'2026-12-31' },
     ],
     lieux:[
-      { id:1, type:'home', nom:'Domicile',      adresse:'Arrêt Koungou Marché' },
-      { id:2, type:'work', nom:'Bureau CADEMA', adresse:'Arrêt Mamoudzou Centre' },
+      { id:1, type:'home', nom:'Domicile',      adresse:'Arrêt Hauts-Vallons' },
+      { id:2, type:'work', nom:'Bureau CADEMA', adresse:'Arrêt Barge Passot' },
     ],
     trajets:[
-      { id:1, nom:'Domicile → Travail', from:'Koungou',    to:'Mamoudzou', line:'L1', heure:'07:30', jours:['Lun','Mar','Mer','Jeu','Ven'] },
-      { id:2, nom:'Travail → Domicile', from:'Mamoudzou',  to:'Koungou',   line:'L1', heure:'17:15', jours:['Lun','Mar','Mer','Jeu','Ven'] },
+      { id:1, nom:'Domicile → Travail', from:'Hauts-Vallons', to:'Barge Passot', line:'1N', heure:'07:00', jours:['Lun','Mar','Mer','Jeu','Ven'] },
+      { id:2, nom:'Travail → Domicile', from:'Barge Passot',  to:'Hauts-Vallons', line:'1N', heure:'17:30', jours:['Lun','Mar','Mer','Jeu','Ven'] },
     ],
     historique:[
-      { date:'2026-06-27', heure:'07:32', line:'L1', from:'Koungou',    to:'Mamoudzou',  duree:'38 min', titre:'Abonnement mensuel' },
-      { date:'2026-06-26', heure:'17:18', line:'L1', from:'Mamoudzou',  to:'Koungou',    duree:'41 min', titre:'Abonnement mensuel' },
-      { date:'2026-06-26', heure:'07:31', line:'L1', from:'Koungou',    to:'Mamoudzou',  duree:'36 min', titre:'Abonnement mensuel' },
-      { date:'2026-06-25', heure:'17:22', line:'L1', from:'Mamoudzou',  to:'Koungou',    duree:'39 min', titre:'Abonnement mensuel' },
-      { date:'2026-06-24', heure:'07:35', line:'L2', from:'Koungou',    to:'Bandraboua', duree:'22 min', titre:'Carnet 10 voyages' },
-      { date:'2026-06-23', heure:'09:10', line:'L6', from:'Dzaoudzi',   to:'Pamandzi',   duree:'12 min', titre:'Carnet 10 voyages' },
+      { date:'2026-06-28', heure:'07:02', line:'1N', from:'Hauts-Vallons',   to:'Barge Passot',    duree:'14 min', titre:'Abonnement mensuel' },
+      { date:'2026-06-27', heure:'17:32', line:'1N', from:'Barge Passot',    to:'Hauts-Vallons',   duree:'16 min', titre:'Abonnement mensuel' },
+      { date:'2026-06-27', heure:'07:00', line:'1N', from:'Hauts-Vallons',   to:'Barge Passot',    duree:'13 min', titre:'Abonnement mensuel' },
+      { date:'2026-06-26', heure:'17:35', line:'1N', from:'Barge Passot',    to:'Hauts-Vallons',   duree:'15 min', titre:'Abonnement mensuel' },
+      { date:'2026-06-25', heure:'09:10', line:'1S', from:'Barge Passot',    to:'PEM Passamainty', duree:'22 min', titre:'Abonnement mensuel' },
+      { date:'2026-06-24', heure:'14:20', line:'3',  from:'Doujani — Collège', to:'Barge Passot',  duree:'28 min', titre:'Carnet 10 voyages'  },
     ],
   };
 }
@@ -224,38 +259,61 @@ const heroObserver = new IntersectionObserver(entries => {
 // ══════════════════════════════════════════════════
 
 // Base d'arrêts réels de Mayotte
+// ── Arrêts réels CARIBUS Mayotte (source PDFs officiels + caribus.mobilite.yt) ──
 const stops = [
-  { name:'Mamoudzou Centre',           lat:-12.7806, lng:45.2278, lines:['L1','L2','L3','L4','L5'], icon:'🏙️' },
-  { name:'Mamoudzou Marché Couvert',   lat:-12.7795, lng:45.2260, lines:['L1','L2'],                icon:'🏪' },
-  { name:'Mamoudzou Hôpital',          lat:-12.7855, lng:45.2295, lines:['L1','L3'],                icon:'🏥' },
-  { name:'Mamoudzou Mairie',           lat:-12.7800, lng:45.2270, lines:['L1','L2','L5'],           icon:'🏛️' },
-  { name:'Kawéni Lycée',               lat:-12.7650, lng:45.2100, lines:['L1','L2'],                icon:'🎓' },
-  { name:'Kawéni Zone Industrielle',   lat:-12.7620, lng:45.2070, lines:['L1'],                     icon:'🏭' },
-  { name:'Majicavo Carrefour',         lat:-12.7500, lng:45.2180, lines:['L1'],                     icon:'🚏' },
-  { name:'Koungou',                    lat:-12.7301, lng:45.2019, lines:['L1'],                     icon:'🏘️' },
-  { name:'Koungou Village',            lat:-12.7280, lng:45.1990, lines:['L1'],                     icon:'🚏' },
-  { name:'Longoni Port',               lat:-12.7170, lng:45.1640, lines:['L1','L2'],                icon:'⚓' },
-  { name:'Mtsangamouji',               lat:-12.7400, lng:45.1600, lines:['L7'],                     icon:'🚏' },
-  { name:'Bandraboua',                 lat:-12.7100, lng:45.1980, lines:['L2'],                     icon:'🏘️' },
-  { name:'Dzoumogné',                  lat:-12.7080, lng:45.1820, lines:['L2'],                     icon:'🚏' },
-  { name:'Tsoundzou',                  lat:-12.7950, lng:45.2380, lines:['L4','L5'],                icon:'🚏' },
-  { name:'Passamaïnty',                lat:-12.7970, lng:45.2420, lines:['L4'],                     icon:'🚏' },
-  { name:'Bouéni',                     lat:-12.9500, lng:45.0800, lines:['L3'],                     icon:'🏝️' },
-  { name:'Kani-Kéli',                  lat:-12.9200, lng:45.1000, lines:['L4'],                     icon:'🚏' },
-  { name:'Sada',                       lat:-12.8500, lng:45.1100, lines:['L5'],                     icon:'🏘️' },
-  { name:'Chiconi',                    lat:-12.8700, lng:45.1200, lines:['L5'],                     icon:'🚏' },
-  { name:'Tsingoni',                   lat:-12.8900, lng:45.1150, lines:['L4','L5'],                icon:'🚏' },
-  { name:'Ouangani',                   lat:-12.8600, lng:45.1500, lines:['L8'],                     icon:'🏘️' },
-  { name:'Dzaoudzi Centre',            lat:-12.7860, lng:45.2620, lines:['L6'],                     icon:'🏙️' },
-  { name:'Pamandzi',                   lat:-12.8030, lng:45.2700, lines:['L6'],                     icon:'🚏' },
-  { name:'Labattoir',                  lat:-12.7900, lng:45.2680, lines:['L6'],                     icon:'🚏' },
-  { name:'Aéroport Dzaoudzi-Pamandzi', lat:-12.8060, lng:45.2814, lines:['L6'],                     icon:'✈️' },
-  { name:'Chirongui',                  lat:-12.9300, lng:45.0950, lines:['L3','L4'],                icon:'🚏' },
-  { name:'Bouéni Village',             lat:-12.9550, lng:45.0770, lines:['L3'],                     icon:'🚏' },
-  { name:'M\'Tsapéré',                  lat:-12.7730, lng:45.2240, lines:['L3','L5'],               icon:'🚏' },
-  { name:'Cavani',                     lat:-12.7760, lng:45.2300, lines:['L2','L4'],                icon:'🚏' },
-  { name:'Koropa',                     lat:-12.7580, lng:45.2140, lines:['L1'],                     icon:'🚏' },
+  // ── LIGNE 1N — Hauts-Vallons → Barge Passot ──
+  { name:'Hauts-Vallons',                    lat:-12.7623, lng:45.2213, lines:['1N'],              icon:'🏘️' },
+  { name:'Massakini',                        lat:-12.7680, lng:45.2237, lines:['1N'],              icon:'🚏' },
+  { name:'Collège K2',                       lat:-12.7718, lng:45.2255, lines:['1N'],              icon:'🎓' },
+  { name:'Cité judiciaire',                  lat:-12.7752, lng:45.2268, lines:['1N'],              icon:'⚖️' },
+  { name:'Trésor public',                    lat:-12.7772, lng:45.2274, lines:['1N'],              icon:'🏛️' },
+  { name:'Barge Passot',                     lat:-12.7795, lng:45.2280, lines:['1N','1S','2H','2O','3'], icon:'⛴️' },
+
+  // ── LIGNE 1S — Barge Passot → PEM Passamainty ──
+  { name:'Manguier',                         lat:-12.7815, lng:45.2290, lines:['1S','2H','2O'],   icon:'🚏' },
+  { name:'Baobab — complexe sportif',        lat:-12.7840, lng:45.2305, lines:['1S','2H','2O'],   icon:'🏟️' },
+  { name:'Halle de pêche',                   lat:-12.7862, lng:45.2318, lines:['1S','2H','2O'],   icon:'🐟' },
+  { name:'Mairie annexe Harouna Tavanday',   lat:-12.7882, lng:45.2328, lines:['1S','2H','2O'],   icon:'🏛️' },
+  { name:'Boina Hamissi',                    lat:-12.7905, lng:45.2340, lines:['1S','2H','2O'],   icon:'🚏' },
+  { name:'Doujani — Écoles',                 lat:-12.7928, lng:45.2352, lines:['1S','2H','2O'],   icon:'🏫' },
+  { name:'Anratabe',                         lat:-12.7950, lng:45.2368, lines:['1S','2H','2O'],   icon:'🚏' },
+  { name:'PEM Passamainty',                  lat:-12.7978, lng:45.2392, lines:['1S','2H','2O','4'], icon:'🚉' },
+
+  // ── LIGNE 2H — suite vers Hajangoua ──
+  { name:'Tsoundzou 1',                      lat:-12.8018, lng:45.2372, lines:['2H','2O'],         icon:'🚏' },
+  { name:'Tsoundzou 2',                      lat:-12.8055, lng:45.2348, lines:['2H','2O'],         icon:'🚏' },
+  { name:'Ironi Bé',                         lat:-12.8105, lng:45.2302, lines:['2H','2O'],         icon:'🚏' },
+  { name:'Marché Tsararano',                 lat:-12.8158, lng:45.2248, lines:['2H','2O'],         icon:'🏪' },
+  { name:'Mairie Dembéni',                   lat:-12.8388, lng:45.2008, lines:['2H'],              icon:'🏛️' },
+  { name:'CUFR',                             lat:-12.8512, lng:45.2052, lines:['2H'],              icon:'🎓' },
+  { name:'Hajangoua',                        lat:-12.8618, lng:45.2005, lines:['2H'],              icon:'🏘️' },
+
+  // ── LIGNE 2O — bifurcation vers Ongojou ──
+  { name:'Tsararano Village',                lat:-12.8185, lng:45.2195, lines:['2O'],              icon:'🚏' },
+  { name:'Ongojou',                          lat:-12.8252, lng:45.2105, lines:['2O'],              icon:'🏘️' },
+
+  // ── LIGNE 3 — Doujani Collège → Barge Passot ──
+  { name:'Doujani — Collège',                lat:-12.7958, lng:45.2275, lines:['3'],               icon:'🎓' },
+  { name:'Doujani — Mosquée',               lat:-12.7942, lng:45.2288, lines:['3'],               icon:'🕌' },
+  { name:"M'tsapéré",                        lat:-12.7920, lng:45.2305, lines:['3'],               icon:'🚏' },
+  { name:'Dispensaire',                      lat:-12.7900, lng:45.2298, lines:['3'],               icon:'🏥' },
+  { name:'Belvédère',                        lat:-12.7875, lng:45.2290, lines:['3'],               icon:'🚏' },
+  { name:'École primaire',                   lat:-12.7858, lng:45.2283, lines:['3'],               icon:'🏫' },
+  { name:'Briqueterie',                      lat:-12.7842, lng:45.2276, lines:['3'],               icon:'🚏' },
+  { name:'Tamarins',                         lat:-12.7828, lng:45.2270, lines:['3'],               icon:'🌳' },
+  { name:'Tribunal Administratif',           lat:-12.7818, lng:45.2265, lines:['3'],               icon:'⚖️' },
+  { name:'Hôpital de Mayotte',              lat:-12.7808, lng:45.2257, lines:['3'],               icon:'🏥' },
+  { name:'Jacaranda',                        lat:-12.7800, lng:45.2265, lines:['3'],               icon:'🌸' },
+
+  // ── LIGNE 4 — PEM Passamainty → Vahibé ──
+  { name:'Stade de Cavani',                  lat:-12.7968, lng:45.2418, lines:['4'],               icon:'🏟️' },
+  { name:'Collège de Kawéni',               lat:-12.7955, lng:45.2435, lines:['4'],               icon:'🎓' },
+  { name:'Vahibé Mariage',                   lat:-12.7942, lng:45.2452, lines:['4'],               icon:'🚏' },
+  { name:'Vahibé Chendra',                   lat:-12.7928, lng:45.2468, lines:['4'],               icon:'🏘️' },
 ];
+
+// Index rapide nom → objet stop
+const stopByName = Object.fromEntries(stops.map(s => [s.name.toLowerCase(), s]));
 
 // Indice de focus pour navigation clavier
 let itinFocusIdx = { from: -1, to: -1 };
@@ -378,6 +436,12 @@ function selectMode(mode) {
   });
 }
 
+function findStop(val) {
+  const q = val.toLowerCase().trim();
+  return stops.find(s => s.name.toLowerCase() === q)
+      || stops.find(s => s.name.toLowerCase().includes(q));
+}
+
 function searchItinerary() {
   const fromVal = document.getElementById('itin-from').value.trim();
   const toVal   = document.getElementById('itin-to').value.trim();
@@ -387,10 +451,8 @@ function searchItinerary() {
     return;
   }
 
-  const fromStop = stops.find(s => s.name.toLowerCase() === fromVal.toLowerCase())
-    || stops.find(s => s.name.toLowerCase().includes(fromVal.toLowerCase()));
-  const toStop   = stops.find(s => s.name.toLowerCase() === toVal.toLowerCase())
-    || stops.find(s => s.name.toLowerCase().includes(toVal.toLowerCase()));
+  const fromStop = findStop(fromVal);
+  const toStop   = findStop(toVal);
 
   if (!fromStop || !toStop) {
     showToast('Arrêt non trouvé. Choisissez dans les suggestions.', 'warning', '🔍');
@@ -401,94 +463,117 @@ function searchItinerary() {
     return;
   }
 
-  const dist = haversine(fromStop, toStop);
-  const busMins  = Math.round(dist / 25 * 60 + 3);   // 25 km/h + attente
-  const bikeMins = Math.round(dist / 15 * 60);        // 15 km/h
-  const walkMins = Math.round(dist / 5  * 60);        // 5 km/h
-
-  // Trouver ligne commune
-  const commonLine = lines.find(l =>
-    fromStop.lines.includes(l.num) && toStop.lines.includes(l.num)
-  ) || lines.find(l =>
+  // Chercher la meilleure ligne Caribus (stopNames ordonnés)
+  const matchedLine = lines.find(l => {
+    const sn = l.stopNames.map(n => n.toLowerCase());
+    const fi = sn.findIndex(n => n === fromStop.name.toLowerCase() || fromStop.name.toLowerCase().includes(n) || n.includes(fromStop.name.toLowerCase()));
+    const ti = sn.findIndex(n => n === toStop.name.toLowerCase() || toStop.name.toLowerCase().includes(n) || n.includes(toStop.name.toLowerCase()));
+    return fi !== -1 && ti !== -1;
+  }) || lines.find(l =>
     fromStop.lines.includes(l.num) || toStop.lines.includes(l.num)
   );
 
-  // Arrêts intermédiaires sur la ligne
-  const routeStops = buildRoute(fromStop, toStop, commonLine);
+  const routeStops = buildRoute(fromStop, toStop, matchedLine);
 
-  // Affichage
-  document.getElementById('res-from').textContent = fromStop.name;
-  document.getElementById('res-to').textContent   = toStop.name;
+  // Calcul des temps selon distance réelle
+  const dist     = haversine(fromStop, toStop);
+  const nbStops  = routeStops.length - 1;
+  const busMins  = Math.round(nbStops * 2.5 + dist / 20 * 60);  // ~2.5 min/arrêt + vitesse
+  const bikeMins = Math.round(dist / 14 * 60);
+  const walkMins = Math.round(dist / 4.5 * 60);
+
+  document.getElementById('res-from').textContent  = fromStop.name;
+  document.getElementById('res-to').textContent    = toStop.name;
   document.getElementById('time-bus').textContent  = fmt(busMins);
   document.getElementById('time-bike').textContent = `~${fmt(bikeMins)}`;
   document.getElementById('time-walk').textContent = fmt(walkMins);
 
   selectMode('bus');
-  renderTripDetail(fromStop, toStop, routeStops, commonLine, busMins);
+  renderTripDetail(fromStop, toStop, routeStops, matchedLine, busMins);
   showItinResult();
 
-  // Carte
   setTimeout(() => {
     initItinMap();
     clearMapLayers();
-    renderItinMap(fromStop, toStop, routeStops);
-  }, 80);
+    renderItinMap(fromStop, toStop, routeStops, matchedLine);
+  }, 120);
 }
 
 function buildRoute(from, to, line) {
-  // Arrêts intermédiaires approximatifs sur la ligne
-  const allOnLine = line ? stops.filter(s => s.lines.includes(line.num)) : [];
-  // Tri par distance depuis départ
-  allOnLine.sort((a,b) => haversine(from,a) - haversine(from,b));
-  const intermediates = allOnLine.filter(s =>
-    s.name !== from.name && s.name !== to.name &&
-    haversine(from,s) < haversine(from,to)
-  ).slice(0, 5);
-  return [from, ...intermediates, to];
+  if (!line || !line.stopNames) return [from, to];
+
+  // Utilise l'ordre officiel des arrêts de la ligne
+  const ordered = line.stopNames
+    .map(n => stops.find(s => s.name.toLowerCase() === n.toLowerCase()
+                           || s.name.toLowerCase().includes(n.toLowerCase())
+                           || n.toLowerCase().includes(s.name.toLowerCase())))
+    .filter(Boolean);
+
+  const fi = ordered.findIndex(s => s.name === from.name);
+  const ti = ordered.findIndex(s => s.name === to.name);
+
+  if (fi === -1 || ti === -1) return [from, to];
+
+  const slice = fi <= ti ? ordered.slice(fi, ti+1) : ordered.slice(ti, fi+1).reverse();
+  return slice.length >= 2 ? slice : [from, to];
 }
 
 function renderTripDetail(from, to, route, line, busMins) {
   const el = document.getElementById('itin-trip-detail');
-  const lineBadge = line ? `<span class="trip-step-badge">🚌 ${line.num} · Toutes les ${line.freq} min</span>` : '';
-  let html = '';
+  const lineColor = line ? line.color : '#1a56c4';
+  const horaireSem = line ? line.horaires.sem : '';
+
+  let html = `
+    <div style="background:${lineColor}14;border:1px solid ${lineColor}30;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;">
+      <div style="font-weight:800;color:${lineColor};font-size:14px;margin-bottom:6px;">
+        🚌 Ligne ${line ? line.num : '—'} · ${line ? line.name : ''}
+      </div>
+      <div style="color:var(--gray-600);line-height:1.6;">
+        📅 ${horaireSem}<br>
+        🗓️ Sam : ${line ? line.horaires.sam : ''}<br>
+        🌞 Dim/Fériés : ${line ? line.horaires.dim : ''}
+      </div>
+    </div>`;
 
   route.forEach((stop, i) => {
     const isFirst = i === 0;
     const isLast  = i === route.length - 1;
-    const dotClass = isFirst ? '' : isLast ? 'end' : 'stop';
-    const time = isFirst ? 'Départ'
-               : isLast  ? `+${busMins} min`
-               : `+${Math.round(busMins * i/(route.length-1))} min`;
+    const dotCls  = isFirst ? '' : isLast ? 'end' : 'stop';
+    const elapsed = isFirst ? 'Départ'
+                  : isLast  ? `Arrivée · +${busMins} min`
+                  : `+${Math.round(busMins * i / (route.length-1))} min`;
     html += `
       <div class="trip-step">
         <div class="trip-step-left">
-          <div class="trip-step-dot ${dotClass}"></div>
-          ${!isLast ? `<div class="trip-step-line ${dotClass==='stop'?'dashed':''}"></div>` : ''}
+          <div class="trip-step-dot ${dotCls}" style="${isFirst ? `background:${lineColor};box-shadow:0 0 0 3px ${lineColor}30` : isLast ? 'background:var(--gold);box-shadow:0 0 0 3px rgba(245,158,11,.3)' : ''}"></div>
+          ${!isLast ? `<div class="trip-step-line ${dotCls==='stop'?'dashed':''}" style="${isFirst?`background:${lineColor}40`:''}"></div>` : ''}
         </div>
         <div class="trip-step-body">
-          <div class="trip-step-label">${stop.name}</div>
-          <div class="trip-step-meta">${time}</div>
-          ${isFirst ? lineBadge : ''}
+          <div class="trip-step-label">${stop.icon || '🚏'} ${stop.name}</div>
+          <div class="trip-step-meta">${elapsed}</div>
         </div>
       </div>`;
   });
   el.innerHTML = html;
 }
 
-function renderItinMap(from, to, route) {
-  // Polyline du trajet
-  const latlngs = route.map(s => [s.lat, s.lng]);
+function renderItinMap(from, to, route, line) {
+  const lineColor = line ? line.color : '#1a56c4';
+  const latlngs   = route.map(s => [s.lat, s.lng]);
+
+  // Trajet principal
   const poly = L.polyline(latlngs, {
-    color: '#1a56c4', weight: 5, opacity: .9,
-    dashArray: null, lineJoin: 'round', lineCap: 'round'
+    color: lineColor, weight: 6, opacity: .92,
+    lineJoin: 'round', lineCap: 'round'
   }).addTo(itinMap);
   itinLayers.push(poly);
 
   // Arrêts intermédiaires
-  route.slice(1,-1).forEach(s => {
-    const m = L.marker([s.lat, s.lng], {
-      icon: makeIcon(`<div class="map-marker-stop"></div>`, 12)
-    }).addTo(itinMap).bindPopup(`<b>${s.name}</b>`);
+  route.slice(1, -1).forEach(s => {
+    const m = L.circleMarker([s.lat, s.lng], {
+      radius: 5, color: lineColor, fillColor: '#fff',
+      fillOpacity: 1, weight: 2.5
+    }).addTo(itinMap).bindPopup(`<b>${s.icon || '🚏'} ${s.name}</b>`);
     itinLayers.push(m);
   });
 
