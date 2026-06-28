@@ -205,6 +205,22 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+// ── Newsletter ────────────────────────────────────
+function subscribeNewsletter(e) {
+  e.preventDefault();
+  const input = e.target.querySelector('input[type="email"]');
+  const btn   = e.target.querySelector('button');
+  btn.textContent = '✓ Inscrit !';
+  btn.style.background = '#059669';
+  input.value = '';
+  input.disabled = true;
+  setTimeout(() => {
+    btn.textContent = "S'abonner";
+    btn.style.background = '';
+    input.disabled = false;
+  }, 4000);
+}
+
 // ── Dark mode ─────────────────────────────────────
 function toggleDark() {
   const html = document.documentElement;

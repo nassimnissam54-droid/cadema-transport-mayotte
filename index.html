@@ -312,6 +312,50 @@
     </div>
   </section>
 
+  <!-- ══ ACCÈS RAPIDE (style Ametis) ══ -->
+  <section class="quick-access-section">
+    <div class="section-wrap">
+      <div class="qa-grid">
+        <button class="qa-tile" onclick="showSection('lignes')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#0d3b8a,#1a56c4)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h7"/><rect x="13" y="14" width="8" height="6" rx="1.5" stroke="#fff" fill="none"/></svg>
+          </div>
+          <span>Fiches horaires</span>
+        </button>
+        <button class="qa-tile" onclick="showSection('lignes')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h4M18 12h4M12 2v4M12 18v4"/><circle cx="12" cy="12" r="3" fill="#fff" stroke="none"/></svg>
+          </div>
+          <span>Plan du réseau</span>
+        </button>
+        <button class="qa-tile" onclick="showSection('tarifs');openModal('add-titre-modal')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 14h.01M10 14h4"/></svg>
+          </div>
+          <span>Mon abonnement</span>
+        </button>
+        <button class="qa-tile" onclick="showSection('tarifs')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <span>Tarifs &amp; offres</span>
+        </button>
+        <button class="qa-tile" onclick="showSection('incidents')">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#ea580c,#f97316)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <span>Info trafic</span>
+        </button>
+        <button class="qa-tile" onclick="document.getElementById('accessibility-section').scrollIntoView({behavior:'smooth'})">
+          <div class="qa-icon" style="background:linear-gradient(135deg,#059669,#10b981)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v6l-3 4M12 13l3 4"/><path d="M5 10h14"/></svg>
+          </div>
+          <span>Accessibilité</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <!-- TFL-style status board -->
   <section class="status-board-section">
     <div class="section-wrap">
@@ -404,32 +448,152 @@
     </div>
   </section>
 
-  <!-- Actualités -->
+  <!-- ══ ACTUALITÉS RÉSEAU ══ -->
   <section class="news-section">
     <div class="section-wrap">
       <div class="section-head">
-        <h2 class="section-title">Actualités réseau</h2>
-        <p class="section-sub">Dernières informations du réseau CADEMA</p>
+        <div class="section-head-row">
+          <div>
+            <h2 class="section-title">Actualités réseau</h2>
+            <p class="section-sub">Dernières informations du réseau CADEMA</p>
+          </div>
+          <a class="see-all" href="#" onclick="showSection('incidents')">Toutes les actus →</a>
+        </div>
       </div>
       <div class="news-grid">
-        <div class="news-card news-blue">
-          <div class="news-tag">Organisation</div>
-          <h3>Nouvelle desserte Bouéni</h3>
-          <p>La ligne L3 est renforcée avec 4 passages supplémentaires les vendredis à partir du 1er juillet 2026.</p>
-          <a href="#">Lire la suite →</a>
+        <article class="news-card2">
+          <div class="news-card2-img" style="background:linear-gradient(135deg,#0d3b8a 0%,#1a56c4 100%)">
+            <svg viewBox="0 0 48 48" fill="none" width="48" height="48"><rect x="4" y="16" width="40" height="24" rx="5" fill="rgba(255,255,255,.15)"/><path d="M4 24h40" stroke="#fff" stroke-width="2"/><circle cx="12" cy="35" r="3" fill="#fff"/><circle cx="36" cy="35" r="3" fill="#fff"/><rect x="10" y="8" width="28" height="10" rx="2" fill="rgba(255,255,255,.2)"/></svg>
+          </div>
+          <div class="news-card2-body">
+            <div class="news-card2-meta"><span class="nc2-tag nc2-blue">Organisation</span><span class="nc2-date">28 juin 2026</span></div>
+            <h3>Nouveaux horaires Caribus été 2026</h3>
+            <p>Les horaires estivaux entrent en vigueur le 1er juillet. Fréquence renforcée sur la ligne 1N aux heures de pointe.</p>
+            <a class="nc2-link" href="#">Lire la suite <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+          </div>
+        </article>
+
+        <article class="news-card2">
+          <div class="news-card2-img" style="background:linear-gradient(135deg,#059669 0%,#10b981 100%)">
+            <svg viewBox="0 0 48 48" fill="none" width="48" height="48"><circle cx="24" cy="24" r="16" fill="rgba(255,255,255,.15)"/><path d="M16 24l6 6 10-12" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="news-card2-body">
+            <div class="news-card2-meta"><span class="nc2-tag nc2-green">Accessibilité</span><span class="nc2-date">25 juin 2026</span></div>
+            <h3>3 nouveaux arrêts PMR aménagés</h3>
+            <p>Les arrêts Hôpital de Mayotte, PEM Passamainty et Barge Passot sont désormais entièrement accessibles aux personnes à mobilité réduite.</p>
+            <a class="nc2-link" href="#">Lire la suite <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+          </div>
+        </article>
+
+        <article class="news-card2">
+          <div class="news-card2-img" style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)">
+            <svg viewBox="0 0 48 48" fill="none" width="48" height="48"><path d="M24 8l4.5 9 10 1.5-7.25 7 1.7 10L24 31l-8.95 4.5 1.7-10L9.5 18.5l10-1.5L24 8z" fill="rgba(255,255,255,.2)" stroke="#fff" stroke-width="1.5"/></svg>
+          </div>
+          <div class="news-card2-body">
+            <div class="news-card2-meta"><span class="nc2-tag nc2-gold">Bilan</span><span class="nc2-date">20 juin 2026</span></div>
+            <h3>Ponctualité mai 2026 : 91 %</h3>
+            <p>Record depuis le lancement du réseau. Les optimisations sur la ligne 1S et 3 ont porté leurs fruits ce mois-ci.</p>
+            <a class="nc2-link" href="#">Lire la suite <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ APPLICATION MOBILE ══ -->
+  <section class="app-section">
+    <div class="section-wrap">
+      <div class="app-inner">
+        <div class="app-text">
+          <div class="app-eyebrow">📱 Application officielle</div>
+          <h2 class="app-title">CADEMA dans votre poche</h2>
+          <p class="app-desc">Planifiez vos trajets, consultez les horaires en temps réel, recevez les alertes trafic et gérez votre abonnement directement depuis votre smartphone.</p>
+          <ul class="app-features">
+            <li><svg viewBox="0 0 20 20" fill="currentColor" width="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>Itinéraires en temps réel</li>
+            <li><svg viewBox="0 0 20 20" fill="currentColor" width="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>Alertes perturbations push</li>
+            <li><svg viewBox="0 0 20 20" fill="currentColor" width="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>Gestion de votre titre de transport</li>
+            <li><svg viewBox="0 0 20 20" fill="currentColor" width="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>Horaires hors-connexion</li>
+          </ul>
+          <div class="app-btns">
+            <a class="app-store-btn" href="#" onclick="return false">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="22"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              <div><span>Télécharger sur</span><strong>App Store</strong></div>
+            </a>
+            <a class="app-store-btn" href="#" onclick="return false">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="22"><path d="M3.18 23.76c.31.17.67.19 1.01.05l12.2-6.93-2.59-2.6-10.62 9.48zM20.6 10.27l-2.6-1.48-2.9 2.59 2.9 2.9 2.62-1.49c.75-.43.75-1.6-.02-2.52zM1.88.43C1.56.9 1.4 1.47 1.4 2.08v19.84c0 .61.16 1.18.48 1.65l.09.08 11.1-11.1v-.27L1.97.36l-.09.07zM14.91 7.32L3.18.22c-.34-.2-.7-.2-1.01-.05l10.62 9.49 2.12-2.34z"/></svg>
+              <div><span>Disponible sur</span><strong>Google Play</strong></div>
+            </a>
+          </div>
+          <p class="app-soon">🚀 Lancement prévu fin 2026 — Inscrivez-vous pour être notifié</p>
         </div>
-        <div class="news-card news-green">
-          <div class="news-tag">Travaux</div>
-          <h3>Réaménagement arrêt Mamoudzou Centre</h3>
-          <p>Travaux d'accessibilité PMR du 5 au 20 juillet. Déviations en vigueur sur les lignes L1 et L2.</p>
-          <a href="#">Lire la suite →</a>
+        <div class="app-visual">
+          <div class="app-phone-mockup">
+            <div class="app-phone-screen">
+              <div class="apm-header">
+                <div class="apm-logo">CADEMA</div>
+                <div class="apm-status">
+                  <span class="apm-dot"></span>En ligne
+                </div>
+              </div>
+              <div class="apm-route">
+                <div class="apm-stop apm-from">🔵 Hauts-Vallons</div>
+                <div class="apm-line-seg"></div>
+                <div class="apm-stop">🔴 Barge Passot</div>
+                <div class="apm-line-seg"></div>
+                <div class="apm-stop apm-to">🟡 PEM Passamainty</div>
+              </div>
+              <div class="apm-times">
+                <div class="apm-time-row"><span>Ligne 1N</span><span class="apm-mins">14 min</span></div>
+                <div class="apm-time-row"><span>Prochain départ</span><span class="apm-next">07:32</span></div>
+              </div>
+              <div class="apm-map-preview">
+                <div class="apm-map-dot apm-md1"></div>
+                <div class="apm-map-dot apm-md2"></div>
+                <div class="apm-map-dot apm-md3"></div>
+                <div class="apm-map-line"></div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="news-card news-orange">
-          <div class="news-tag">Bilan</div>
-          <h3>Ponctualité mai 2026 : 91%</h3>
-          <p>Meilleur score depuis l'ouverture du réseau. Les améliorations sur la ligne L1 portent leurs fruits.</p>
-          <a href="#">Lire la suite →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ ACCESSIBILITÉ PMR ══ -->
+  <section class="accessibility-section" id="accessibility-section">
+    <div class="section-wrap">
+      <div class="access-inner">
+        <div class="access-icon-wrap">
+          <svg viewBox="0 0 64 64" fill="none" width="56" height="56"><circle cx="32" cy="12" r="6" fill="#fff" opacity=".9"/><path d="M20 28c0-6.6 5.4-12 12-12s12 5.4 12 12v4H20v-4z" fill="#fff" opacity=".7"/><path d="M18 34h28l-4 16H22L18 34z" fill="#fff" opacity=".5"/><circle cx="24" cy="54" r="4" fill="#fff" opacity=".9"/><circle cx="40" cy="54" r="4" fill="#fff" opacity=".9"/></svg>
         </div>
+        <div class="access-text">
+          <h2>Un réseau accessible à tous</h2>
+          <p>Tous les bus Caribus sont équipés de rampes d'accès automatiques pour les personnes à mobilité réduite (PMR). Les arrêts PEM Hauts-Vallons, Barge Passot et Passamainty sont entièrement aménagés.</p>
+        </div>
+        <div class="access-pills">
+          <span class="access-pill">♿ Rampes PMR</span>
+          <span class="access-pill">🔊 Annonces sonores</span>
+          <span class="access-pill">👁 Affichage braille</span>
+          <span class="access-pill">🆓 Gratuit PMR</span>
+        </div>
+        <a class="access-btn" onclick="showSection('tarifs')">En savoir plus →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ NEWSLETTER ══ -->
+  <section class="newsletter-section">
+    <div class="section-wrap">
+      <div class="nl-inner">
+        <div class="nl-icon">✉️</div>
+        <div class="nl-text">
+          <h2>Restez informé des actualités du réseau</h2>
+          <p>Recevez chaque semaine les horaires, alertes trafic et nouveautés CADEMA directement dans votre boîte mail.</p>
+        </div>
+        <form class="nl-form" onsubmit="subscribeNewsletter(event)">
+          <input type="email" placeholder="Votre adresse email…" required aria-label="Email newsletter">
+          <button type="submit">S'abonner</button>
+        </form>
       </div>
     </div>
   </section>
