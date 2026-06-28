@@ -244,6 +244,7 @@ function showSection(id, navEl) {
   document.getElementById('main-nav').classList.remove('open');
   document.getElementById('burger-btn').classList.remove('open');
   syncDrawerActive(id);
+  syncBottomNav(id);
   window.scrollTo({ top:0, behavior:'smooth' });
   if (id === 'stats' && !chartsRendered) { chartsRendered = true; renderCharts(); }
   if (id === 'stats' && !statsAnimated)  { statsAnimated  = true; animateStats(); }
@@ -305,6 +306,14 @@ function updateDrawerDarkBtn() {
 }
 // Close drawer on Escape key
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+// ── Bottom nav sync ───────────────────────────────
+const BN_MAP = { home:'bn-home', lignes:'bn-lignes', tarifs:'bn-tarifs', compte:'bn-compte' };
+function syncBottomNav(id) {
+  document.querySelectorAll('.bn-item').forEach(el => el.classList.remove('active'));
+  const target = BN_MAP[id] ? document.getElementById(BN_MAP[id]) : null;
+  if (target) target.classList.add('active');
+}
 
 // ── Pills ─────────────────────────────────────────
 function statusPill(s) {

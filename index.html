@@ -995,6 +995,32 @@
   </div>
 </div>
 
+<!-- ── BOTTOM NAV MOBILE ── -->
+<nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Navigation principale">
+  <button class="bn-item" id="bn-home" onclick="showSection('home',null)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    <span>Accueil</span>
+  </button>
+  <button class="bn-item" id="bn-lignes" onclick="showSection('lignes',null)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="10" rx="3"/><path d="M6 8V6a2 2 0 012-2h8a2 2 0 012 2v2"/><circle cx="7.5" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
+    <span>Lignes</span>
+  </button>
+  <button class="bn-item bn-center-wrap" onclick="showSection('home',null);setTimeout(()=>document.getElementById('itin-from').scrollIntoView({behavior:'smooth'}),200)">
+    <div class="bn-center-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+    </div>
+    <span>Itinéraire</span>
+  </button>
+  <button class="bn-item" id="bn-tarifs" onclick="showSection('tarifs',null)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><path d="M6 14h.01M10 14h4"/></svg>
+    <span>Tarifs</span>
+  </button>
+  <button class="bn-item" id="bn-compte" onclick="showSection('compte',null)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span>Compte</span>
+  </button>
+</nav>
+
 <script src="cadema.js"></script>
 </body>
 </html>
