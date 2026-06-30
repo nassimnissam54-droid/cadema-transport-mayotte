@@ -662,14 +662,17 @@ function searchItinerary() {
   document.getElementById('time-bike').textContent = `~${fmt(bikeMins)}`;
   document.getElementById('time-walk').textContent = fmt(walkMins);
 
+  const walkIn  = estimateWalkToStop(fromStop, 'in');
+  const walkOut = estimateWalkToStop(toStop, 'out');
+
   selectMode('bus');
-  renderTripDetail(fromStop, toStop, routeStops, matchedLine, busMins);
+  renderTripDetail(fromStop, toStop, routeStops, matchedLine, busMins, walkIn, walkOut);
   showItinResult();
 
   setTimeout(() => {
     initItinMap();
     clearMapLayers();
-    renderItinMap(fromStop, toStop, routeStops, matchedLine);
+    renderItinMap(fromStop, toStop, routeStops, matchedLine, walkIn, walkOut);
   }, 120);
 }
 
@@ -692,21 +695,41 @@ function buildRoute(from, to, line) {
   return slice.length >= 2 ? slice : [from, to];
 }
 
-// Estime une marche d'approche jusqu'à l'arrêt réel (l'utilisateur n'est pas toujours pile sur l'arrêt)
-function estimateWalkToStop(stop) {
-  // Distance moyenne domicile/point de départ → arrêt le plus proche (zone urbaine Mayotte)
-  const metres = 180 + Math.round(Math.random() * 220); // ~180-400 m, stable visuellement par session
-  const mins   = Math.max(2, Math.round(metres / 75)); // ~4.5 km/h
-  return { metres, mins };
+// Hash stable d'un nom (pour générer un point de marche reproductible, pas aléatoire à chaque rendu)
+function strHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) | 0; }
+  return Math.abs(h);
 }
 
-function renderTripDetail(from, to, route, line, busMins) {
+// Déplace un point lat/lng de `metres` dans la direction `bearingDeg`
+function offsetLatLng(lat, lng, metres, bearingDeg) {
+  const R = 6371000;
+  const br = bearingDeg * Math.PI / 180;
+  const lat1 = lat * Math.PI / 180, lng1 = lng * Math.PI / 180;
+  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(metres / R) + Math.cos(lat1) * Math.sin(metres / R) * Math.cos(br));
+  const lng2 = lng1 + Math.atan2(Math.sin(br) * Math.sin(metres / R) * Math.cos(lat1), Math.cos(metres / R) - Math.sin(lat1) * Math.sin(lat2));
+  return { lat: lat2 * 180 / Math.PI, lng: lng2 * 180 / Math.PI };
+}
+
+// Estime une marche d'approche jusqu'à l'arrêt réel (l'utilisateur n'est pas toujours pile sur l'arrêt)
+// + calcule le point de marche (départ ou destination) pour pouvoir tracer le trajet piéton sur la carte
+function estimateWalkToStop(stop, seedSuffix) {
+  const h = strHash(stop.name + seedSuffix);
+  const metres  = 180 + (h % 220); // ~180-400 m, stable pour un même arrêt
+  const mins    = Math.max(2, Math.round(metres / 75)); // ~4.5 km/h
+  const bearing = h % 360;
+  const point   = offsetLatLng(stop.lat, stop.lng, metres, bearing);
+  return { metres, mins, point };
+}
+
+function renderTripDetail(from, to, route, line, busMins, walkIn, walkOut) {
   const el = document.getElementById('itin-trip-detail');
   const lineColor = line ? line.color : '#1a56c4';
   const horaireSem = line ? line.horaires.sem : '';
 
-  const walkIn  = estimateWalkToStop(from);
-  const walkOut = estimateWalkToStop(to);
+  walkIn  = walkIn  || estimateWalkToStop(from, 'in');
+  walkOut = walkOut || estimateWalkToStop(to, 'out');
   const totalMins = walkIn.mins + busMins + walkOut.mins;
 
   let html = `
@@ -781,8 +804,10 @@ function nearestRouteIdx(routeCoords, stop) {
   return best;
 }
 
-function renderItinMap(from, to, route, line) {
+function renderItinMap(from, to, route, line, walkIn, walkOut) {
   const lineColor = line ? line.color : '#1a56c4';
+  walkIn  = walkIn  || estimateWalkToStop(from, 'in');
+  walkOut = walkOut || estimateWalkToStop(to, 'out');
 
   // Utilise les routeCoords réelles de la ligne (waypoints routiers précis)
   let latlngs;
@@ -796,12 +821,26 @@ function renderItinMap(from, to, route, line) {
     latlngs = route.map(s => [s.lat, s.lng]);
   }
 
-  // Trajet principal
+  // Trajet principal (bus)
   const poly = L.polyline(latlngs, {
     color: lineColor, weight: 6, opacity: .92,
     lineJoin: 'round', lineCap: 'round'
   }).addTo(itinMap);
   itinLayers.push(poly);
+
+  // Trajet à pied : du point de départ jusqu'à l'arrêt de bus
+  const walkInLine = L.polyline([[walkIn.point.lat, walkIn.point.lng], [from.lat, from.lng]], {
+    color: '#059669', weight: 4, opacity: .85,
+    dashArray: '2, 10', lineCap: 'round'
+  }).addTo(itinMap);
+  itinLayers.push(walkInLine);
+
+  // Trajet à pied : de l'arrêt d'arrivée jusqu'à la destination
+  const walkOutLine = L.polyline([[to.lat, to.lng], [walkOut.point.lat, walkOut.point.lng]], {
+    color: '#059669', weight: 4, opacity: .85,
+    dashArray: '2, 10', lineCap: 'round'
+  }).addTo(itinMap);
+  itinLayers.push(walkOutLine);
 
   // Arrêts intermédiaires
   route.slice(1, -1).forEach(s => {
@@ -812,20 +851,35 @@ function renderItinMap(from, to, route, line) {
     itinLayers.push(m);
   });
 
-  // Marqueur départ
+  // Point de départ piéton (point A réel de l'utilisateur)
+  const mWalkStart = L.marker([walkIn.point.lat, walkIn.point.lng], {
+    icon: makeIcon(`<div class="map-marker-walk">🚶</div>`, 30)
+  }).addTo(itinMap).bindPopup(`<b>📍 Point de départ</b><br>${walkIn.metres} m à pied jusqu'à l'arrêt`);
+  itinLayers.push(mWalkStart);
+
+  // Marqueur arrêt départ bus
   const mFrom = L.marker([from.lat, from.lng], {
     icon: makeIcon(`<div class="map-marker-from">D</div>`)
-  }).addTo(itinMap).bindPopup(`<b>Départ</b><br>${from.name}`).openPopup();
+  }).addTo(itinMap).bindPopup(`<b>🚌 Montée</b><br>${from.name}`).openPopup();
   itinLayers.push(mFrom);
 
-  // Marqueur arrivée
+  // Marqueur arrêt arrivée bus
   const mTo = L.marker([to.lat, to.lng], {
     icon: makeIcon(`<div class="map-marker-to">A</div>`)
-  }).addTo(itinMap).bindPopup(`<b>Arrivée</b><br>${to.name}`);
+  }).addTo(itinMap).bindPopup(`<b>🚌 Descente</b><br>${to.name}`);
   itinLayers.push(mTo);
 
-  // Zoom sur le trajet
-  itinMap.fitBounds(poly.getBounds(), { padding: [40, 40] });
+  // Point d'arrivée piéton final (destination réelle)
+  const mWalkEnd = L.marker([walkOut.point.lat, walkOut.point.lng], {
+    icon: makeIcon(`<div class="map-marker-walk-end">🏁</div>`, 30)
+  }).addTo(itinMap).bindPopup(`<b>🏁 Destination</b><br>${walkOut.metres} m à pied depuis l'arrêt`);
+  itinLayers.push(mWalkEnd);
+
+  // Zoom sur le trajet complet (marche + bus + marche)
+  const bounds = L.latLngBounds(latlngs);
+  bounds.extend([walkIn.point.lat, walkIn.point.lng]);
+  bounds.extend([walkOut.point.lat, walkOut.point.lng]);
+  itinMap.fitBounds(bounds, { padding: [40, 40] });
   setTimeout(() => itinMap.invalidateSize(), 100);
 }
 
