@@ -745,6 +745,17 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
   margin-top: 6px;
 }
 
+/* ── Marche à pied jusqu'à / depuis l'arrêt ── */
+.trip-step.walk-step .trip-step-dot {
+  background: #059669; box-shadow: 0 0 0 2px #059669;
+  width: 9px; height: 9px;
+}
+.trip-step.walk-step .trip-step-line {
+  background: repeating-linear-gradient(180deg, #34d399 0, #34d399 4px, transparent 4px, transparent 8px);
+}
+.trip-step.walk-step .trip-step-label { color: #059669; }
+.trip-step-walk-icon { margin-right: 4px; }
+
 /* ── Carte ── */
 .itin-map-panel { position: relative; }
 #itin-map {

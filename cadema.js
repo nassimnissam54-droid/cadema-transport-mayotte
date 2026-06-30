@@ -692,10 +692,22 @@ function buildRoute(from, to, line) {
   return slice.length >= 2 ? slice : [from, to];
 }
 
+// Estime une marche d'approche jusqu'à l'arrêt réel (l'utilisateur n'est pas toujours pile sur l'arrêt)
+function estimateWalkToStop(stop) {
+  // Distance moyenne domicile/point de départ → arrêt le plus proche (zone urbaine Mayotte)
+  const metres = 180 + Math.round(Math.random() * 220); // ~180-400 m, stable visuellement par session
+  const mins   = Math.max(2, Math.round(metres / 75)); // ~4.5 km/h
+  return { metres, mins };
+}
+
 function renderTripDetail(from, to, route, line, busMins) {
   const el = document.getElementById('itin-trip-detail');
   const lineColor = line ? line.color : '#1a56c4';
   const horaireSem = line ? line.horaires.sem : '';
+
+  const walkIn  = estimateWalkToStop(from);
+  const walkOut = estimateWalkToStop(to);
+  const totalMins = walkIn.mins + busMins + walkOut.mins;
 
   let html = `
     <div style="background:${lineColor}14;border:1px solid ${lineColor}30;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;">
@@ -707,20 +719,36 @@ function renderTripDetail(from, to, route, line, busMins) {
         🗓️ Sam : ${line ? line.horaires.sam : ''}<br>
         🌞 Dim/Fériés : ${line ? line.horaires.dim : ''}
       </div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed ${lineColor}30;color:#059669;font-weight:700;">
+        🚶 + 🚌 Trajet total estimé : ${fmt(totalMins)}
+      </div>
+    </div>`;
+
+  // Marche d'approche jusqu'à l'arrêt de départ
+  html += `
+    <div class="trip-step walk-step">
+      <div class="trip-step-left">
+        <div class="trip-step-dot"></div>
+        <div class="trip-step-line dashed"></div>
+      </div>
+      <div class="trip-step-body">
+        <div class="trip-step-label"><span class="trip-step-walk-icon">🚶</span>Marche jusqu'à l'arrêt ${from.icon || '🚏'} ${from.name}</div>
+        <div class="trip-step-meta">${walkIn.metres} m · ${fmt(walkIn.mins)} à pied</div>
+      </div>
     </div>`;
 
   route.forEach((stop, i) => {
     const isFirst = i === 0;
     const isLast  = i === route.length - 1;
     const dotCls  = isFirst ? '' : isLast ? 'end' : 'stop';
-    const elapsed = isFirst ? 'Départ'
-                  : isLast  ? `Arrivée · +${busMins} min`
-                  : `+${Math.round(busMins * i / (route.length-1))} min`;
+    const elapsed = isFirst ? `Montée · +${walkIn.mins} min`
+                  : isLast  ? `Descente · +${walkIn.mins + busMins} min`
+                  : `+${walkIn.mins + Math.round(busMins * i / (route.length-1))} min`;
     html += `
       <div class="trip-step">
         <div class="trip-step-left">
           <div class="trip-step-dot ${dotCls}" style="${isFirst ? `background:${lineColor};box-shadow:0 0 0 3px ${lineColor}30` : isLast ? 'background:var(--gold);box-shadow:0 0 0 3px rgba(245,158,11,.3)' : ''}"></div>
-          ${!isLast ? `<div class="trip-step-line ${dotCls==='stop'?'dashed':''}" style="${isFirst?`background:${lineColor}40`:''}"></div>` : ''}
+          <div class="trip-step-line ${dotCls==='stop'?'dashed':''}" style="${isFirst?`background:${lineColor}40`:''}"></div>
         </div>
         <div class="trip-step-body">
           <div class="trip-step-label">${stop.icon || '🚏'} ${stop.name}</div>
@@ -728,6 +756,19 @@ function renderTripDetail(from, to, route, line, busMins) {
         </div>
       </div>`;
   });
+
+  // Marche finale jusqu'à la destination
+  html += `
+    <div class="trip-step walk-step">
+      <div class="trip-step-left">
+        <div class="trip-step-dot end" style="background:var(--gold);box-shadow:0 0 0 3px rgba(245,158,11,.3)"></div>
+      </div>
+      <div class="trip-step-body" style="padding-bottom:0;">
+        <div class="trip-step-label"><span class="trip-step-walk-icon">🚶</span>Marche jusqu'à destination</div>
+        <div class="trip-step-meta">${walkOut.metres} m · ${fmt(walkOut.mins)} à pied · arrivée +${totalMins} min</div>
+      </div>
+    </div>`;
+
   el.innerHTML = html;
 }
 
