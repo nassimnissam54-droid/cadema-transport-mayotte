@@ -196,6 +196,9 @@ function toast(msg, type='success') {
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', ()=>el.remove()); }, 3000);
 }
+function showToast(msg, type='success', icon) {
+  toast(icon ? `${icon} ${msg}` : msg, type);
+}
 
 // ── Clock ─────────────────────────────────────────
 function updateClock() {
@@ -669,11 +672,76 @@ function searchItinerary() {
   renderTripDetail(fromStop, toStop, routeStops, matchedLine, busMins, walkIn, walkOut);
   showItinResult();
 
+  // Reset l'alerte de descente sur une nouvelle recherche
+  stopStopAlert();
+  currentItinDestStop = toStop;
+  const alertBtn = document.getElementById('stop-alert-btn');
+  if (alertBtn) alertBtn.classList.remove('active');
+  const alertLabel = document.getElementById('stop-alert-label');
+  if (alertLabel) alertLabel.textContent = "Activer l'alerte de descente";
+
   setTimeout(() => {
     initItinMap();
     clearMapLayers();
     renderItinMap(fromStop, toStop, routeStops, matchedLine, walkIn, walkOut);
   }, 120);
+}
+
+// ── Alerte de descente (vibration à l'approche de l'arrêt) ──
+let currentItinDestStop = null;
+let stopAlertWatchId    = null;
+const STOP_ALERT_RADIUS_M = 250; // déclenche la vibration sous ce seuil
+
+function toggleStopAlert() {
+  if (stopAlertWatchId !== null) { stopStopAlert(true); return; }
+
+  if (!currentItinDestStop) {
+    showToast('Recherchez d\'abord un itinéraire.', 'warning', '📍');
+    return;
+  }
+  if (!('geolocation' in navigator)) {
+    showToast('La géolocalisation n\'est pas disponible sur cet appareil.', 'warning', '⚠️');
+    return;
+  }
+
+  const btn   = document.getElementById('stop-alert-btn');
+  const label = document.getElementById('stop-alert-label');
+  btn.classList.add('active');
+  label.textContent = 'Alerte active — suivi de votre position…';
+  showToast(`Vous serez alerté(e) à l'approche de ${currentItinDestStop.name}.`, 'success', '🔔');
+
+  stopAlertWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      const userPt = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const distM  = haversine(userPt, currentItinDestStop) * 1000;
+      if (distM <= STOP_ALERT_RADIUS_M) {
+        triggerStopAlert();
+      }
+    },
+    () => {
+      showToast('Impossible d\'accéder à votre position. Vérifiez les autorisations.', 'warning', '📍');
+      stopStopAlert();
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+  );
+}
+
+function triggerStopAlert() {
+  if ('vibrate' in navigator) navigator.vibrate([300, 120, 300, 120, 600]);
+  showToast(`🔔 Arrêt ${currentItinDestStop.name} dans moins de ${STOP_ALERT_RADIUS_M} m — préparez-vous à descendre !`, 'success', '🚏');
+  stopStopAlert();
+}
+
+function stopStopAlert(notify) {
+  if (stopAlertWatchId !== null) {
+    navigator.geolocation.clearWatch(stopAlertWatchId);
+    stopAlertWatchId = null;
+  }
+  const btn   = document.getElementById('stop-alert-btn');
+  const label = document.getElementById('stop-alert-label');
+  if (btn)   btn.classList.remove('active');
+  if (label) label.textContent = "Activer l'alerte de descente";
+  if (notify) showToast('Alerte de descente désactivée.', 'info', '🔕');
 }
 
 function buildRoute(from, to, line) {
