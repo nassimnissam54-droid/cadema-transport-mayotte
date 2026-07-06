@@ -65,7 +65,7 @@
 
     <div class="header-actions">
       <span class="live-clock" id="live-clock">--:--:--</span>
-      <button class="dark-toggle" onclick="toggleDark()" title="Mode sombre" id="dark-btn">🌙</button>
+      <button class="dark-toggle" onclick="toggleDark()" title="Mode sombre" id="dark-btn" aria-label="Basculer le mode sombre">🌙</button>
       <div class="agent-chip" onclick="showSection('compte')">
         <div class="agent-avatar-sm" id="header-avatar">AG</div>
         <span id="header-name">Agent Réseau</span>
@@ -227,7 +227,7 @@
 
           <div class="itin-swap-row">
             <div class="itin-connector-line"></div>
-            <button class="itin-swap" onclick="swapItinerary()" title="Inverser départ / arrivée">
+            <button class="itin-swap" onclick="swapItinerary()" title="Inverser départ / arrivée" aria-label="Inverser le départ et la destination">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
             </button>
             <div class="itin-connector-line"></div>
@@ -249,6 +249,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/></svg>
             Trouver mon itinéraire
           </button>
+
+          <!-- Itinéraires favoris (localStorage) -->
+          <div class="itin-favs" id="itin-favs"></div>
         </div>
 
         <div class="hero-kpis">
@@ -280,6 +283,12 @@
             <span class="itin-route-from" id="res-from">—</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             <span class="itin-route-to" id="res-to">—</span>
+          </div>
+          <div class="itin-header-actions">
+            <button class="itin-icon-btn" id="fav-route-btn" onclick="toggleFavRoute()" title="Ajouter aux favoris" aria-label="Ajouter cet itinéraire aux favoris">☆</button>
+            <button class="itin-icon-btn" onclick="shareItinerary()" title="Partager cet itinéraire" aria-label="Partager cet itinéraire">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+            </button>
           </div>
         </div>
 
@@ -1182,11 +1191,11 @@
 
 <!-- ── BOTTOM NAV MOBILE ── -->
 <nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Navigation principale">
-  <button class="bn-item" id="bn-home" onclick="showSection('home',null)">
+  <button class="bn-item" id="bn-home" onclick="showSection('home',null)" aria-label="Accueil">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
     <span>Accueil</span>
   </button>
-  <button class="bn-item" id="bn-lignes" onclick="showSection('lignes',null)">
+  <button class="bn-item" id="bn-lignes" onclick="showSection('lignes',null)" aria-label="Lignes et horaires">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="10" rx="3"/><path d="M6 8V6a2 2 0 012-2h8a2 2 0 012 2v2"/><circle cx="7.5" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
     <span>Lignes</span>
   </button>
@@ -1196,11 +1205,11 @@
     </div>
     <span>Itinéraire</span>
   </button>
-  <button class="bn-item" id="bn-tarifs" onclick="showSection('tarifs',null)">
+  <button class="bn-item" id="bn-tarifs" onclick="showSection('tarifs',null)" aria-label="Tarifs et abonnements">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><path d="M6 14h.01M10 14h4"/></svg>
     <span>Tarifs</span>
   </button>
-  <button class="bn-item" id="bn-compte" onclick="showSection('compte',null)">
+  <button class="bn-item" id="bn-compte" onclick="showSection('compte',null)" aria-label="Mon compte">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     <span>Compte</span>
   </button>

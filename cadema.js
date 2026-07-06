@@ -679,6 +679,12 @@ function searchItinerary() {
   renderTripDetail(fromStop, toStop, routeStops, matchedLine, busMins, walkIn, walkOut);
   showItinResult();
 
+  // Partage + favoris + countdown temps réel
+  lastItin = { from: fromStop.name, to: toStop.name };
+  history.replaceState(null, '', `${location.pathname}?de=${encodeURIComponent(fromStop.name)}&vers=${encodeURIComponent(toStop.name)}`);
+  updateFavBtn();
+  startNextPassCountdown(matchedLine);
+
   // Reset l'alerte de descente sur une nouvelle recherche
   stopStopAlert();
   currentItinDestStop = toStop;
@@ -692,6 +698,121 @@ function searchItinerary() {
     clearMapLayers();
     renderItinMap(fromStop, toStop, routeStops, matchedLine, walkIn, walkOut);
   }, 120);
+}
+
+// ── Partage d'itinéraire (URL avec paramètres) ────
+let lastItin = null; // { from, to } de la dernière recherche
+
+function shareItinerary() {
+  if (!lastItin) return;
+  const url = `${location.origin}${location.pathname}?de=${encodeURIComponent(lastItin.from)}&vers=${encodeURIComponent(lastItin.to)}`;
+  if (navigator.share) {
+    navigator.share({ title: 'Itinéraire Caribus — CADEMA', text: `${lastItin.from} → ${lastItin.to}`, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url).then(
+      () => showToast('Lien copié ! Partagez-le à qui vous voulez.', 'success', '🔗'),
+      () => showToast('Impossible de copier le lien.', 'error', '⚠️')
+    );
+  }
+}
+
+// Au chargement : si ?de=X&vers=Y dans l'URL, lance la recherche automatiquement
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(location.search);
+  const de = p.get('de'), vers = p.get('vers');
+  if (de && vers) {
+    document.getElementById('itin-from').value = de;
+    document.getElementById('itin-to').value = vers;
+    setTimeout(() => searchItinerary(), 400);
+  }
+  renderFavChips();
+});
+
+// ── Itinéraires favoris (localStorage) ────────────
+function getFavRoutes() {
+  try { return JSON.parse(localStorage.getItem('cadema_favs') || '[]'); }
+  catch { return []; }
+}
+function isFavRoute(from, to) {
+  return getFavRoutes().some(f => f.from === from && f.to === to);
+}
+function toggleFavRoute() {
+  if (!lastItin) return;
+  let favs = getFavRoutes();
+  if (isFavRoute(lastItin.from, lastItin.to)) {
+    favs = favs.filter(f => !(f.from === lastItin.from && f.to === lastItin.to));
+    showToast('Itinéraire retiré des favoris.', 'info', '☆');
+  } else {
+    favs.unshift({ from: lastItin.from, to: lastItin.to });
+    favs = favs.slice(0, 5); // max 5 favoris
+    showToast('Itinéraire ajouté aux favoris !', 'success', '⭐');
+  }
+  localStorage.setItem('cadema_favs', JSON.stringify(favs));
+  updateFavBtn();
+  renderFavChips();
+}
+function updateFavBtn() {
+  const btn = document.getElementById('fav-route-btn');
+  if (!btn || !lastItin) return;
+  const fav = isFavRoute(lastItin.from, lastItin.to);
+  btn.textContent = fav ? '⭐' : '☆';
+  btn.classList.toggle('active', fav);
+}
+function renderFavChips() {
+  const box = document.getElementById('itin-favs');
+  if (!box) return;
+  const favs = getFavRoutes();
+  box.innerHTML = favs.length
+    ? favs.map(f => `
+      <button class="fav-chip" onclick="loadFavRoute('${f.from.replace(/'/g,"\\'")}','${f.to.replace(/'/g,"\\'")}')">
+        ⭐ ${f.from} → ${f.to}
+      </button>`).join('')
+    : '';
+}
+function loadFavRoute(from, to) {
+  document.getElementById('itin-from').value = from;
+  document.getElementById('itin-to').value = to;
+  searchItinerary();
+}
+
+// ── Prochain passage (temps réel simulé) ──────────
+let nextPassTimer = null;
+
+function parseFrequency(line) {
+  // "05h00–21h00 · Pointe: 10 min · Creuse: 20 min"
+  const sem = line && line.horaires ? line.horaires.sem : '';
+  const pointe = (sem.match(/Pointe\s*:\s*(\d+)/i) || [])[1];
+  const creuse = (sem.match(/Creuse\s*:\s*(\d+)/i) || [])[1];
+  const single = (sem.match(/(\d+)\s*min/i) || [])[1];
+  return {
+    pointe: parseInt(pointe || single || 15, 10),
+    creuse: parseInt(creuse || single || 25, 10)
+  };
+}
+
+function nextPassageMins(line) {
+  const now = new Date();
+  const h = now.getHours();
+  if (h < 5 || h >= 21) return null; // service fermé
+  const freq = parseFrequency(line);
+  const isPointe = (h >= 6 && h < 9) || (h >= 15 && h < 18);
+  const f = isPointe ? freq.pointe : freq.creuse;
+  const minsSinceHour = now.getMinutes() + now.getSeconds() / 60;
+  return Math.max(1, Math.ceil(f - (minsSinceHour % f)));
+}
+
+function startNextPassCountdown(line) {
+  if (nextPassTimer) { clearInterval(nextPassTimer); nextPassTimer = null; }
+  const update = () => {
+    const el = document.getElementById('next-pass-live');
+    if (!el) return;
+    const mins = nextPassageMins(line);
+    el.innerHTML = mins === null
+      ? '🌙 Service terminé — reprise à 05h00'
+      : `<span class="next-pass-dot"></span>Prochain passage estimé dans <strong>${mins} min</strong>`;
+  };
+  update();
+  nextPassTimer = setInterval(update, 30000);
 }
 
 // ── Alerte de descente (vibration à l'approche de l'arrêt) ──
@@ -820,6 +941,7 @@ function renderTripDetail(from, to, route, line, busMins, walkIn, walkOut) {
       <div style="margin-top:8px;padding-top:8px;border-top:1px dashed ${lineColor}30;color:#059669;font-weight:700;">
         🚶 + 🚌 Trajet total estimé : ${fmt(totalMins)}
       </div>
+      <div class="next-pass-live" id="next-pass-live"></div>
     </div>`;
 
   // Marche d'approche jusqu'à l'arrêt de départ
