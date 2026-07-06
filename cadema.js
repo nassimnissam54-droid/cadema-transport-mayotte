@@ -502,25 +502,109 @@ const stopByName = Object.fromEntries(stops.map(s => [s.name.toLowerCase(), s]))
 // Indice de focus pour navigation clavier
 let itinFocusIdx = { from: -1, to: -1 };
 
+// Points personnalisés sélectionnés via la recherche d'adresse (geocoding)
+const itinPoint = { from: null, to: null };
+const geocodeTimers = { from: null, to: null };
+
 function itinAutocomplete(side, val) {
   const box = document.getElementById(`suggestions-${side}`);
   const clearBtn = document.getElementById(`clear-${side}`);
   if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
   itinFocusIdx[side] = -1;
+  itinPoint[side] = null; // toute frappe invalide le point d'adresse précédent
 
   if (!val.trim()) { box.classList.remove('open'); return; }
   const q = val.toLowerCase();
-  const hits = stops.filter(s => s.name.toLowerCase().includes(q)).slice(0, 7);
-  if (!hits.length) { box.classList.remove('open'); return; }
+  const hits = stops.filter(s => s.name.toLowerCase().includes(q)).slice(0, 5);
 
-  box.innerHTML = hits.map((s, i) => `
-    <div class="itin-suggestion-item" data-idx="${i}"
+  renderSuggestions(side, val, hits, []);
+
+  // Recherche d'adresse libre (Nominatim / OpenStreetMap) avec debounce
+  if (geocodeTimers[side]) clearTimeout(geocodeTimers[side]);
+  if (val.trim().length >= 3) {
+    geocodeTimers[side] = setTimeout(() => geocodeAddress(side, val, hits), 400);
+  }
+}
+
+function renderSuggestions(side, val, stopHits, addrHits) {
+  const box = document.getElementById(`suggestions-${side}`);
+  if (!stopHits.length && !addrHits.length) { box.classList.remove('open'); return; }
+
+  let html = stopHits.map(s => `
+    <div class="itin-suggestion-item"
       onmousedown="selectItinStop('${side}','${s.name.replace(/'/g,"\\'")}')">
       <div class="sug-icon">${s.icon}</div>
       <span class="sug-name">${highlight(s.name, val)}</span>
       ${s.lines.length ? `<span class="sug-line">${s.lines.slice(0,2).join(' · ')}</span>` : ''}
     </div>`).join('');
+
+  if (addrHits.length) {
+    html += `<div class="sug-separator">📍 Adresses & lieux</div>`;
+    html += addrHits.map(a => `
+      <div class="itin-suggestion-item sug-address"
+        onmousedown="selectItinAddress('${side}','${a.name.replace(/'/g,"\\'")}',${a.lat},${a.lng})">
+        <div class="sug-icon">📍</div>
+        <span class="sug-name">${a.name}</span>
+        <span class="sug-line sug-addr-tag">adresse</span>
+      </div>`).join('');
+  }
+  box.innerHTML = html;
   box.classList.add('open');
+}
+
+// Geocoding Nominatim limité à Mayotte (viewbox + countrycodes=yt)
+async function geocodeAddress(side, val, stopHits) {
+  try {
+    // NB : pas de countrycodes=yt — Nominatim indexe Mayotte sous "fr" ;
+    // le viewbox borné à l'île suffit à restreindre les résultats.
+    const base = 'https://nominatim.openstreetmap.org/search?format=json&limit=4';
+    const vbox = '&viewbox=44.95,-12.55,45.35,-13.05';
+    let res = await fetch(`${base}${vbox}&bounded=1&q=${encodeURIComponent(val)}`, { headers: { 'Accept-Language': 'fr' } });
+    if (!res.ok) return;
+    let data = await res.json();
+
+    // Fallback : le mode borné strict rate certains lieux → relance avec "Mayotte"
+    if (!data.length) {
+      res = await fetch(`${base}${vbox}&q=${encodeURIComponent(val + ' Mayotte')}`, { headers: { 'Accept-Language': 'fr' } });
+      if (!res.ok) return;
+      data = (await res.json())
+        // Garde uniquement les résultats situés sur l'île
+        .filter(d => d.lat > -13.05 && d.lat < -12.55 && d.lon > 44.95 && d.lon < 45.35);
+    }
+
+    // L'utilisateur a peut-être déjà tapé autre chose entre-temps
+    const current = document.getElementById(`itin-${side}`).value.trim();
+    if (current !== val.trim()) return;
+
+    const addrHits = data.map(d => ({
+      name: d.display_name.split(',').slice(0, 2).join(',').trim(),
+      lat: parseFloat(d.lat),
+      lng: parseFloat(d.lon)
+    }))
+    // Écarte les doublons avec des arrêts déjà proposés
+    .filter(a => !stopHits.some(s => s.name.toLowerCase() === a.name.toLowerCase()));
+
+    renderSuggestions(side, val, stopHits, addrHits);
+  } catch { /* réseau indisponible : on garde les arrêts seuls */ }
+}
+
+function selectItinAddress(side, name, lat, lng) {
+  document.getElementById(`itin-${side}`).value = name;
+  document.getElementById(`suggestions-${side}`).classList.remove('open');
+  itinPoint[side] = { name, lat, lng };
+  const clearBtn = document.getElementById(`clear-${side}`);
+  if (clearBtn) clearBtn.style.display = 'flex';
+  itinFocusIdx[side] = -1;
+}
+
+// Arrêt Caribus le plus proche d'un point donné
+function nearestStop(pt) {
+  let best = null, bestD = Infinity;
+  stops.forEach(s => {
+    const d = haversine(pt, s);
+    if (d < bestD) { bestD = d; best = s; }
+  });
+  return { stop: best, distKm: bestD };
 }
 
 function highlight(text, query) {
@@ -537,6 +621,7 @@ function selectItinStop(side, name) {
 }
 
 function clearItin(side) {
+  itinPoint[side] = null;
   document.getElementById(`itin-${side}`).value = '';
   document.getElementById(`suggestions-${side}`).classList.remove('open');
   document.getElementById(`clear-${side}`).style.display = 'none';
@@ -635,11 +720,32 @@ function searchItinerary() {
     return;
   }
 
-  const fromStop = findStop(fromVal);
-  const toStop   = findStop(toVal);
+  // Résolution : arrêt connu, sinon adresse geocodée → arrêt le plus proche
+  let fromStop = findStop(fromVal);
+  let toStop   = findStop(toVal);
+  let fromAddr = null, toAddr = null;
+
+  if (!fromStop && itinPoint.from) {
+    const near = nearestStop(itinPoint.from);
+    if (near.distKm > 3) {
+      showToast('Aucun arrêt Caribus à moins de 3 km de cette adresse de départ.', 'warning', '📍');
+      return;
+    }
+    fromStop = near.stop;
+    fromAddr = itinPoint.from;
+  }
+  if (!toStop && itinPoint.to) {
+    const near = nearestStop(itinPoint.to);
+    if (near.distKm > 3) {
+      showToast('Aucun arrêt Caribus à moins de 3 km de cette destination.', 'warning', '📍');
+      return;
+    }
+    toStop = near.stop;
+    toAddr = itinPoint.to;
+  }
 
   if (!fromStop || !toStop) {
-    showToast('Arrêt non trouvé. Choisissez dans les suggestions.', 'warning', '🔍');
+    showToast('Lieu non trouvé. Choisissez dans les suggestions.', 'warning', '🔍');
     return;
   }
   if (fromStop.name === toStop.name) {
@@ -666,14 +772,14 @@ function searchItinerary() {
   const bikeMins = Math.round(dist / 14 * 60);
   const walkMins = Math.round(dist / 4.5 * 60);
 
-  document.getElementById('res-from').textContent  = fromStop.name;
-  document.getElementById('res-to').textContent    = toStop.name;
+  document.getElementById('res-from').textContent  = fromAddr ? fromAddr.name : fromStop.name;
+  document.getElementById('res-to').textContent    = toAddr ? toAddr.name : toStop.name;
   document.getElementById('time-bus').textContent  = fmt(busMins);
   document.getElementById('time-bike').textContent = `~${fmt(bikeMins)}`;
   document.getElementById('time-walk').textContent = fmt(walkMins);
 
-  const walkIn  = estimateWalkToStop(fromStop, 'in');
-  const walkOut = estimateWalkToStop(toStop, 'out');
+  const walkIn  = estimateWalkToStop(fromStop, 'in', fromAddr);
+  const walkOut = estimateWalkToStop(toStop, 'out', toAddr);
 
   selectMode('bus');
   renderTripDetail(fromStop, toStop, routeStops, matchedLine, busMins, walkIn, walkOut);
@@ -910,7 +1016,13 @@ function offsetLatLng(lat, lng, metres, bearingDeg) {
 
 // Estime une marche d'approche jusqu'à l'arrêt réel (l'utilisateur n'est pas toujours pile sur l'arrêt)
 // + calcule le point de marche (départ ou destination) pour pouvoir tracer le trajet piéton sur la carte
-function estimateWalkToStop(stop, seedSuffix) {
+// Si realPoint est fourni (adresse geocodée), utilise les vraies coordonnées et la vraie distance.
+function estimateWalkToStop(stop, seedSuffix, realPoint) {
+  if (realPoint) {
+    const metres = Math.max(30, Math.round(haversine(realPoint, stop) * 1000));
+    const mins   = Math.max(1, Math.round(metres / 75)); // ~4.5 km/h
+    return { metres, mins, point: { lat: realPoint.lat, lng: realPoint.lng }, label: realPoint.name };
+  }
   const h = strHash(stop.name + seedSuffix);
   const metres  = 180 + (h % 220); // ~180-400 m, stable pour un même arrêt
   const mins    = Math.max(2, Math.round(metres / 75)); // ~4.5 km/h
@@ -953,7 +1065,7 @@ function renderTripDetail(from, to, route, line, busMins, walkIn, walkOut) {
       </div>
       <div class="trip-step-body">
         <div class="trip-step-label"><span class="trip-step-walk-icon">🚶</span>Marche jusqu'à l'arrêt ${from.icon || '🚏'} ${from.name}</div>
-        <div class="trip-step-meta">${walkIn.metres} m · ${fmt(walkIn.mins)} à pied</div>
+        <div class="trip-step-meta">${walkIn.label ? `Depuis ${walkIn.label} · ` : ''}${walkIn.metres} m · ${fmt(walkIn.mins)} à pied</div>
       </div>
     </div>`;
 
@@ -984,7 +1096,7 @@ function renderTripDetail(from, to, route, line, busMins, walkIn, walkOut) {
         <div class="trip-step-dot end" style="background:var(--gold);box-shadow:0 0 0 3px rgba(245,158,11,.3)"></div>
       </div>
       <div class="trip-step-body" style="padding-bottom:0;">
-        <div class="trip-step-label"><span class="trip-step-walk-icon">🚶</span>Marche jusqu'à destination</div>
+        <div class="trip-step-label"><span class="trip-step-walk-icon">🚶</span>Marche jusqu'à ${walkOut.label || 'destination'}</div>
         <div class="trip-step-meta">${walkOut.metres} m · ${fmt(walkOut.mins)} à pied · arrivée +${totalMins} min</div>
       </div>
     </div>`;
@@ -1051,7 +1163,7 @@ function renderItinMap(from, to, route, line, walkIn, walkOut) {
   // Point de départ piéton (point A réel de l'utilisateur)
   const mWalkStart = L.marker([walkIn.point.lat, walkIn.point.lng], {
     icon: makeIcon(`<div class="map-marker-walk">🚶</div>`, 30)
-  }).addTo(itinMap).bindPopup(`<b>📍 Point de départ</b><br>${walkIn.metres} m à pied jusqu'à l'arrêt`);
+  }).addTo(itinMap).bindPopup(`<b>📍 ${walkIn.label || 'Point de départ'}</b><br>${walkIn.metres} m à pied jusqu'à l'arrêt`);
   itinLayers.push(mWalkStart);
 
   // Marqueur arrêt départ bus
@@ -1069,7 +1181,7 @@ function renderItinMap(from, to, route, line, walkIn, walkOut) {
   // Point d'arrivée piéton final (destination réelle)
   const mWalkEnd = L.marker([walkOut.point.lat, walkOut.point.lng], {
     icon: makeIcon(`<div class="map-marker-walk-end">🏁</div>`, 30)
-  }).addTo(itinMap).bindPopup(`<b>🏁 Destination</b><br>${walkOut.metres} m à pied depuis l'arrêt`);
+  }).addTo(itinMap).bindPopup(`<b>🏁 ${walkOut.label || 'Destination'}</b><br>${walkOut.metres} m à pied depuis l'arrêt`);
   itinLayers.push(mWalkEnd);
 
   // Zoom sur le trajet complet (marche + bus + marche)
