@@ -135,6 +135,7 @@
         <option value="open">🔴 Non traités</option>
         <option value="resolved">✅ Traités</option>
       </select>
+      <button class="btn-portal btn-sm btn-outline" id="notif-btn" onclick="enableNotifs()">🔔 Activer les alertes</button>
     </div>
     <div class="signalements-list" id="signalements-list"></div>
   </div>
@@ -773,17 +774,96 @@ renderSignalements();
 renderCandidatures();
 updateCandBadge();
 
+// ── Notifications selon le degré d'urgence ──
+let knownSigIds = new Set(getLiveSignalements().map(s => s.id));
+
+function updateNotifBtn() {
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  if (!('Notification' in window)) { btn.style.display = 'none'; return; }
+  if (Notification.permission === 'granted') {
+    btn.textContent = '🔔 Alertes activées';
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+  } else if (Notification.permission === 'denied') {
+    btn.textContent = '🔕 Alertes bloquées (voir réglages navigateur)';
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+  }
+}
+
+function enableNotifs() {
+  if (!('Notification' in window)) { toast('Notifications non supportées par ce navigateur.', 'warning'); return; }
+  Notification.requestPermission().then(p => {
+    updateNotifBtn();
+    if (p === 'granted') toast('🔔 Alertes activées : vous serez notifié à chaque signalement chauffeur.', 'success');
+  });
+}
+
+// Bip sonore pour les signalements urgents (WebAudio, aucun fichier requis)
+function urgentBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, .25].forEach(t => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880; o.type = 'square';
+      g.gain.setValueAtTime(.12, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + t + .18);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + .2);
+    });
+  } catch {}
+}
+
+function notifySignalement(s) {
+  const cfg = {
+    high:   { emoji:'🚨', label:'URGENT',       toastType:'error'   },
+    medium: { emoji:'⚠️', label:'Urgence moyenne', toastType:'warning' },
+    low:    { emoji:'ℹ️', label:'Info',          toastType:'info'    }
+  }[s.urgence] || { emoji:'📡', label:'Signalement', toastType:'info' };
+
+  // Toast dans la page, coloré selon l'urgence
+  toast(`${cfg.emoji} ${cfg.label} — ${s.id} · ${s.chauffeur} (${s.ligne}) : ${s.lieu}`, cfg.toastType);
+
+  // Bip sonore uniquement pour les urgences élevées
+  if (s.urgence === 'high') urgentBeep();
+
+  // Notification système (même si l'onglet est en arrière-plan)
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const n = new Notification(`${cfg.emoji} ${cfg.label} — Signalement ${s.id}`, {
+      body: `${s.chauffeur} · Ligne ${s.ligne} · ${s.bus}\n📍 ${s.lieu}\n${s.desc.slice(0, 120)}${s.renfort && s.renfort !== 'non' ? '\n🚌 Renfort demandé !' : ''}`,
+      icon: 'icon-192.png',
+      tag: s.id,
+      requireInteraction: s.urgence === 'high' // l'alerte urgente reste affichée jusqu'au clic
+    });
+    n.onclick = () => {
+      window.focus();
+      document.querySelectorAll('.pro-tab')[3].click();
+      n.close();
+    };
+  }
+}
+
 // Mise à jour en direct si le portail chauffeur (autre onglet) envoie un signalement ou une candidature
 window.addEventListener('storage', (e) => {
   if (e.key === 'cadema_signalements') {
     renderSignalements();
-    toast('📡 Nouveau signalement chauffeur reçu.', 'warning');
+    // Notifie uniquement les nouveaux signalements, selon leur urgence
+    getLiveSignalements().forEach(s => {
+      if (!knownSigIds.has(s.id)) {
+        knownSigIds.add(s.id);
+        notifySignalement(s);
+      }
+    });
   }
   if (e.key === 'cadema_candidatures') {
     renderCandidatures();
     updateCandBadge();
+    toast('🧑‍✈️ Nouvelle candidature chauffeur reçue.', 'info');
   }
 });
+
+updateNotifBtn();
 </script>
 </body>
 </html>
