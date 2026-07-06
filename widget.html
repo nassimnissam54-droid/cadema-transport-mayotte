@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widget Itinéraire — CADEMA</title>
+  <!--
+    WIDGET EMBARQUABLE CADEMA
+    Intégrez la recherche d'itinéraire Caribus sur votre site :
+
+    <iframe src="https://VOTRE-DOMAINE/widget.html"
+            width="100%" height="260" frameborder="0"
+            style="border-radius:16px;max-width:420px"></iframe>
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: linear-gradient(135deg, #061a35 0%, #0d3472 100%); padding: 18px; min-height: 100vh; }
+    .w-head { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+    .w-logo { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .w-title { color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .04em; }
+    .w-sub { color: rgba(255,255,255,.55); font-size: 10.5px; }
+    .w-field { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18); border-radius: 11px; padding: 11px 13px; margin-bottom: 8px; }
+    .w-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .w-dot-a { background: #60a5fa; }
+    .w-dot-b { background: #f59e0b; }
+    .w-field input { flex: 1; background: none; border: none; outline: none;
+      color: #fff; font-size: 16px; font-weight: 500; }
+    .w-field input::placeholder { color: rgba(255,255,255,.45); font-size: 13px; }
+    .w-btn { width: 100%; padding: 12px; border: none; border-radius: 11px; cursor: pointer;
+      background: linear-gradient(135deg, #f59e0b, #e67e00); color: #061a35;
+      font-size: 14px; font-weight: 800; margin-top: 4px; transition: transform .15s; }
+    .w-btn:active { transform: scale(.97); }
+    .w-foot { text-align: center; margin-top: 10px; }
+    .w-foot a { color: rgba(255,255,255,.5); font-size: 10.5px; text-decoration: none; }
+    .w-foot a:hover { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <div class="w-head">
+    <div class="w-logo">🚌</div>
+    <div>
+      <div class="w-title">CADEMA · Caribus</div>
+      <div class="w-sub">Itinéraires du réseau de Mayotte</div>
+    </div>
+  </div>
+  <form onsubmit="go(event)">
+    <div class="w-field"><span class="w-dot w-dot-a"></span><input id="w-from" placeholder="Départ (arrêt ou adresse)…" required></div>
+    <div class="w-field"><span class="w-dot w-dot-b"></span><input id="w-to" placeholder="Destination…" required></div>
+    <button class="w-btn" type="submit">Trouver mon itinéraire →</button>
+  </form>
+  <div class="w-foot"><a href="index.html" target="_blank" rel="noopener">Propulsé par CADEMA — voir le site complet</a></div>
+  <script>
+    function go(e) {
+      e.preventDefault();
+      const de = encodeURIComponent(document.getElementById('w-from').value.trim());
+      const vers = encodeURIComponent(document.getElementById('w-to').value.trim());
+      window.open(`index.html?de=${de}&vers=${vers}`, '_blank', 'noopener');
+    }
+  </script>
+</body>
+</html>

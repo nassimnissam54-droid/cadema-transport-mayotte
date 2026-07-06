@@ -200,6 +200,62 @@ function showToast(msg, type='success', icon) {
   toast(icon ? `${icon} ${msg}` : msg, type);
 }
 
+// ── Onboarding première visite ────────────────────
+const ONBOARD_STEPS = [
+  { icon: '🗺️', title: 'Trouvez votre itinéraire',
+    text: "Tapez un arrêt ou n'importe quelle adresse de Mayotte : le trajet en bus ET la marche jusqu'à l'arrêt s'affichent sur la carte." },
+  { icon: '🔔', title: "L'alerte de descente",
+    text: "Activez-la sur votre itinéraire : votre téléphone vibrera à l'approche de votre arrêt. Impossible de le rater !" },
+  { icon: '⭐', title: 'Favoris & partage',
+    text: "Enregistrez vos trajets fréquents d'une étoile et partagez un itinéraire par lien WhatsApp en un geste." }
+];
+let onboardIdx = 0;
+
+function showOnboarding() {
+  if (localStorage.getItem('cadema_onboarded')) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'onboard-overlay';
+  wrap.id = 'onboard-overlay';
+  wrap.innerHTML = `
+    <div class="onboard-card" role="dialog" aria-label="Bienvenue sur CADEMA">
+      <div class="onboard-icon" id="onboard-icon"></div>
+      <h3 id="onboard-title"></h3>
+      <p id="onboard-text"></p>
+      <div class="onboard-dots" id="onboard-dots"></div>
+      <div class="onboard-btns">
+        <button class="onboard-skip" onclick="endOnboarding()">Passer</button>
+        <button class="onboard-next" id="onboard-next" onclick="nextOnboarding()">Suivant</button>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  renderOnboardStep();
+}
+
+function renderOnboardStep() {
+  const s = ONBOARD_STEPS[onboardIdx];
+  document.getElementById('onboard-icon').textContent  = s.icon;
+  document.getElementById('onboard-title').textContent = s.title;
+  document.getElementById('onboard-text').textContent  = s.text;
+  document.getElementById('onboard-dots').innerHTML = ONBOARD_STEPS
+    .map((_, i) => `<span class="onboard-dot ${i === onboardIdx ? 'active' : ''}"></span>`).join('');
+  document.getElementById('onboard-next').textContent =
+    onboardIdx === ONBOARD_STEPS.length - 1 ? "C'est parti !" : 'Suivant';
+}
+
+function nextOnboarding() {
+  if (onboardIdx >= ONBOARD_STEPS.length - 1) { endOnboarding(); return; }
+  onboardIdx++;
+  renderOnboardStep();
+}
+
+function endOnboarding() {
+  localStorage.setItem('cadema_onboarded', '1');
+  const el = document.getElementById('onboard-overlay');
+  if (el) { el.classList.add('closing'); setTimeout(() => el.remove(), 250); }
+}
+
+window.addEventListener('DOMContentLoaded', () => setTimeout(showOnboarding, 800));
+
 // ── PWA : service worker (mode hors-ligne) ────────
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   window.addEventListener('load', () => {
@@ -274,6 +330,67 @@ function showSection(id, navEl) {
   window.scrollTo({ top:0, behavior:'smooth' });
   if (id === 'stats' && !chartsRendered) { chartsRendered = true; renderCharts(); }
   if (id === 'stats' && !statsAnimated)  { statsAnimated  = true; animateStats(); }
+  if (id === 'plan') setTimeout(initPlanMap, 80);
+}
+
+// ── Plan du réseau interactif ─────────────────────
+let planMap = null;
+const planLayers = {}; // num de ligne → L.layerGroup
+
+function initPlanMap() {
+  if (planMap) { planMap.invalidateSize(); return; }
+  planMap = L.map('plan-map', { zoomControl: true })
+    .setView([-12.78, 45.21], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 18
+  }).addTo(planMap);
+
+  lines.forEach(line => {
+    const group = L.layerGroup();
+
+    // Tracé de la ligne
+    const coords = (line.routeCoords && line.routeCoords.length >= 2)
+      ? line.routeCoords
+      : line.stopNames.map(n => stops.find(s => s.name.toLowerCase().includes(n.toLowerCase()))).filter(Boolean).map(s => [s.lat, s.lng]);
+    if (coords.length >= 2) {
+      L.polyline(coords, { color: line.color, weight: 5, opacity: .85, lineJoin: 'round', lineCap: 'round' }).addTo(group);
+    }
+
+    // Arrêts de la ligne, popup = correspondances
+    stops.filter(s => s.lines.includes(line.num)).forEach(s => {
+      L.circleMarker([s.lat, s.lng], {
+        radius: 6, color: line.color, fillColor: '#fff', fillOpacity: 1, weight: 2.5
+      }).bindPopup(`
+        <b>${s.icon || '🚏'} ${s.name}</b><br>
+        <small>Lignes : ${s.lines.join(' · ')}</small>
+      `).addTo(group);
+    });
+
+    planLayers[line.num] = group;
+    group.addTo(planMap); // toutes visibles par défaut
+  });
+
+  renderPlanFilters();
+  setTimeout(() => planMap.invalidateSize(), 150);
+}
+
+function renderPlanFilters() {
+  const box = document.getElementById('plan-filters');
+  if (!box) return;
+  box.innerHTML = lines.map(l => `
+    <label class="plan-chip active" id="plan-chip-${l.num}" style="--line-color:${l.color}">
+      <input type="checkbox" checked onchange="togglePlanLine('${l.num}', this.checked)">
+      <span class="plan-chip-dot"></span>
+      Ligne ${l.num}
+    </label>`).join('');
+}
+
+function togglePlanLine(num, visible) {
+  const group = planLayers[num];
+  if (!group || !planMap) return;
+  if (visible) group.addTo(planMap); else planMap.removeLayer(group);
+  const chip = document.getElementById(`plan-chip-${num}`);
+  if (chip) chip.classList.toggle('active', visible);
 }
 
 function toggleNav() {

@@ -51,6 +51,7 @@
         <a class="nav-link" href="#" onclick="showSection('lignes',this)">Lignes & Horaires <span class="caret">▾</span></a>
         <div class="dropdown-menu">
           <a onclick="showSection('lignes')">📋 Toutes les lignes</a>
+          <a onclick="showSection('plan')">🗺️ Plan du réseau</a>
           <a onclick="showSection('lignes')">🕐 Horaires détaillés</a>
           <a onclick="openModal('add-line-modal')">➕ Ajouter une ligne</a>
         </div>
@@ -352,7 +353,7 @@
           </div>
           <span>Fiches horaires</span>
         </button>
-        <button class="qa-tile" onclick="showSection('lignes')">
+        <button class="qa-tile" onclick="showSection('plan')">
           <div class="qa-icon" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h4M18 12h4M12 2v4M12 18v4"/><circle cx="12" cy="12" r="3" fill="#fff" stroke="none"/></svg>
           </div>
@@ -655,6 +656,22 @@
         </thead>
         <tbody id="lines-tbody"></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PLAN DU RÉSEAU INTERACTIF
+══════════════════════════════════════ -->
+<div id="section-plan" class="page">
+  <div class="inner-page">
+    <div class="inner-page-header">
+      <h2>Plan du réseau</h2>
+      <span class="plan-hint">Cochez les lignes à afficher · touchez un arrêt pour ses correspondances</span>
+    </div>
+    <div class="plan-filters" id="plan-filters"></div>
+    <div class="plan-map-wrap">
+      <div id="plan-map"></div>
     </div>
   </div>
 </div>
