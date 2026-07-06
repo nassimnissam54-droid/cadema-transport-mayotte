@@ -1,0 +1,16 @@
+{
+  "name": "CADEMA — Réseau de Transport de Mayotte",
+  "short_name": "CADEMA",
+  "description": "Itinéraires, horaires, tarifs et info trafic du réseau Caribus à Mayotte.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#061a35",
+  "theme_color": "#061a35",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

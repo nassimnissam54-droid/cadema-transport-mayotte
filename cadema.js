@@ -200,6 +200,13 @@ function showToast(msg, type='success', icon) {
   toast(icon ? `${icon} ${msg}` : msg, type);
 }
 
+// ── PWA : service worker (mode hors-ligne) ────────
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
 // ── Clock ─────────────────────────────────────────
 function updateClock() {
   const el = document.getElementById('live-clock');
