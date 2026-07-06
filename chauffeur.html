@@ -73,6 +73,18 @@
           <span>✓</span> Confirmer et accéder
         </button>
       </form>
+
+      <!-- Compte démo -->
+      <div class="demo-box">
+        <div class="demo-box-head">🎭 Compte de démonstration</div>
+        <div class="demo-box-creds">
+          <span><strong>Nom :</strong> Ibrahim DEMO</span>
+          <span><strong>Badge :</strong> CH-000</span>
+          <span><strong>Véhicule :</strong> BUS-01</span>
+        </div>
+        <button type="button" class="demo-box-btn" onclick="loginDemo()">→ Se connecter avec le compte démo</button>
+      </div>
+
       <div class="cand-cta">
         <span>Pas encore chauffeur CADEMA ?</span>
         <button type="button" class="cand-cta-btn" onclick="toggleCandidature()">💼 Postuler comme chauffeur de bus</button>
@@ -427,6 +439,15 @@ function renderReports() {
 
 function resetForm() {
   document.querySelector('.report-form').reset();
+}
+
+// ── Compte démo ───────────────────────────────────
+function loginDemo() {
+  document.getElementById('d-nom').value   = 'Ibrahim DEMO';
+  document.getElementById('d-badge').value = 'CH-000';
+  document.getElementById('d-ligne').value = 'L1';
+  document.getElementById('d-bus').value   = 'BUS-01';
+  loginDriver({ preventDefault() {} });
 }
 
 // ── Candidature chauffeur ─────────────────────────
