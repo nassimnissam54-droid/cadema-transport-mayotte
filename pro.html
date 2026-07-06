@@ -482,24 +482,36 @@ function renderAgents() {
 
 // ── Signalements chauffeurs ──
 let sigFilter = 'all';
+// Signalements envoyés en direct depuis le portail chauffeur (stockage partagé)
+function getLiveSignalements() {
+  try { return JSON.parse(localStorage.getItem('cadema_signalements') || '[]'); }
+  catch { return []; }
+}
+function allSignalements() {
+  return [...getLiveSignalements(), ...signalements];
+}
+
 function renderSignalements(filter) {
   if (filter !== undefined) sigFilter = filter;
   const el = document.getElementById('signalements-list');
   if (!el) return;
-  const list = sigFilter === 'all' ? signalements : signalements.filter(s => s.status === sigFilter);
-  const typeLabels = { retard:'⏱ Retard', route:'🚧 Route bloquée', panne:'🔧 Panne', passager:'👤 Incident passager', accident:'🚨 Accident', autre:'📝 Autre' };
+  const merged = allSignalements();
+  const list = sigFilter === 'all' ? merged : merged.filter(s => s.status === sigFilter);
+  const typeLabels = { retard:'⏱ Retard', route:'🚧 Route bloquée', panne:'🔧 Panne', passager:'👤 Incident passager', accident:'🚨 Accident', porte:'🚪 Porte', climatisation:'❄️ Clim', autre:'📝 Autre' };
+  const renfortBadge = { oui:'🚌 Bus de remplacement demandé', urgence:'🚨 Secours demandés' };
   el.innerHTML = list.map(s => `
     <div class="sig-card ${s.status==='resolved'?'sig-resolved':''}">
       <div class="sig-card-header">
         <span class="sig-id">${s.id}</span>
         <span class="sig-type">${typeLabels[s.type]||s.type}</span>
         <span class="urg-pill urg-${s.urgence}">${s.urgence==='high'?'🔴 Urgent':s.urgence==='medium'?'🟡 Moyen':'🟢 Faible'}</span>
-        <span class="sig-time">${s.time}</span>
+        <span class="sig-time">${s.date ? s.date + ' ' : ''}${s.time}</span>
         <span class="sig-status-badge ${s.status==='resolved'?'resolved':'open'}">${s.status==='resolved'?'✅ Traité':'🔴 Non traité'}</span>
       </div>
       <div class="sig-chauffeur">🚌 ${s.chauffeur} · ${s.badge} · Ligne ${s.ligne} · ${s.bus}</div>
       <div class="sig-lieu">📍 ${s.lieu}</div>
       <div class="sig-desc">${s.desc}</div>
+      ${s.renfort && s.renfort !== 'non' ? `<div class="renfort-badge">${renfortBadge[s.renfort] || s.renfort}</div>` : ''}
       ${s.status === 'open' ? `
       <div class="sig-actions">
         <button class="btn-portal btn-sm btn-pro-primary" onclick="resolveSignalement('${s.id}')">✓ Marquer traité</button>
@@ -511,12 +523,22 @@ function renderSignalements(filter) {
 function filterSignalements(v) { renderSignalements(v); }
 
 function resolveSignalement(id) {
+  // Signalement live (portail chauffeur) → mise à jour du stockage partagé
+  const live = getLiveSignalements();
+  const liveHit = live.find(s => s.id === id);
+  if (liveHit) {
+    liveHit.status = 'resolved';
+    localStorage.setItem('cadema_signalements', JSON.stringify(live));
+    renderSignalements();
+    toast(`Signalement ${id} marqué traité.`, 'success');
+    return;
+  }
   const s = signalements.find(s=>s.id===id);
   if (s) { s.status = 'resolved'; renderSignalements(); toast(`Signalement ${id} marqué traité.`, 'success'); }
 }
 
 function createTaskFromSig(id) {
-  const s = signalements.find(s=>s.id===id);
+  const s = allSignalements().find(s=>s.id===id);
   if (!s) return;
   openTaskModal();
   setTimeout(() => {
@@ -750,6 +772,18 @@ renderAgents();
 renderSignalements();
 renderCandidatures();
 updateCandBadge();
+
+// Mise à jour en direct si le portail chauffeur (autre onglet) envoie un signalement ou une candidature
+window.addEventListener('storage', (e) => {
+  if (e.key === 'cadema_signalements') {
+    renderSignalements();
+    toast('📡 Nouveau signalement chauffeur reçu.', 'warning');
+  }
+  if (e.key === 'cadema_candidatures') {
+    renderCandidatures();
+    updateCandBadge();
+  }
+});
 </script>
 </body>
 </html>

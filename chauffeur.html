@@ -399,9 +399,16 @@ function quickReport(type) {
 function submitReport(e) {
   e.preventDefault();
   const renfort = document.querySelector('input[name="renfort"]:checked')?.value || 'non';
+
+  // Numérotation continue basée sur les signalements déjà transmis à la régulation
+  let shared;
+  try { shared = JSON.parse(localStorage.getItem('cadema_signalements') || '[]'); }
+  catch { shared = []; }
+
   const report = {
-    id:       'SIG-' + String(sessionReports.length + 1).padStart(3,'0'),
+    id:       'SIG-C' + String(shared.length + 1).padStart(3,'0'),
     time:     new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }),
+    date:     new Date().toLocaleDateString('fr-FR'),
     type:     document.getElementById('r-type').value,
     urgence:  document.getElementById('r-urgence').value,
     lieu:     document.getElementById('r-lieu').value,
@@ -410,6 +417,18 @@ function submitReport(e) {
     chauffeur: driverInfo,
   };
   sessionReports.unshift(report);
+
+  // Transmission au portail professionnel (stockage partagé)
+  shared.unshift({
+    id: report.id, time: report.time, date: report.date,
+    chauffeur: driverInfo.nom || 'Chauffeur', badge: driverInfo.badge || '—',
+    ligne: driverInfo.ligne || '—', bus: driverInfo.bus || '—',
+    type: report.type, urgence: report.urgence,
+    lieu: report.lieu, desc: report.desc, renfort,
+    status: 'open'
+  });
+  localStorage.setItem('cadema_signalements', JSON.stringify(shared));
+
   renderReports();
   e.target.reset();
 
