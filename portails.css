@@ -1046,3 +1046,95 @@
   .portal-main   { padding: 16px 12px 48px; }
   .pro-kpi-bar   { padding: 14px 16px; }
 }
+
+/* ══════════════════════════════════════════════════════
+   CANDIDATURE / ADHÉSION CHAUFFEUR
+══════════════════════════════════════════════════════ */
+.cand-cta {
+  margin-top: 22px; padding-top: 18px;
+  border-top: 1px dashed var(--gray-200, #e2e8f0);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.cand-cta span { font-size: 13px; color: var(--gray-400, #94a3b8); }
+.cand-cta-btn {
+  background: none; border: 2px solid #f59e0b; color: #d97706;
+  padding: 11px 22px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: all .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.cand-cta-btn:hover {
+  background: linear-gradient(135deg, #f59e0b, #e67e00);
+  color: #061a35; border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(245,158,11,.35);
+}
+
+.cand-section { display: flex; justify-content: center; padding: 24px 16px 60px; }
+.cand-card {
+  background: #fff; border-radius: 22px; padding: 32px 28px;
+  max-width: 640px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.12);
+}
+[data-theme="dark"] .cand-card { background: #0f2547; }
+.cand-header { text-align: center; margin-bottom: 26px; }
+.cand-header h2 { font-size: 22px; font-weight: 800; margin: 10px 0 8px; }
+.cand-header p  { font-size: 13.5px; color: var(--gray-400, #64748b); line-height: 1.6; }
+
+.cand-docs { margin: 22px 0 6px; }
+.cand-docs-title {
+  font-size: 13px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--gray-400, #64748b);
+  margin-bottom: 12px;
+}
+.cand-docs-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+}
+.doc-drop {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 18px 10px 14px; border-radius: 14px; cursor: pointer;
+  border: 2px dashed var(--gray-200, #cbd5e1);
+  background: var(--gray-50, #f8fafc);
+  transition: all .18s ease; text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+[data-theme="dark"] .doc-drop { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.15); }
+.doc-drop:hover { border-color: #f59e0b; background: rgba(245,158,11,.05); }
+.doc-drop.filled {
+  border-style: solid; border-color: #059669;
+  background: rgba(5,150,105,.06);
+}
+.doc-icon  { font-size: 26px; }
+.doc-label { font-size: 12.5px; font-weight: 700; }
+.doc-status { font-size: 11px; color: var(--gray-400, #94a3b8); word-break: break-all; }
+.doc-drop.filled .doc-status { color: #059669; font-weight: 700; }
+
+.cand-success { text-align: center; padding: 24px 8px; }
+.cand-success-icon { font-size: 56px; margin-bottom: 12px; }
+.cand-success h3 { font-size: 21px; font-weight: 800; margin-bottom: 12px; }
+.cand-success p  { font-size: 14px; color: var(--gray-400, #64748b); line-height: 1.7; margin-bottom: 22px; }
+
+/* Badge onglet candidatures (portail pro) */
+.cand-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 19px; height: 19px; padding: 0 5px;
+  border-radius: 100px; background: #2563eb; color: #fff;
+  font-size: 11px; font-weight: 800; margin-left: 5px;
+}
+
+/* Cartes candidatures (revue RH) */
+.candidatures-list { display: flex; flex-direction: column; gap: 14px; }
+.cand-docs-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.cand-doc-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 11px; border-radius: 100px;
+  background: rgba(37,99,235,.08); color: #2563eb;
+  font-size: 12px; font-weight: 700; text-decoration: none;
+  border: 1px solid rgba(37,99,235,.2);
+}
+a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
+
+@media (max-width: 560px) {
+  .cand-docs-grid { grid-template-columns: 1fr; }
+  .cand-card { padding: 24px 18px; }
+}

@@ -73,6 +73,111 @@
           <span>✓</span> Confirmer et accéder
         </button>
       </form>
+      <div class="cand-cta">
+        <span>Pas encore chauffeur CADEMA ?</span>
+        <button type="button" class="cand-cta-btn" onclick="toggleCandidature()">💼 Postuler comme chauffeur de bus</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CANDIDATURE CHAUFFEUR -->
+  <section class="cand-section hidden" id="cand-section">
+    <div class="cand-card">
+      <div class="cand-header">
+        <div class="driver-id-icon">💼</div>
+        <h2>Devenir chauffeur CADEMA</h2>
+        <p>Remplissez ce formulaire et joignez vos documents. Le service RH vous recontacte sous 10 jours ouvrés.</p>
+      </div>
+
+      <form id="cand-form" onsubmit="submitCandidature(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom complet *</label>
+            <input type="text" id="c-nom" placeholder="Prénom NOM" required autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label>Téléphone *</label>
+            <input type="tel" id="c-tel" placeholder="06 39 XX XX XX" required autocomplete="tel">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="c-email" placeholder="vous@email.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label>Commune de résidence *</label>
+            <input type="text" id="c-commune" placeholder="ex: Mamoudzou" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>N° permis D *</label>
+            <input type="text" id="c-permis" placeholder="Numéro du permis" required>
+          </div>
+          <div class="form-group">
+            <label>FIMO / FCO Voyageurs valide ?</label>
+            <select id="c-fimo">
+              <option value="oui">✅ Oui, en cours de validité</option>
+              <option value="bientot">🕐 En cours d'obtention</option>
+              <option value="non">❌ Non</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Expérience de conduite (années, réseaux, types de véhicules)</label>
+          <textarea id="c-exp" rows="3" placeholder="ex: 4 ans chauffeur de car scolaire à La Réunion, permis D depuis 2019…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Message de motivation</label>
+          <textarea id="c-motiv" rows="3" placeholder="Pourquoi souhaitez-vous rejoindre le réseau Caribus ?"></textarea>
+        </div>
+
+        <!-- Pièces jointes -->
+        <div class="cand-docs">
+          <h3 class="cand-docs-title">📎 Documents à joindre</h3>
+          <div class="cand-docs-grid">
+            <label class="doc-drop" id="drop-photo">
+              <input type="file" accept="image/*" onchange="attachDoc('photo', this)" hidden>
+              <span class="doc-icon">🪪</span>
+              <span class="doc-label">Photo d'identité *</span>
+              <span class="doc-status" id="status-photo">Appuyez pour joindre</span>
+            </label>
+            <label class="doc-drop" id="drop-cv">
+              <input type="file" accept=".pdf,image/*" onchange="attachDoc('cv', this)" hidden>
+              <span class="doc-icon">📄</span>
+              <span class="doc-label">CV *</span>
+              <span class="doc-status" id="status-cv">PDF ou photo</span>
+            </label>
+            <label class="doc-drop" id="drop-permis">
+              <input type="file" accept=".pdf,image/*" onchange="attachDoc('permis', this)" hidden>
+              <span class="doc-icon">🚦</span>
+              <span class="doc-label">Permis D (recto/verso) *</span>
+              <span class="doc-status" id="status-permis">PDF ou photo</span>
+            </label>
+            <label class="doc-drop" id="drop-fimo">
+              <input type="file" accept=".pdf,image/*" onchange="attachDoc('fimo', this)" hidden>
+              <span class="doc-icon">🎓</span>
+              <span class="doc-label">Carte FIMO / FCO</span>
+              <span class="doc-status" id="status-fimo">Facultatif</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="report-actions">
+          <button type="button" class="btn-portal btn-outline" onclick="toggleCandidature()">← Retour</button>
+          <button type="submit" class="btn-portal btn-driver-primary">📤 Envoyer ma candidature</button>
+        </div>
+      </form>
+
+      <!-- Confirmation -->
+      <div class="cand-success hidden" id="cand-success">
+        <div class="cand-success-icon">✅</div>
+        <h3>Candidature envoyée !</h3>
+        <p>Votre dossier <strong id="cand-ref">—</strong> a bien été transmis au service RH de la CADEMA.<br>
+        Vous recevrez une réponse par email ou téléphone sous 10 jours ouvrés.</p>
+        <button class="btn-portal btn-driver-primary" onclick="toggleCandidature()">← Retour à l'identification</button>
+      </div>
     </div>
   </section>
 
@@ -322,6 +427,88 @@ function renderReports() {
 
 function resetForm() {
   document.querySelector('.report-form').reset();
+}
+
+// ── Candidature chauffeur ─────────────────────────
+const candDocs = {}; // clé → { name, size, type, dataUrl? }
+
+function toggleCandidature() {
+  const id  = document.getElementById('driver-id-section');
+  const cand = document.getElementById('cand-section');
+  const showingCand = cand.classList.contains('hidden');
+  id.classList.toggle('hidden', showingCand);
+  cand.classList.toggle('hidden', !showingCand);
+  // Réinitialise l'écran succès si on revient
+  document.getElementById('cand-form').classList.remove('hidden');
+  document.getElementById('cand-success').classList.add('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function attachDoc(key, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 8 * 1024 * 1024) {
+    toast('Fichier trop lourd (8 Mo maximum).', 'error');
+    input.value = '';
+    return;
+  }
+  const doc = { name: file.name, size: file.size, type: file.type };
+  const finish = () => {
+    candDocs[key] = doc;
+    const drop = document.getElementById('drop-' + key);
+    drop.classList.add('filled');
+    document.getElementById('status-' + key).textContent =
+      `✓ ${file.name.length > 22 ? file.name.slice(0, 20) + '…' : file.name} (${(file.size/1024).toFixed(0)} Ko)`;
+    toast('Document joint.', 'success');
+  };
+  // Miniature pour les images légères (aperçu côté RH)
+  if (file.type.startsWith('image/') && file.size < 600 * 1024) {
+    const rd = new FileReader();
+    rd.onload = () => { doc.dataUrl = rd.result; finish(); };
+    rd.readAsDataURL(file);
+  } else {
+    finish();
+  }
+}
+
+function submitCandidature(e) {
+  e.preventDefault();
+  const missing = ['photo', 'cv', 'permis'].filter(k => !candDocs[k]);
+  if (missing.length) {
+    const labels = { photo: "la photo d'identité", cv: 'le CV', permis: 'le permis D' };
+    toast(`Document manquant : ${missing.map(m => labels[m]).join(', ')}.`, 'warning');
+    return;
+  }
+  let cands;
+  try { cands = JSON.parse(localStorage.getItem('cadema_candidatures') || '[]'); }
+  catch { cands = []; }
+  const ref = 'CAND-' + String(cands.length + 1).padStart(3, '0');
+  cands.unshift({
+    ref,
+    date:    new Date().toLocaleDateString('fr-FR'),
+    nom:     document.getElementById('c-nom').value,
+    tel:     document.getElementById('c-tel').value,
+    email:   document.getElementById('c-email').value,
+    commune: document.getElementById('c-commune').value,
+    permis:  document.getElementById('c-permis').value,
+    fimo:    document.getElementById('c-fimo').value,
+    exp:     document.getElementById('c-exp').value,
+    motiv:   document.getElementById('c-motiv').value,
+    docs:    candDocs,
+    statut:  'nouvelle',
+    source:  'portail-chauffeur'
+  });
+  try {
+    localStorage.setItem('cadema_candidatures', JSON.stringify(cands));
+  } catch {
+    // Quota localStorage dépassé (miniatures) : réessaie sans les dataUrl
+    cands[0].docs = Object.fromEntries(Object.entries(candDocs).map(([k, d]) => [k, { name: d.name, size: d.size, type: d.type }]));
+    localStorage.setItem('cadema_candidatures', JSON.stringify(cands));
+  }
+  document.getElementById('cand-ref').textContent = ref;
+  document.getElementById('cand-form').classList.add('hidden');
+  document.getElementById('cand-success').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function toast(msg, type='success') {

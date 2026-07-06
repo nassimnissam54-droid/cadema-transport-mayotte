@@ -55,6 +55,7 @@
     <button class="pro-tab" onclick="switchTab('liste', this)">📄 Liste des tâches</button>
     <button class="pro-tab" onclick="switchTab('agents', this)">👥 Agents &amp; Affectations</button>
     <button class="pro-tab" onclick="switchTab('signalements', this)">🚨 Signalements chauffeurs</button>
+    <button class="pro-tab" onclick="switchTab('candidatures', this)">🧑‍✈️ Candidatures <span class="cand-badge" id="cand-count-badge">0</span></button>
   </div>
 
   <!-- ── KANBAN ── -->
@@ -138,6 +139,21 @@
     <div class="signalements-list" id="signalements-list"></div>
   </div>
 
+  <!-- ── CANDIDATURES CHAUFFEURS ── -->
+  <div id="tab-candidatures" class="pro-tab-content">
+    <div class="sig-toolbar">
+      <select class="filter-select" onchange="filterCandidatures(this.value)">
+        <option value="all">Toutes les candidatures</option>
+        <option value="nouvelle">🔵 Nouvelles</option>
+        <option value="encours">🟡 En cours d'étude</option>
+        <option value="acceptee">✅ Acceptées</option>
+        <option value="refusee">❌ Refusées</option>
+      </select>
+      <button class="btn-portal btn-pro-primary" onclick="openAdhesionModal()">+ Demande d'adhésion chauffeur</button>
+    </div>
+    <div class="candidatures-list" id="candidatures-list"></div>
+  </div>
+
 </main>
 
 <!-- Toast -->
@@ -207,6 +223,91 @@
   </div>
 </div>
 
+<!-- Modal demande d'adhésion chauffeur -->
+<div class="modal-overlay" id="adhesion-modal" onclick="if(event.target===this)closeAdhesionModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🧑‍✈️ Demande d'adhésion chauffeur</h3>
+      <button onclick="closeAdhesionModal()">&times;</button>
+    </div>
+    <form onsubmit="submitAdhesion(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom complet du chauffeur *</label>
+          <input type="text" id="a-nom" placeholder="Prénom NOM" required>
+        </div>
+        <div class="form-group">
+          <label>Téléphone *</label>
+          <input type="tel" id="a-tel" placeholder="06 39 XX XX XX" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="a-email" placeholder="chauffeur@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Commune *</label>
+          <input type="text" id="a-commune" placeholder="ex: Koungou" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>N° permis D *</label>
+          <input type="text" id="a-permis" placeholder="Numéro du permis" required>
+        </div>
+        <div class="form-group">
+          <label>FIMO / FCO Voyageurs</label>
+          <select id="a-fimo">
+            <option value="oui">✅ Valide</option>
+            <option value="bientot">🕐 En cours</option>
+            <option value="non">❌ Non</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Expérience & motivations</label>
+        <textarea id="a-exp" rows="3" placeholder="Parcours, années d'expérience, réseaux…"></textarea>
+      </div>
+
+      <div class="cand-docs">
+        <h3 class="cand-docs-title">📎 Documents</h3>
+        <div class="cand-docs-grid">
+          <label class="doc-drop" id="drop-a-photo">
+            <input type="file" accept="image/*" onchange="attachDoc('a-photo', this)" hidden>
+            <span class="doc-icon">🪪</span>
+            <span class="doc-label">Photo d'identité *</span>
+            <span class="doc-status" id="status-a-photo">Joindre</span>
+          </label>
+          <label class="doc-drop" id="drop-a-cv">
+            <input type="file" accept=".pdf,image/*" onchange="attachDoc('a-cv', this)" hidden>
+            <span class="doc-icon">📄</span>
+            <span class="doc-label">CV *</span>
+            <span class="doc-status" id="status-a-cv">PDF ou photo</span>
+          </label>
+          <label class="doc-drop" id="drop-a-permisdoc">
+            <input type="file" accept=".pdf,image/*" onchange="attachDoc('a-permisdoc', this)" hidden>
+            <span class="doc-icon">🚦</span>
+            <span class="doc-label">Permis D *</span>
+            <span class="doc-status" id="status-a-permisdoc">PDF ou photo</span>
+          </label>
+          <label class="doc-drop" id="drop-a-fimodoc">
+            <input type="file" accept=".pdf,image/*" onchange="attachDoc('a-fimodoc', this)" hidden>
+            <span class="doc-icon">🎓</span>
+            <span class="doc-label">FIMO / FCO</span>
+            <span class="doc-status" id="status-a-fimodoc">Facultatif</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeAdhesionModal()">Annuler</button>
+        <button type="submit" class="btn btn-primary">📤 Soumettre la demande</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -263,6 +364,7 @@ function switchTab(id, btn) {
   if (id === 'liste')         renderTasksList();
   if (id === 'agents')        renderAgents();
   if (id === 'signalements')  renderSignalements();
+  if (id === 'candidatures')  { renderCandidatures(); updateCandBadge(); }
 }
 
 // ── KPIs ──
@@ -501,12 +603,153 @@ function toast(msg, type='success') {
   setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', ()=>el.remove()); }, 3500);
 }
 
+// ── Candidatures chauffeurs ──
+const candDocs = {}; // pièces jointes de la modale d'adhésion
+let candFilter = 'all';
+
+function getCandidatures() {
+  try { return JSON.parse(localStorage.getItem('cadema_candidatures') || '[]'); }
+  catch { return []; }
+}
+function saveCandidatures(c) { localStorage.setItem('cadema_candidatures', JSON.stringify(c)); }
+
+function updateCandBadge() {
+  const n = getCandidatures().filter(c => c.statut === 'nouvelle').length;
+  const b = document.getElementById('cand-count-badge');
+  b.textContent = n;
+  b.style.display = n ? 'inline-flex' : 'none';
+}
+
+function filterCandidatures(v) { candFilter = v; renderCandidatures(); }
+
+function renderCandidatures() {
+  const el = document.getElementById('candidatures-list');
+  let cands = getCandidatures();
+  if (candFilter !== 'all') cands = cands.filter(c => c.statut === candFilter);
+
+  if (!cands.length) {
+    el.innerHTML = `<div class="no-reports">Aucune candidature ${candFilter === 'all' ? 'reçue' : 'dans ce statut'} pour l'instant.<br>
+      <small>Les candidatures envoyées depuis le portail chauffeur apparaissent ici.</small></div>`;
+    return;
+  }
+
+  const statutPill = {
+    nouvelle: '<span class="urgence-pill urg-medium" style="background:#dbeafe;color:#1d4ed8">🔵 Nouvelle</span>',
+    encours:  '<span class="urgence-pill urg-medium">🟡 En cours d\'étude</span>',
+    acceptee: '<span class="urgence-pill urg-low">✅ Acceptée</span>',
+    refusee:  '<span class="urgence-pill urg-high">❌ Refusée</span>'
+  };
+  const fimoLabel = { oui: '✅ FIMO valide', bientot: '🕐 FIMO en cours', non: '❌ Sans FIMO' };
+  const docLabels = { photo: '🪪 Photo', cv: '📄 CV', permis: '🚦 Permis D', fimo: '🎓 FIMO',
+    'a-photo': '🪪 Photo', 'a-cv': '📄 CV', 'a-permisdoc': '🚦 Permis D', 'a-fimodoc': '🎓 FIMO' };
+
+  el.innerHTML = cands.map(c => `
+    <div class="report-card cand-review-card">
+      <div class="report-card-header">
+        <span class="report-id">${c.ref}</span>
+        <strong>${c.nom}</strong>
+        ${statutPill[c.statut] || ''}
+        <span class="report-time">${c.date}</span>
+      </div>
+      <div class="report-lieu">📍 ${c.commune} · 📞 ${c.tel} · ✉️ ${c.email}</div>
+      <div class="report-desc">
+        Permis D n° <strong>${c.permis}</strong> · ${fimoLabel[c.fimo] || ''}
+        ${c.exp ? `<br>💼 ${c.exp}` : ''}
+        ${c.motiv ? `<br>💬 ${c.motiv}` : ''}
+      </div>
+      <div class="cand-docs-row">
+        ${Object.entries(c.docs || {}).map(([k, d]) => d.dataUrl
+          ? `<a class="cand-doc-chip" href="${d.dataUrl}" target="_blank" title="${d.name}">${docLabels[k] || k} 👁</a>`
+          : `<span class="cand-doc-chip" title="${d.name}">${docLabels[k] || k} ✓</span>`
+        ).join('')}
+      </div>
+      <div class="report-actions" style="margin-top:10px">
+        ${c.statut === 'nouvelle' || c.statut === 'encours' ? `
+          ${c.statut === 'nouvelle' ? `<button class="btn-portal btn-sm btn-outline" onclick="setCandStatut('${c.ref}','encours')">🟡 Mettre à l'étude</button>` : ''}
+          <button class="btn-portal btn-sm btn-outline" style="color:#059669;border-color:#059669" onclick="setCandStatut('${c.ref}','acceptee')">✅ Accepter</button>
+          <button class="btn-portal btn-sm btn-outline" style="color:#b91c1c;border-color:#b91c1c" onclick="setCandStatut('${c.ref}','refusee')">❌ Refuser</button>
+        ` : `<button class="btn-portal btn-sm btn-outline" onclick="setCandStatut('${c.ref}','encours')">↩︎ Rouvrir le dossier</button>`}
+      </div>
+    </div>`).join('');
+}
+
+function setCandStatut(ref, statut) {
+  const cands = getCandidatures();
+  const c = cands.find(x => x.ref === ref);
+  if (!c) return;
+  c.statut = statut;
+  saveCandidatures(cands);
+  renderCandidatures();
+  updateCandBadge();
+  const msg = { encours: `Dossier ${ref} mis à l'étude.`, acceptee: `Candidature ${ref} acceptée ! 🎉`, refusee: `Candidature ${ref} refusée.` };
+  toast(msg[statut] || 'Statut mis à jour.', statut === 'refusee' ? 'warning' : 'success');
+}
+
+// ── Demande d'adhésion (depuis le portail pro) ──
+function openAdhesionModal()  { document.getElementById('adhesion-modal').classList.add('open'); }
+function closeAdhesionModal() { document.getElementById('adhesion-modal').classList.remove('open'); }
+
+function attachDoc(key, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 8 * 1024 * 1024) { toast('Fichier trop lourd (8 Mo max).', 'error'); input.value = ''; return; }
+  const doc = { name: file.name, size: file.size, type: file.type };
+  const finish = () => {
+    candDocs[key] = doc;
+    document.getElementById('drop-' + key).classList.add('filled');
+    document.getElementById('status-' + key).textContent =
+      `✓ ${file.name.length > 18 ? file.name.slice(0, 16) + '…' : file.name}`;
+  };
+  if (file.type.startsWith('image/') && file.size < 600 * 1024) {
+    const rd = new FileReader();
+    rd.onload = () => { doc.dataUrl = rd.result; finish(); };
+    rd.readAsDataURL(file);
+  } else finish();
+}
+
+function submitAdhesion(e) {
+  e.preventDefault();
+  const missing = ['a-photo', 'a-cv', 'a-permisdoc'].filter(k => !candDocs[k]);
+  if (missing.length) {
+    const labels = { 'a-photo': "photo d'identité", 'a-cv': 'CV', 'a-permisdoc': 'permis D' };
+    toast(`Document manquant : ${missing.map(m => labels[m]).join(', ')}.`, 'warning');
+    return;
+  }
+  const cands = getCandidatures();
+  const ref = 'CAND-' + String(cands.length + 1).padStart(3, '0');
+  cands.unshift({
+    ref, date: new Date().toLocaleDateString('fr-FR'),
+    nom: document.getElementById('a-nom').value,
+    tel: document.getElementById('a-tel').value,
+    email: document.getElementById('a-email').value,
+    commune: document.getElementById('a-commune').value,
+    permis: document.getElementById('a-permis').value,
+    fimo: document.getElementById('a-fimo').value,
+    exp: document.getElementById('a-exp').value, motiv: '',
+    docs: { ...candDocs }, statut: 'nouvelle', source: 'portail-pro'
+  });
+  try { saveCandidatures(cands); }
+  catch {
+    cands[0].docs = Object.fromEntries(Object.entries(candDocs).map(([k, d]) => [k, { name: d.name, size: d.size, type: d.type }]));
+    saveCandidatures(cands);
+  }
+  Object.keys(candDocs).forEach(k => delete candDocs[k]);
+  e.target.reset();
+  document.querySelectorAll('#adhesion-modal .doc-drop').forEach(d => d.classList.remove('filled'));
+  closeAdhesionModal();
+  renderCandidatures();
+  updateCandBadge();
+  toast(`Demande d'adhésion ${ref} enregistrée.`, 'success');
+}
+
 // ── Init ──
 updateKPIs();
 renderKanban();
 renderTasksList();
 renderAgents();
 renderSignalements();
+renderCandidatures();
+updateCandBadge();
 </script>
 </body>
 </html>
