@@ -27,13 +27,66 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
+      <div class="pro-shift-chip hidden" id="pro-shift-chip">
+        <span class="pro-shift-line" id="pro-shift-line">—</span>
+        <span class="pro-shift-name" id="pro-shift-name">—</span>
+        <button class="pro-shift-end" onclick="logoutPro()" title="Fin de poste">⏻</button>
+      </div>
       <div class="portal-clock" id="pro-clock">--:--:--</div>
       <button class="dark-toggle" onclick="toggleDark()" id="pro-dark-btn" title="Mode sombre">🌙</button>
     </div>
   </div>
 </header>
 
-<main class="pro-main">
+<!-- IDENTIFICATION PROFESSIONNEL -->
+<section class="pro-login-section" id="pro-login-section">
+  <div class="pro-login-card">
+    <div class="pro-login-icon">🎛️</div>
+    <h2>Prise de poste — Régulation</h2>
+    <p>Identifiez-vous et sélectionnez la ligne dont vous assurez le suivi durant tout votre poste.</p>
+    <form class="pro-login-form" onsubmit="loginPro(event)">
+      <div class="form-group">
+        <label>Votre nom</label>
+        <input type="text" id="p-nom" placeholder="Prénom NOM" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>Fonction</label>
+        <select id="p-role">
+          <option value="Régulateur réseau">Régulateur réseau</option>
+          <option value="Chef d'exploitation">Chef d'exploitation</option>
+          <option value="Responsable maintenance">Responsable maintenance</option>
+          <option value="Agent de contrôle">Agent de contrôle</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Ligne prise en charge pour ce poste</label>
+        <select id="p-ligne" required>
+          <option value="ALL">🌐 Tout le réseau (supervision globale)</option>
+          <option value="L1">L1 — Mamoudzou / Koungou</option>
+          <option value="L2">L2 — Mamoudzou / Bandraboua</option>
+          <option value="L3">L3 — Mamoudzou / Bouéni</option>
+          <option value="L4">L4 — Mamoudzou / Kani-Kéli</option>
+          <option value="L5">L5 — Mamoudzou / Sada</option>
+          <option value="L6">L6 — Dzaoudzi / Pamandzi</option>
+          <option value="L7">L7 — Koungou / Mtsangamouji</option>
+          <option value="L8">L8 — Mamoudzou / Ouangani</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-portal btn-pro-primary">✓ Démarrer mon poste</button>
+    </form>
+    <div class="demo-box">
+      <div class="demo-box-head">🎭 Compte de démonstration</div>
+      <div class="demo-box-creds">
+        <span><strong>Nom :</strong> Marie DEMO</span>
+        <span><strong>Fonction :</strong> Régulateur réseau</span>
+        <span><strong>Ligne :</strong> L3</span>
+      </div>
+      <button type="button" class="demo-box-btn" onclick="loginProDemo()">→ Se connecter avec le compte démo</button>
+    </div>
+  </div>
+</section>
+
+<main class="pro-main hidden" id="pro-main">
 
   <!-- KPI BAR -->
   <div class="pro-kpi-bar">
@@ -325,6 +378,60 @@ function toggleDark() {
   document.getElementById('pro-dark-btn').textContent = dark ? '🌙' : '☀️';
 }
 
+// ── Prise de poste (identification + ligne prise en charge) ──
+const LIGNE_LABELS = {
+  ALL:'Tout le réseau', L1:'Mamoudzou / Koungou', L2:'Mamoudzou / Bandraboua',
+  L3:'Mamoudzou / Bouéni', L4:'Mamoudzou / Kani-Kéli', L5:'Mamoudzou / Sada',
+  L6:'Dzaoudzi / Pamandzi', L7:'Koungou / Mtsangamouji', L8:'Mamoudzou / Ouangani'
+};
+let proInfo = null;
+
+function loginPro(e) {
+  if (e) e.preventDefault();
+  proInfo = {
+    nom:   document.getElementById('p-nom').value.trim() || 'Régulateur',
+    role:  document.getElementById('p-role').value,
+    ligne: document.getElementById('p-ligne').value
+  };
+  applyPoste();
+  toast(`Bon poste, ${proInfo.nom.split(' ')[0]} ! Ligne suivie : ${proInfo.ligne === 'ALL' ? 'tout le réseau' : proInfo.ligne}.`, 'success');
+}
+
+function loginProDemo() {
+  document.getElementById('p-nom').value = 'Marie DEMO';
+  document.getElementById('p-role').value = 'Régulateur réseau';
+  document.getElementById('p-ligne').value = 'L3';
+  loginPro();
+}
+
+function applyPoste() {
+  document.getElementById('pro-login-section').classList.add('hidden');
+  document.getElementById('pro-main').classList.remove('hidden');
+
+  const chip = document.getElementById('pro-shift-chip');
+  chip.classList.remove('hidden');
+  document.getElementById('pro-shift-line').textContent = proInfo.ligne === 'ALL' ? '🌐 Réseau' : proInfo.ligne;
+  document.getElementById('pro-shift-name').textContent = proInfo.nom;
+
+  // Recharge les vues qui dépendent de la ligne prise en charge
+  renderSignalements();
+  updateKPIs();
+}
+
+function logoutPro() {
+  if (!confirm('Confirmer la fin de poste ? Vous reviendrez à l\'écran d\'identification.')) return;
+  proInfo = null;
+  document.getElementById('pro-main').classList.add('hidden');
+  document.getElementById('pro-shift-chip').classList.add('hidden');
+  document.getElementById('pro-login-section').classList.remove('hidden');
+  toast('Fin de poste enregistrée. Bonne journée !', 'info');
+}
+
+// Un signalement concerne-t-il la ligne prise en charge par le professionnel ?
+function isMaLigne(s) {
+  return !proInfo || proInfo.ligne === 'ALL' || s.ligne === proInfo.ligne;
+}
+
 // ── Données ──
 let taskIdCtr = 0;
 const catIcons = { maintenance:'🔧', controle:'🔍', admin:'📄', formation:'🎓', terrain:'🗺️', securite:'🛡️' };
@@ -497,15 +604,24 @@ function renderSignalements(filter) {
   const el = document.getElementById('signalements-list');
   if (!el) return;
   const merged = allSignalements();
-  const list = sigFilter === 'all' ? merged : merged.filter(s => s.status === sigFilter);
+  let list = sigFilter === 'all' ? merged : merged.filter(s => s.status === sigFilter);
+
+  // Priorité à la ligne prise en charge : ses signalements remontent en tête
+  if (proInfo && proInfo.ligne !== 'ALL') {
+    list = [...list].sort((a, b) => (isMaLigne(b) - isMaLigne(a)));
+  }
+
   const typeLabels = { retard:'⏱ Retard', route:'🚧 Route bloquée', panne:'🔧 Panne', passager:'👤 Incident passager', accident:'🚨 Accident', porte:'🚪 Porte', climatisation:'❄️ Clim', autre:'📝 Autre' };
   const renfortBadge = { oui:'🚌 Bus de remplacement demandé', urgence:'🚨 Secours demandés' };
-  el.innerHTML = list.map(s => `
-    <div class="sig-card ${s.status==='resolved'?'sig-resolved':''}">
+  el.innerHTML = list.map(s => {
+    const maLigne = proInfo && proInfo.ligne !== 'ALL' && s.ligne === proInfo.ligne;
+    return `
+    <div class="sig-card ${s.status==='resolved'?'sig-resolved':''} ${maLigne?'sig-ma-ligne':''}">
       <div class="sig-card-header">
         <span class="sig-id">${s.id}</span>
         <span class="sig-type">${typeLabels[s.type]||s.type}</span>
         <span class="urg-pill urg-${s.urgence}">${s.urgence==='high'?'🔴 Urgent':s.urgence==='medium'?'🟡 Moyen':'🟢 Faible'}</span>
+        ${maLigne ? '<span class="sig-ma-ligne-tag">⭐ Ma ligne</span>' : ''}
         <span class="sig-time">${s.date ? s.date + ' ' : ''}${s.time}</span>
         <span class="sig-status-badge ${s.status==='resolved'?'resolved':'open'}">${s.status==='resolved'?'✅ Traité':'🔴 Non traité'}</span>
       </div>
@@ -518,7 +634,8 @@ function renderSignalements(filter) {
         <button class="btn-portal btn-sm btn-pro-primary" onclick="resolveSignalement('${s.id}')">✓ Marquer traité</button>
         <button class="btn-portal btn-sm btn-outline" onclick="createTaskFromSig('${s.id}')">📋 Créer une tâche</button>
       </div>` : ''}
-    </div>`).join('') || `<div style="text-align:center;padding:32px;color:var(--gray-400)">Aucun signalement.</div>`;
+    </div>`;
+  }).join('') || `<div style="text-align:center;padding:32px;color:var(--gray-400)">Aucun signalement.</div>`;
 }
 
 function filterSignalements(v) { renderSignalements(v); }
@@ -822,19 +939,23 @@ function notifySignalement(s) {
     low:    { emoji:'ℹ️', label:'Info',          toastType:'info'    }
   }[s.urgence] || { emoji:'📡', label:'Signalement', toastType:'info' };
 
-  // Toast dans la page, coloré selon l'urgence
-  toast(`${cfg.emoji} ${cfg.label} — ${s.id} · ${s.chauffeur} (${s.ligne}) : ${s.lieu}`, cfg.toastType);
+  const maLigne = proInfo && proInfo.ligne !== 'ALL' && s.ligne === proInfo.ligne;
+  const prefix  = maLigne ? '⭐ MA LIGNE · ' : '';
 
-  // Bip sonore uniquement pour les urgences élevées
-  if (s.urgence === 'high') urgentBeep();
+  // Toast dans la page, coloré selon l'urgence
+  toast(`${prefix}${cfg.emoji} ${cfg.label} — ${s.id} · ${s.chauffeur} (${s.ligne}) : ${s.lieu}`, maLigne && s.urgence !== 'high' ? 'warning' : cfg.toastType);
+
+  // Bip sonore pour toute urgence élevée, ou pour tout signalement de ma ligne
+  if (s.urgence === 'high' || maLigne) urgentBeep();
 
   // Notification système (même si l'onglet est en arrière-plan)
   if ('Notification' in window && Notification.permission === 'granted') {
-    const n = new Notification(`${cfg.emoji} ${cfg.label} — Signalement ${s.id}`, {
+    const n = new Notification(`${prefix}${cfg.emoji} ${cfg.label} — Signalement ${s.id}`, {
       body: `${s.chauffeur} · Ligne ${s.ligne} · ${s.bus}\n📍 ${s.lieu}\n${s.desc.slice(0, 120)}${s.renfort && s.renfort !== 'non' ? '\n🚌 Renfort demandé !' : ''}`,
       icon: 'icon-192.png',
       tag: s.id,
-      requireInteraction: s.urgence === 'high' // l'alerte urgente reste affichée jusqu'au clic
+      // Reste affichée jusqu'au clic si c'est urgent OU si ça concerne ma ligne
+      requireInteraction: s.urgence === 'high' || maLigne
     });
     n.onclick = () => {
       window.focus();

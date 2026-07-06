@@ -1166,3 +1166,62 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
   -webkit-tap-highlight-color: transparent;
 }
 .demo-box-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+/* ══════════════════════════════════════════════════════
+   PRISE DE POSTE PROFESSIONNEL (login + ligne)
+══════════════════════════════════════════════════════ */
+.pro-login-section { display: flex; justify-content: center; padding: 48px 16px 60px; }
+.pro-login-card {
+  background: #fff; border-radius: 22px; padding: 36px 30px;
+  max-width: 440px; width: 100%; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.14);
+}
+[data-theme="dark"] .pro-login-card { background: #0f2547; }
+.pro-login-icon { font-size: 46px; margin-bottom: 10px; }
+.pro-login-card h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.pro-login-card p  { font-size: 13.5px; color: var(--gray-400, #64748b); line-height: 1.6; margin-bottom: 22px; }
+.pro-login-form { text-align: left; display: flex; flex-direction: column; gap: 14px; }
+.pro-login-form .btn-portal { width: 100%; margin-top: 6px; }
+
+/* Chip de poste dans l'en-tête */
+.pro-shift-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+  border-radius: 100px; padding: 5px 6px 5px 12px; color: #fff;
+}
+.pro-shift-line {
+  background: #f59e0b; color: #061a35; font-weight: 800; font-size: 12px;
+  padding: 3px 10px; border-radius: 100px; white-space: nowrap;
+}
+.pro-shift-name { font-size: 12.5px; font-weight: 600; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pro-shift-end {
+  background: rgba(255,255,255,.18); border: none; color: #fff;
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+  font-size: 13px; display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.pro-shift-end:hover { background: rgba(239,68,68,.85); }
+
+/* Signalement de la ligne prise en charge */
+.sig-ma-ligne {
+  border-left: 4px solid #f59e0b;
+  box-shadow: 0 4px 18px rgba(245,158,11,.18);
+}
+.sig-ma-ligne-tag {
+  background: rgba(245,158,11,.16); color: #d97706;
+  font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 100px;
+}
+
+@media (max-width: 560px) {
+  .pro-shift-name { display: none; }
+  .pro-login-card { padding: 28px 20px; }
+}
+
+/* Masquage fiable des sections de portail (override des display:flex/grid) */
+.pro-login-section.hidden,
+.pro-main.hidden,
+.pro-shift-chip.hidden,
+.driver-id-section.hidden,
+.cand-section.hidden,
+.cand-form.hidden,
+.cand-success.hidden { display: none !important; }
