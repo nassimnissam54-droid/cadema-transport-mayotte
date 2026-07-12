@@ -1302,3 +1302,25 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
   background: rgba(30,64,175,.06);
   border-left: 4px solid #1e40af;
 }
+
+/* ── Suggestions de tâches par métier ── */
+.task-suggestions { margin: -6px 0 14px; }
+.task-sug-head {
+  font-size: 11.5px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--gray-500, #64748b); margin-bottom: 8px;
+}
+.task-sug-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.task-sug-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; border-radius: 100px; cursor: pointer;
+  background: rgba(5,150,105,.06); color: #047857;
+  border: 1.5px solid rgba(5,150,105,.25);
+  font-size: 12px; font-weight: 600; text-align: left;
+  transition: all .15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.task-sug-chip:hover {
+  background: rgba(5,150,105,.14); border-color: #059669;
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .task-sug-chip { background: rgba(52,211,153,.1); color: #6ee7b7; border-color: rgba(52,211,153,.3); }

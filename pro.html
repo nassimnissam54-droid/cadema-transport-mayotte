@@ -270,6 +270,10 @@
         <label>Intitulé de la tâche</label>
         <input type="text" id="t-titre" placeholder="ex: Vérification freins bus n°14" required>
       </div>
+      <div class="task-suggestions" id="task-suggestions">
+        <div class="task-sug-head" id="task-sug-head">💡 Suggestions</div>
+        <div class="task-sug-list" id="task-sug-list"></div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label>Catégorie</label>
@@ -294,7 +298,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>Assigné à</label>
-          <select id="t-agent">
+          <select id="t-agent" onchange="updateTaskSuggestions()">
             <option value="Non assigné">— Non assigné —</option>
             <option value="Marie Abdallah">Marie Abdallah</option>
             <option value="Omar Soilihi">Omar Soilihi</option>
@@ -719,6 +723,81 @@ function createTaskFromSig(id) {
 }
 
 // ── Modal tâche ──
+// ── Suggestions de tâches selon le métier de l'agent ──
+const TASK_SUGGESTIONS = {
+  'Responsable maintenance': [
+    { t:'Vérification freins et pneumatiques',        cat:'maintenance', prio:'high'   },
+    { t:'Planifier la révision moteur trimestrielle', cat:'maintenance', prio:'medium' },
+    { t:'Contrôle climatisation de la flotte',        cat:'maintenance', prio:'medium' },
+    { t:'Valider le devis pièces détachées',          cat:'admin',       prio:'low'    },
+    { t:'Audit sécurité de l\'atelier',               cat:'securite',    prio:'medium' }
+  ],
+  'Agent technique': [
+    { t:'Réparation panne signalée (voir SIG en cours)', cat:'maintenance', prio:'high'  },
+    { t:'Remplacement ampoules et feux défectueux',      cat:'maintenance', prio:'medium'},
+    { t:'Diagnostic électronique embarquée',             cat:'maintenance', prio:'medium'},
+    { t:'Test des rampes PMR',                           cat:'maintenance', prio:'medium'},
+    { t:'Vérification niveaux et vidange',               cat:'maintenance', prio:'low'   }
+  ],
+  'Contrôleur réseau': [
+    { t:'Contrôle des titres de transport — ligne à définir', cat:'controle', prio:'medium' },
+    { t:'Vérification ponctualité aux arrêts clés',           cat:'controle', prio:'medium' },
+    { t:'Audit accessibilité PMR des arrêts',                 cat:'controle', prio:'medium' },
+    { t:'Comptage montées/descentes heure de pointe',         cat:'controle', prio:'low'    },
+    { t:'Rapport fraude hebdomadaire',                        cat:'admin',    prio:'low'    }
+  ],
+  'Chauffeur / Agent terrain': [
+    { t:'Reconnaissance itinéraire de déviation',   cat:'terrain', prio:'high'   },
+    { t:'Vérification état des arrêts du secteur',  cat:'terrain', prio:'medium' },
+    { t:'Remontée état de la chaussée après pluies',cat:'terrain', prio:'medium' },
+    { t:'Affichage des nouveaux horaires en bus',   cat:'terrain', prio:'low'    },
+    { t:'Formation éco-conduite',                   cat:'formation', prio:'low'  }
+  ],
+  'Agente d\'entretien': [
+    { t:'Nettoyage et désinfection complète d\'un bus', cat:'maintenance', prio:'medium' },
+    { t:'Entretien des abribus du secteur',             cat:'terrain',     prio:'medium' },
+    { t:'Réapprovisionnement produits d\'hygiène',      cat:'admin',       prio:'low'    },
+    { t:'Nettoyage approfondi sièges et barres',        cat:'maintenance', prio:'low'    },
+    { t:'Signalement dégradations constatées',          cat:'terrain',     prio:'medium' }
+  ]
+};
+// Propositions génériques quand aucun agent n'est choisi
+TASK_SUGGESTIONS['*'] = [
+  { t:'Réunion de coordination hebdomadaire', cat:'admin',     prio:'low'    },
+  { t:'Mise à jour du plan de service',       cat:'admin',     prio:'medium' },
+  { t:'Exercice d\'évacuation sécurité',      cat:'securite',  prio:'medium' }
+];
+
+function updateTaskSuggestions() {
+  const agentNom = document.getElementById('t-agent').value;
+  const agent = agents.find(a => a.nom === agentNom);
+  const role = agent ? agent.role : null;
+  const sugs = (role && TASK_SUGGESTIONS[role]) || TASK_SUGGESTIONS['*'];
+
+  document.getElementById('task-sug-head').textContent = role
+    ? `💡 Suggestions pour ${agent.nom.split(' ')[0]} (${role})`
+    : '💡 Suggestions générales';
+
+  const prioDot = { high:'🔴', medium:'🟡', low:'🟢' };
+  document.getElementById('task-sug-list').innerHTML = sugs.map((s, i) => `
+    <button type="button" class="task-sug-chip" onclick="applySuggestion(${i})">
+      ${catIcons[s.cat] || '📋'} ${s.t} <span>${prioDot[s.prio]}</span>
+    </button>`).join('');
+
+  // Mémorise la liste courante pour applySuggestion
+  currentSuggestions = sugs;
+}
+let currentSuggestions = [];
+
+function applySuggestion(i) {
+  const s = currentSuggestions[i];
+  if (!s) return;
+  document.getElementById('t-titre').value    = s.t;
+  document.getElementById('t-categorie').value = s.cat;
+  document.getElementById('t-priorite').value  = s.prio;
+  document.getElementById('t-titre').focus();
+}
+
 function openTaskModal(defaultStatus='todo', defaultAgent='') {
   document.getElementById('t-status').value    = defaultStatus;
   document.getElementById('t-edit-id').value   = '';
@@ -727,6 +806,7 @@ function openTaskModal(defaultStatus='todo', defaultAgent='') {
   document.querySelector('#task-modal form').reset();
   document.getElementById('t-status').value  = defaultStatus;
   if (defaultAgent) document.getElementById('t-agent').value = defaultAgent;
+  updateTaskSuggestions();
   document.getElementById('task-modal').classList.add('open');
 }
 
@@ -743,6 +823,7 @@ function editTask(id) {
   document.getElementById('t-echeance').value   = t.echeance || '';
   document.getElementById('t-desc').value       = t.desc || '';
   document.getElementById('t-status').value     = t.status;
+  updateTaskSuggestions();
   document.getElementById('task-modal').classList.add('open');
 }
 
