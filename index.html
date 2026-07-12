@@ -765,6 +765,68 @@
 ══════════════════════════════════════ -->
 <div id="section-compte" class="page">
   <div class="inner-page">
+
+    <!-- ── AUTHENTIFICATION (affiché si non connecté) ── -->
+    <div class="compte-auth" id="compte-auth">
+      <div class="auth-card">
+        <div class="auth-icon">👤</div>
+        <h2>Mon Compte CADEMA</h2>
+        <p class="auth-sub">Connectez-vous ou créez votre compte pour retrouver vos titres, lieux favoris, trajets et historique.</p>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="auth-tab-login" onclick="switchAuthTab('login')">Se connecter</button>
+          <button class="auth-tab" id="auth-tab-signup" onclick="switchAuthTab('signup')">Créer un compte</button>
+        </div>
+
+        <!-- Connexion -->
+        <form class="auth-form" id="auth-form-login" onsubmit="loginUserAccount(event)">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="vous@email.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label>Mot de passe</label>
+            <input type="password" id="login-pass" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary auth-submit">→ Se connecter</button>
+        </form>
+
+        <!-- Création de compte -->
+        <form class="auth-form hidden" id="auth-form-signup" onsubmit="signupUser(event)">
+          <div class="form-group">
+            <label>Nom complet</label>
+            <input type="text" id="signup-nom" placeholder="Prénom NOM" required autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="signup-email" placeholder="vous@email.com" required autocomplete="email">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Téléphone</label>
+              <input type="tel" id="signup-tel" placeholder="06 39 XX XX XX" autocomplete="tel">
+            </div>
+            <div class="form-group">
+              <label>Mot de passe</label>
+              <input type="password" id="signup-pass" placeholder="6 caractères min." required minlength="6" autocomplete="new-password">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary auth-submit">✓ Créer mon compte</button>
+        </form>
+
+        <div class="demo-box" style="margin-top:20px">
+          <div class="demo-box-head">🎭 Compte de démonstration</div>
+          <div class="demo-box-creds">
+            <span><strong>Email :</strong> demo@cadema.yt</span>
+            <span><strong>Mot de passe :</strong> demo123</span>
+          </div>
+          <button type="button" class="demo-box-btn" onclick="loginDemoUser()">→ Se connecter avec le compte démo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TABLEAU DE BORD (affiché si connecté) ── -->
+    <div id="compte-dashboard" class="hidden">
     <div class="compte-header">
       <div class="compte-avatar" id="compte-avatar">AG</div>
       <div class="compte-identity">
@@ -772,7 +834,10 @@
         <p class="compte-role" id="compte-role">Opérateur · CADEMA Mayotte</p>
         <p class="compte-email" id="compte-email">agent@cadema-mayotte.fr</p>
       </div>
-      <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12)" onclick="openModal('edit-profil-modal')">✏ Modifier le profil</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12)" onclick="openModal('edit-profil-modal')">✏ Modifier le profil</button>
+        <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,.3);background:rgba(239,68,68,.25)" onclick="logoutUser()">⏻ Se déconnecter</button>
+      </div>
     </div>
 
     <div class="compte-grid">
@@ -821,6 +886,7 @@
         </div>
       </section>
     </div>
+    </div><!-- /compte-dashboard -->
   </div>
 </div>
 

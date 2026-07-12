@@ -181,7 +181,115 @@ function defaultCompte() {
     ],
   };
 }
-function saveCompte() { localStorage.setItem('cadema_compte', JSON.stringify(compte)); }
+// ── Authentification Mon Compte ──────────────────
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('cadema_users') || '[]'); }
+  catch { return []; }
+}
+function saveUsers(u) { localStorage.setItem('cadema_users', JSON.stringify(u)); }
+function currentUserEmail() { return localStorage.getItem('cadema_session') || null; }
+
+// Chaque utilisateur a ses propres données (titres, lieux, trajets, historique)
+function userCompteKey(email) { return 'cadema_compte_' + email; }
+
+function emptyCompte(nom, email) {
+  return { nom, email, role:'Voyageur', titres:[], lieux:[], trajets:[], historique:[] };
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('auth-tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('auth-tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('auth-form-login').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('auth-form-signup').classList.toggle('hidden', tab !== 'signup');
+}
+
+function signupUser(e) {
+  e.preventDefault();
+  const nom   = document.getElementById('signup-nom').value.trim();
+  const email = document.getElementById('signup-email').value.trim().toLowerCase();
+  const tel   = document.getElementById('signup-tel').value.trim();
+  const pass  = document.getElementById('signup-pass').value;
+  const users = getUsers();
+  if (users.some(u => u.email === email)) {
+    toast('Un compte existe déjà avec cet email. Connectez-vous.', 'warning');
+    switchAuthTab('login');
+    document.getElementById('login-email').value = email;
+    return;
+  }
+  users.push({ nom, email, tel, pass });
+  saveUsers(users);
+  localStorage.setItem(userCompteKey(email), JSON.stringify(emptyCompte(nom, email)));
+  localStorage.setItem('cadema_session', email);
+  applyAuthState();
+  toast(`Bienvenue ${nom.split(' ')[0]} ! Votre compte est créé. 🎉`, 'success');
+}
+
+function loginUserAccount(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('login-pass').value;
+  const user  = getUsers().find(u => u.email === email);
+  if (!user || user.pass !== pass) {
+    toast('Email ou mot de passe incorrect.', 'error');
+    return;
+  }
+  localStorage.setItem('cadema_session', email);
+  applyAuthState();
+  toast(`Content de vous revoir, ${user.nom.split(' ')[0]} !`, 'success');
+}
+
+function loginDemoUser() {
+  // Crée le compte démo à la première utilisation (avec données d'exemple)
+  const users = getUsers();
+  if (!users.some(u => u.email === 'demo@cadema.yt')) {
+    users.push({ nom:'Ali Démo', email:'demo@cadema.yt', tel:'0639000000', pass:'demo123' });
+    saveUsers(users);
+    const demo = defaultCompte();
+    demo.nom = 'Ali Démo'; demo.email = 'demo@cadema.yt'; demo.role = 'Voyageur';
+    localStorage.setItem(userCompteKey('demo@cadema.yt'), JSON.stringify(demo));
+  }
+  localStorage.setItem('cadema_session', 'demo@cadema.yt');
+  applyAuthState();
+  toast('Connecté avec le compte démo. 🎭', 'success');
+}
+
+function logoutUser() {
+  localStorage.removeItem('cadema_session');
+  applyAuthState();
+  toast('Vous êtes déconnecté(e). À bientôt !', 'info');
+}
+
+function applyAuthState() {
+  const email = currentUserEmail();
+  const auth  = document.getElementById('compte-auth');
+  const dash  = document.getElementById('compte-dashboard');
+  if (!auth || !dash) return;
+
+  if (email && getUsers().some(u => u.email === email)) {
+    // Charge les données de CET utilisateur
+    try { compte = JSON.parse(localStorage.getItem(userCompteKey(email)) || 'null') || emptyCompte(email, email); }
+    catch { compte = emptyCompte(email, email); }
+    titreIdCtr  = Math.max(0, ...compte.titres.map(t=>t.id), 0);
+    lieuIdCtr   = Math.max(0, ...compte.lieux.map(l=>l.id), 0);
+    trajetIdCtr = Math.max(0, ...compte.trajets.map(t=>t.id), 0);
+    auth.classList.add('hidden');
+    dash.classList.remove('hidden');
+    renderProfil(); renderTitres(); renderLieux(); renderTrajets(); renderHistorique();
+  } else {
+    auth.classList.remove('hidden');
+    dash.classList.add('hidden');
+    // Header : état anonyme
+    const hn = document.getElementById('header-name');
+    const ha = document.getElementById('header-avatar');
+    if (hn) hn.textContent = 'Se connecter';
+    if (ha) ha.textContent = '👤';
+  }
+}
+
+function saveCompte() {
+  const email = currentUserEmail();
+  if (email) localStorage.setItem(userCompteKey(email), JSON.stringify(compte));
+}
 let compte = loadCompte();
 let titreIdCtr  = Math.max(0, ...compte.titres.map(t=>t.id));
 let lieuIdCtr   = Math.max(0, ...compte.lieux.map(l=>l.id));
@@ -1721,11 +1829,7 @@ function filterHistorique(val) { renderHistorique(val); }
   updateHeroKPIs();
   renderLinesTable();
   renderIncidentTimeline();
-  renderProfil();
-  renderTitres();
-  renderLieux();
-  renderTrajets();
-  renderHistorique();
+  applyAuthState(); // affiche connexion/inscription ou le tableau de bord selon la session
 
   // Observe hero for counter animation
   const heroEl = document.querySelector('.hero-kpis');
