@@ -1330,8 +1330,12 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
 ══════════════════════════════════════════════════════ */
 .agent-header { background: linear-gradient(135deg, #5b21b6 0%, #6d28d9 100%); }
 
-.portal-badge-agent { background: rgba(124,58,237,.9) !important; }
-.portal-agent .portal-icon { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+.portal-agent {
+  background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%);
+  box-shadow: 0 4px 20px rgba(124,58,237,.3);
+}
+.portal-agent:hover { box-shadow: 0 8px 30px rgba(124,58,237,.45); }
+.portal-badge-agent { background: rgba(255,255,255,.2); }
 
 .agent-demo-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
