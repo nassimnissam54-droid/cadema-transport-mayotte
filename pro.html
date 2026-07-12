@@ -206,6 +206,10 @@
       </select>
       <button class="btn-portal btn-pro-primary" onclick="openAdhesionModal()">+ Demande d'adhésion chauffeur</button>
     </div>
+    <h3 class="section-label" style="margin-top:26px">📝 Inscriptions Espace Agents <span class="cand-badge" id="insc-count-badge" style="background:#7c3aed">0</span></h3>
+    <div class="candidatures-list" id="inscriptions-list"></div>
+
+    <h3 class="section-label" style="margin-top:26px">🚌 Candidatures chauffeurs</h3>
     <div class="candidatures-list" id="candidatures-list"></div>
   </div>
 
@@ -218,7 +222,7 @@
           <div class="form-row">
             <div class="form-group">
               <label>Destinataires</label>
-              <select id="m-ligne">
+              <select id="m-ligne" onchange="setActiveConv(this.value)">
                 <option value="ALL">🌐 Tous les chauffeurs</option>
                 <option value="TEAM">👥 Équipe agents (technique, contrôle, entretien…)</option>
                 <option value="L1">Ligne L1</option>
@@ -248,7 +252,9 @@
         </form>
       </div>
       <div class="comm-thread-card">
-        <h3 class="section-label">💬 Fil des échanges</h3>
+        <h3 class="section-label">💬 Conversations</h3>
+        <div class="conv-list" id="conv-list"></div>
+        <div class="conv-thread-head" id="conv-thread-head">Sélectionnez une conversation</div>
         <div class="comm-thread" id="comm-thread"></div>
       </div>
     </div>
@@ -469,7 +475,8 @@ function applyPoste() {
 
   // Pré-cible la ligne du poste dans le formulaire de communication
   const mLigne = document.getElementById('m-ligne');
-  if (mLigne && proInfo.ligne !== 'ALL') mLigne.value = proInfo.ligne;
+  if (mLigne && proInfo.ligne !== 'ALL') { mLigne.value = proInfo.ligne; activeConv = proInfo.ligne; }
+  renderConvList();
   renderCommThread();
   updateCommBadge();
 }
@@ -544,8 +551,8 @@ function switchTab(id, btn) {
   if (id === 'liste')         renderTasksList();
   if (id === 'agents')        renderAgents();
   if (id === 'signalements')  renderSignalements();
-  if (id === 'candidatures')  { renderCandidatures(); updateCandBadge(); }
-  if (id === 'comm')          { renderCommThread(); markCommRead(); }
+  if (id === 'candidatures')  { renderCandidatures(); updateCandBadge(); renderAgentInscriptions(); }
+  if (id === 'comm')          { renderConvList(); renderCommThread(); markCommRead(); }
 }
 
 // ── KPIs ──
@@ -977,6 +984,61 @@ function setCandStatut(ref, statut) {
   toast(msg[statut] || 'Statut mis à jour.', statut === 'refusee' ? 'warning' : 'success');
 }
 
+// ── Inscriptions Espace Agents ──
+function getAgentInscriptions() {
+  try { return JSON.parse(localStorage.getItem('cadema_agent_inscriptions') || '[]'); }
+  catch { return []; }
+}
+
+function renderAgentInscriptions() {
+  const el = document.getElementById('inscriptions-list');
+  if (!el) return;
+  const inscriptions = getAgentInscriptions();
+
+  const badge = document.getElementById('insc-count-badge');
+  const nouvelles = inscriptions.filter(i => i.statut === 'nouvelle').length;
+  badge.textContent = nouvelles;
+  badge.style.display = nouvelles ? 'inline-flex' : 'none';
+
+  if (!inscriptions.length) {
+    el.innerHTML = '<div class="no-reports">Aucune inscription agent pour l\'instant.<br><small>Les inscriptions faites depuis l\'Espace Agents apparaissent ici.</small></div>';
+    return;
+  }
+  const statutPill = {
+    nouvelle: '<span class="urgence-pill" style="background:#ede9fe;color:#6d28d9">🟣 Nouvelle</span>',
+    validee:  '<span class="urgence-pill urg-low">✅ Validée</span>',
+    refusee:  '<span class="urgence-pill urg-high">❌ Refusée</span>'
+  };
+  el.innerHTML = inscriptions.map(i => `
+    <div class="report-card">
+      <div class="report-card-header">
+        <span class="report-id">${i.ref}</span>
+        <strong>${i.nom}</strong>
+        ${statutPill[i.statut] || ''}
+        <span class="report-time">${i.date}</span>
+      </div>
+      <div class="report-lieu">🧰 ${i.role} · 📞 ${i.tel} · ✉️ ${i.email}</div>
+      ${i.exp ? `<div class="report-desc">💼 ${i.exp}</div>` : ''}
+      <div class="report-actions" style="margin-top:10px">
+        ${i.statut === 'nouvelle' ? `
+          <button class="btn-portal btn-sm btn-outline" style="color:#059669;border-color:#059669" onclick="setInscStatut('${i.ref}','validee')">✅ Valider le compte</button>
+          <button class="btn-portal btn-sm btn-outline" style="color:#b91c1c;border-color:#b91c1c" onclick="setInscStatut('${i.ref}','refusee')">❌ Refuser</button>
+        ` : `<button class="btn-portal btn-sm btn-outline" onclick="setInscStatut('${i.ref}','nouvelle')">↩︎ Rouvrir</button>`}
+      </div>
+    </div>`).join('');
+}
+
+function setInscStatut(ref, statut) {
+  const inscriptions = getAgentInscriptions();
+  const i = inscriptions.find(x => x.ref === ref);
+  if (!i) return;
+  i.statut = statut;
+  localStorage.setItem('cadema_agent_inscriptions', JSON.stringify(inscriptions));
+  renderAgentInscriptions();
+  const msg = { validee: `Compte agent ${ref} validé — ${i.nom} peut se connecter. 🎉`, refusee: `Inscription ${ref} refusée.`, nouvelle: `Dossier ${ref} rouvert.` };
+  toast(msg[statut], statut === 'refusee' ? 'warning' : 'success');
+}
+
 // ── Demande d'adhésion (depuis le portail pro) ──
 function openAdhesionModal()  { document.getElementById('adhesion-modal').classList.add('open'); }
 function closeAdhesionModal() { document.getElementById('adhesion-modal').classList.remove('open'); }
@@ -1042,15 +1104,43 @@ function getMessages() {
 function saveMessages(m) { localStorage.setItem('cadema_messages', JSON.stringify(m)); }
 
 let commReadCount = getMessages().length; // messages déjà vus
+let activeConv = 'ALL'; // conversation (destinataire) actuellement affichée
+
+// Libellé d'une conversation
+const CONV_LABELS = {
+  ALL:  '🌐 Tous les chauffeurs',
+  TEAM: '👥 Équipe agents'
+};
+function convLabel(conv) { return CONV_LABELS[conv] || ('🚌 Ligne ' + conv); }
+
+// Toutes les conversations existantes (destinataires ayant au moins un message) + ALL/TEAM par défaut
+function listConversations() {
+  const set = new Set(['ALL', 'TEAM']);
+  getMessages().forEach(m => { if (m.ligne) set.add(m.ligne); });
+  // Ordre : ALL, TEAM, puis lignes triées
+  const arr = [...set];
+  const rank = c => (c === 'ALL' ? 0 : c === 'TEAM' ? 1 : 2);
+  return arr.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+}
+
+function setActiveConv(conv) {
+  activeConv = conv;
+  // Synchronise le sélecteur de destinataire
+  const sel = document.getElementById('m-ligne');
+  if (sel && sel.value !== conv) sel.value = conv;
+  renderConvList();
+  renderCommThread();
+}
 
 function sendProMessage(e) {
   e.preventDefault();
+  const dest = document.getElementById('m-ligne').value;
   const msgs = getMessages();
   msgs.unshift({
     id: 'MSG-' + Date.now(),
     from: 'pro',
     auteur: proInfo ? `${proInfo.nom} · ${proInfo.role}` : 'Régulation',
-    ligne: document.getElementById('m-ligne').value,
+    ligne: dest,
     type: document.getElementById('m-type').value,
     text: document.getElementById('m-text').value.trim(),
     time: new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }),
@@ -1058,31 +1148,56 @@ function sendProMessage(e) {
   });
   saveMessages(msgs);
   commReadCount = msgs.length;
+  const type = document.getElementById('m-type').value;
   e.target.reset();
-  // Re-cible la ligne du poste par défaut
-  if (proInfo && proInfo.ligne !== 'ALL') document.getElementById('m-ligne').value = proInfo.ligne;
+  document.getElementById('m-ligne').value = dest; // conserve le destinataire choisi
+  document.getElementById('m-type').value = type;
+  activeConv = dest; // reste sur la conversation où l'on vient d'écrire
+  renderConvList();
   renderCommThread();
-  toast('📡 Message transmis aux chauffeurs.', 'success');
+  toast(`📡 Message envoyé — ${convLabel(dest)}.`, 'success');
+}
+
+// Liste des conversations (une bulle/onglet par destinataire)
+function renderConvList() {
+  const el = document.getElementById('conv-list');
+  if (!el) return;
+  const msgs = getMessages();
+  el.innerHTML = listConversations().map(conv => {
+    const convMsgs = msgs.filter(m => m.ligne === conv);
+    const last = convMsgs[0];
+    const preview = last ? (last.text.length > 26 ? last.text.slice(0, 24) + '…' : last.text) : 'Aucun message';
+    return `
+      <button class="conv-item ${conv === activeConv ? 'active' : ''}" onclick="setActiveConv('${conv}')">
+        <span class="conv-item-name">${convLabel(conv)}</span>
+        <span class="conv-item-count">${convMsgs.length}</span>
+        <span class="conv-item-preview">${preview}</span>
+      </button>`;
+  }).join('');
 }
 
 function renderCommThread() {
   const el = document.getElementById('comm-thread');
+  const head = document.getElementById('conv-thread-head');
   if (!el) return;
-  const msgs = getMessages();
+  if (head) head.textContent = '💬 ' + convLabel(activeConv);
+
+  const msgs = getMessages().filter(m => m.ligne === activeConv);
   if (!msgs.length) {
-    el.innerHTML = '<div class="no-reports">Aucun échange pour l\'instant.<br><small>Les réponses des chauffeurs apparaîtront ici.</small></div>';
+    el.innerHTML = `<div class="no-reports">Aucun message dans cette conversation.<br><small>Écrivez à ${convLabel(activeConv)} pour démarrer l'échange.</small></div>`;
     return;
   }
   const typeIcon = { info:'ℹ️', warning:'⚠️', ok:'✅' };
-  el.innerHTML = msgs.map(m => `
+  // Ordre chronologique (ancien → récent) dans le fil
+  el.innerHTML = [...msgs].reverse().map(m => `
     <div class="comm-msg ${m.from === 'pro' ? 'comm-out' : 'comm-in'} comm-${m.type || 'info'}">
       <div class="comm-msg-head">
         <span>${m.from === 'pro' ? '🎛️ ' + m.auteur : (m.from === 'agent' ? '🛠️ ' + m.auteur : '🚌 ' + m.auteur)}</span>
-        <span class="comm-msg-target">${m.ligne === 'ALL' ? '🌐 Tous' : m.ligne === 'TEAM' ? '👥 Équipe' : '→ ' + m.ligne}</span>
       </div>
       <div class="comm-msg-text">${typeIcon[m.type] || ''} ${m.text}</div>
       <div class="comm-msg-time">${m.date} · ${m.time}</div>
     </div>`).join('');
+  el.scrollTop = el.scrollHeight;
 }
 
 function updateCommBadge() {
@@ -1102,6 +1217,7 @@ renderAgents();
 renderSignalements();
 renderCandidatures();
 updateCandBadge();
+renderAgentInscriptions();
 
 // ── Notifications selon le degré d'urgence ──
 let knownSigIds = new Set(getLiveSignalements().map(s => s.id));
@@ -1194,7 +1310,12 @@ window.addEventListener('storage', (e) => {
     updateCandBadge();
     toast('🧑‍✈️ Nouvelle candidature chauffeur reçue.', 'info');
   }
+  if (e.key === 'cadema_agent_inscriptions') {
+    renderAgentInscriptions();
+    toast('📝 Nouvelle inscription Espace Agents reçue.', 'info');
+  }
   if (e.key === 'cadema_messages') {
+    renderConvList();
     renderCommThread();
     updateCommBadge();
     const msgs = getMessages();
