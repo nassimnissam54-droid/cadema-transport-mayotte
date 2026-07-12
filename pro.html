@@ -220,6 +220,7 @@
               <label>Destinataires</label>
               <select id="m-ligne">
                 <option value="ALL">🌐 Tous les chauffeurs</option>
+                <option value="TEAM">👥 Équipe agents (technique, contrôle, entretien…)</option>
                 <option value="L1">Ligne L1</option>
                 <option value="L2">Ligne L2</option>
                 <option value="L3">Ligne L3</option>
@@ -502,6 +503,22 @@ let tasks = [
   { id:++taskIdCtr, titre:'Mise à jour affichages en bus',        categorie:'terrain',    priorite:'low',    agent:'Fatouma Nassuf',  echeance:'2026-07-15', desc:'Nouveaux horaires estivaux à afficher.', status:'done' },
 ];
 
+// Synchronisation des tâches avec l'Espace Agents (stockage partagé)
+(function loadSharedTasks() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('cadema_tasks') || 'null');
+    if (Array.isArray(saved) && saved.length) {
+      tasks = saved;
+      taskIdCtr = Math.max(0, ...tasks.map(t => t.id));
+    } else {
+      localStorage.setItem('cadema_tasks', JSON.stringify(tasks));
+    }
+  } catch {}
+})();
+function persistTasks() {
+  localStorage.setItem('cadema_tasks', JSON.stringify(tasks));
+}
+
 const agents = [
   { nom:'Marie Abdallah',  role:'Responsable maintenance', avatar:'MA', actif:true  },
   { nom:'Omar Soilihi',    role:'Agent technique',          avatar:'OS', actif:true  },
@@ -575,13 +592,13 @@ function dragCard(e, id)  { draggedId = id; e.dataTransfer.effectAllowed = 'move
 function dropCard(e, status) {
   if (!draggedId) return;
   const t = tasks.find(t => t.id === draggedId);
-  if (t) { t.status = status; renderKanban(); updateKPIs(); toast(`Tâche déplacée vers "${statusLabel(status)}".`, 'info'); }
+  if (t) { t.status = status; persistTasks(); renderKanban(); updateKPIs(); toast(`Tâche déplacée vers "${statusLabel(status)}".`, 'info'); }
   draggedId = null;
 }
 
 function moveTask(id, status) {
   const t = tasks.find(t => t.id === id);
-  if (t) { t.status = status; renderKanban(); renderTasksList(); updateKPIs(); toast(`Tâche "${t.titre.slice(0,30)}" → ${statusLabel(status)}`, 'success'); }
+  if (t) { t.status = status; persistTasks(); renderKanban(); renderTasksList(); updateKPIs(); toast(`Tâche "${t.titre.slice(0,30)}" → ${statusLabel(status)}`, 'success'); }
 }
 
 function statusLabel(s) { return s==='todo'?'À faire':s==='inprogress'?'En cours':'Terminé'; }
@@ -849,6 +866,7 @@ function saveTask(e) {
     tasks.push({ id:++taskIdCtr, ...data });
     toast('Tâche créée.', 'success');
   }
+  persistTasks();
   closeTaskModal();
   renderKanban();
   renderTasksList();
@@ -859,6 +877,7 @@ function saveTask(e) {
 function deleteTask(id) {
   if (!confirm('Supprimer cette tâche ?')) return;
   tasks = tasks.filter(t=>t.id!==id);
+  persistTasks();
   renderKanban(); renderTasksList(); renderAgents(); updateKPIs();
   toast('Tâche supprimée.', 'info');
 }
@@ -1058,8 +1077,8 @@ function renderCommThread() {
   el.innerHTML = msgs.map(m => `
     <div class="comm-msg ${m.from === 'pro' ? 'comm-out' : 'comm-in'} comm-${m.type || 'info'}">
       <div class="comm-msg-head">
-        <span>${m.from === 'pro' ? '🎛️ ' + m.auteur : '🚌 ' + m.auteur}</span>
-        <span class="comm-msg-target">${m.ligne === 'ALL' ? '🌐 Tous' : '→ ' + m.ligne}</span>
+        <span>${m.from === 'pro' ? '🎛️ ' + m.auteur : (m.from === 'agent' ? '🛠️ ' + m.auteur : '🚌 ' + m.auteur)}</span>
+        <span class="comm-msg-target">${m.ligne === 'ALL' ? '🌐 Tous' : m.ligne === 'TEAM' ? '👥 Équipe' : '→ ' + m.ligne}</span>
       </div>
       <div class="comm-msg-text">${typeIcon[m.type] || ''} ${m.text}</div>
       <div class="comm-msg-time">${m.date} · ${m.time}</div>
@@ -1180,16 +1199,28 @@ window.addEventListener('storage', (e) => {
     updateCommBadge();
     const msgs = getMessages();
     const last = msgs[0];
-    if (last && last.from === 'chauffeur') {
-      toast(`💬 Message de ${last.auteur} : ${last.text.slice(0, 80)}`, 'warning');
+    if (last && last.from !== 'pro') {
+      const who = last.from === 'agent' ? 'agent' : 'chauffeur';
+      toast(`💬 Message ${who} — ${last.auteur} : ${last.text.slice(0, 80)}`, 'warning');
       urgentBeep();
       if ('Notification' in window && Notification.permission === 'granted') {
-        const n = new Notification(`💬 Message chauffeur — ${last.auteur}`, {
+        const n = new Notification(`💬 Message ${who} — ${last.auteur}`, {
           body: last.text.slice(0, 140), icon: 'icon-192.png', tag: last.id
         });
         n.onclick = () => { window.focus(); document.querySelectorAll('.pro-tab')[5].click(); n.close(); };
       }
     }
+  }
+  if (e.key === 'cadema_tasks') {
+    // Un agent a fait avancer une tâche depuis son espace
+    try {
+      const saved = JSON.parse(localStorage.getItem('cadema_tasks') || 'null');
+      if (Array.isArray(saved)) {
+        tasks = saved;
+        renderKanban(); renderTasksList(); renderAgents(); updateKPIs();
+        toast('📋 Tâches mises à jour par un agent.', 'info');
+      }
+    } catch {}
   }
 });
 

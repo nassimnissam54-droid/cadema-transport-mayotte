@@ -1324,3 +1324,31 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
   transform: translateY(-1px);
 }
 [data-theme="dark"] .task-sug-chip { background: rgba(52,211,153,.1); color: #6ee7b7; border-color: rgba(52,211,153,.3); }
+
+/* ══════════════════════════════════════════════════════
+   ESPACE AGENTS
+══════════════════════════════════════════════════════ */
+.agent-header { background: linear-gradient(135deg, #5b21b6 0%, #6d28d9 100%); }
+
+.portal-badge-agent { background: rgba(124,58,237,.9) !important; }
+.portal-agent .portal-icon { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+
+.agent-demo-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px; margin-top: 4px;
+}
+.agent-demo-btn {
+  background: #7c3aed; color: #fff; border: none;
+  padding: 10px 8px; border-radius: 10px;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: background .15s, transform .15s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.agent-demo-btn:hover { background: #6d28d9; transform: translateY(-1px); }
+
+.my-tasks-list { display: flex; flex-direction: column; gap: 12px; }
+
+.label-highlight { color: #7c3aed; font-weight: 800; }
+
+.agent-login-section.hidden { display: none !important; }

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CADEMA — Espace Agents</title>
+  <link rel="stylesheet" href="cadema.css">
+  <link rel="stylesheet" href="portails.css">
+</head>
+<body class="portal-body-wrap">
+
+<!-- HEADER AGENTS -->
+<header class="portal-header agent-header">
+  <div class="portal-header-inner">
+    <a href="index.html" class="portal-back">← Accueil</a>
+    <div class="portal-logo">
+      <svg width="36" height="36" viewBox="0 0 44 44" fill="none">
+        <rect width="44" height="44" rx="10" fill="rgba(255,255,255,0.2)"/>
+        <rect x="10" y="22" width="6" height="10" rx="1.5" fill="#fff"/>
+        <rect x="19" y="18" width="6" height="14" rx="1.5" fill="#fff"/>
+        <rect x="28" y="25" width="6" height="7" rx="1.5" fill="#fff"/>
+        <circle cx="22" cy="9" r="4" fill="#f59e0b"/>
+      </svg>
+      <div>
+        <div class="portal-logo-name">CADEMA</div>
+        <div class="portal-logo-sub">Espace Agents</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="pro-shift-chip hidden" id="agent-shift-chip">
+        <span class="pro-shift-line" id="agent-shift-role">—</span>
+        <span class="pro-shift-name" id="agent-shift-name">—</span>
+        <button class="pro-shift-end" onclick="logoutAgent()" title="Fin de poste">⏻</button>
+      </div>
+      <div class="portal-clock" id="agent-clock">--:--:--</div>
+      <button class="dark-toggle" onclick="toggleDark()" id="ag-dark-btn" title="Mode sombre">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="portal-main">
+
+  <!-- IDENTIFICATION AGENT -->
+  <section class="driver-id-section" id="agent-login-section">
+    <div class="driver-id-card">
+      <div class="driver-id-icon">🛠️</div>
+      <h2>Espace Agents CADEMA</h2>
+      <p>Maintenance, technique, contrôle, terrain, entretien — connectez-vous à votre espace métier.</p>
+      <form class="driver-id-form" onsubmit="loginAgent(event)">
+        <div class="form-group">
+          <label>Votre nom</label>
+          <input type="text" id="ag-nom" placeholder="Prénom NOM" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="label-highlight">🧰 Votre métier</label>
+          <select id="ag-role" required>
+            <option value="Responsable maintenance">🔧 Responsable maintenance</option>
+            <option value="Agent technique">⚙️ Agent technique</option>
+            <option value="Contrôleur réseau">🔍 Contrôleur réseau</option>
+            <option value="Chauffeur / Agent terrain">🗺️ Agent terrain</option>
+            <option value="Agente d'entretien">🧽 Agent d'entretien</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-portal btn-driver-primary"><span>✓</span> Accéder à mon espace</button>
+      </form>
+
+      <!-- Comptes démo : un par métier -->
+      <div class="demo-box">
+        <div class="demo-box-head">🎭 Comptes de démonstration — un par métier</div>
+        <div class="agent-demo-grid">
+          <button type="button" class="agent-demo-btn" onclick="loginAgentDemo('Marie Abdallah','Responsable maintenance')">🔧 Marie · Maintenance</button>
+          <button type="button" class="agent-demo-btn" onclick="loginAgentDemo('Omar Soilihi','Agent technique')">⚙️ Omar · Technique</button>
+          <button type="button" class="agent-demo-btn" onclick="loginAgentDemo('Fatouma Nassuf','Contrôleur réseau')">🔍 Fatouma · Contrôle</button>
+          <button type="button" class="agent-demo-btn" onclick="loginAgentDemo('Said Hamidou','Chauffeur / Agent terrain')">🗺️ Said · Terrain</button>
+          <button type="button" class="agent-demo-btn" onclick="loginAgentDemo('Zoubeida Ali','Agente d\'entretien')">🧽 Zoubeida · Entretien</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD AGENT -->
+  <div id="agent-dashboard" class="driver-dashboard hidden">
+
+    <!-- Profil actif -->
+    <div class="driver-profile-bar">
+      <div class="driver-profile-info">
+        <div class="driver-avatar" id="ag-avatar">AG</div>
+        <div>
+          <strong id="ag-nom-display">—</strong>
+          <span id="ag-role-display">—</span>
+        </div>
+      </div>
+      <div class="driver-shift">
+        <span class="shift-badge">⬤ En poste</span>
+        <button class="btn-portal btn-sm btn-outline" onclick="logoutAgent()">Fin de poste</button>
+      </div>
+    </div>
+
+    <!-- Mes tâches (synchronisées avec le portail pro) -->
+    <section class="report-form-section">
+      <h3 class="section-label">📋 Mes tâches <span class="cand-badge" id="my-task-count" style="background:#7c3aed">0</span></h3>
+      <div id="my-tasks-list" class="my-tasks-list"></div>
+    </section>
+
+    <!-- Missions types de mon métier -->
+    <section class="quick-report-section">
+      <h3 class="section-label" id="role-actions-title">⚡ Missions types</h3>
+      <div class="task-sug-list" id="role-actions"></div>
+      <p class="stop-alert-hint" style="text-align:left;margin-top:8px">Touchez une mission pour la signaler comme réalisée à l'équipe.</p>
+    </section>
+
+    <!-- Communication équipe -->
+    <section class="messages-section">
+      <h3 class="section-label">💬 Communication équipe & régulation</h3>
+      <form class="driver-reply-form" onsubmit="sendAgentMessage(event)">
+        <input type="text" id="am-text" placeholder="Transmettre une info à l'équipe / régulation…" required maxlength="300">
+        <button type="submit" class="btn-portal btn-driver-primary">📤 Envoyer</button>
+      </form>
+      <div class="messages-list" id="agent-messages"></div>
+    </section>
+
+  </div>
+</main>
+
+<!-- Toast -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+'use strict';
+
+// Horloge & thème
+setInterval(() => {
+  const el = document.getElementById('agent-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString('fr-FR');
+}, 1000);
+function toggleDark() {
+  const html = document.documentElement;
+  const dark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('ag-dark-btn').textContent = dark ? '🌙' : '☀️';
+}
+
+let agentInfo = null;
+
+const ROLE_EMOJI = {
+  'Responsable maintenance':'🔧', 'Agent technique':'⚙️', 'Contrôleur réseau':'🔍',
+  'Chauffeur / Agent terrain':'🗺️', "Agente d'entretien":'🧽'
+};
+
+// Missions types par métier (miroir des suggestions du portail pro)
+const ROLE_ACTIONS = {
+  'Responsable maintenance': ['Vérification freins et pneumatiques','Révision moteur','Contrôle climatisation','Validation devis pièces','Audit sécurité atelier'],
+  'Agent technique':         ['Réparation panne signalée','Remplacement feux défectueux','Diagnostic électronique','Test rampes PMR','Vidange et niveaux'],
+  'Contrôleur réseau':       ['Contrôle des titres','Vérification ponctualité','Audit PMR des arrêts','Comptage heure de pointe','Rapport fraude'],
+  'Chauffeur / Agent terrain': ['Reconnaissance déviation','État des arrêts du secteur','État chaussée après pluies','Affichage nouveaux horaires'],
+  "Agente d'entretien":      ['Désinfection complète bus','Entretien abribus','Réapprovisionnement hygiène','Nettoyage sièges et barres']
+};
+
+// ── Connexion ──
+function loginAgent(e) {
+  if (e) e.preventDefault();
+  agentInfo = {
+    nom:  document.getElementById('ag-nom').value.trim(),
+    role: document.getElementById('ag-role').value
+  };
+  document.getElementById('agent-login-section').classList.add('hidden');
+  document.getElementById('agent-dashboard').classList.remove('hidden');
+  document.getElementById('ag-avatar').textContent = agentInfo.nom.slice(0,2).toUpperCase();
+  document.getElementById('ag-nom-display').textContent = agentInfo.nom;
+  document.getElementById('ag-role-display').textContent = `${ROLE_EMOJI[agentInfo.role] || ''} ${agentInfo.role}`;
+  const chip = document.getElementById('agent-shift-chip');
+  chip.classList.remove('hidden');
+  document.getElementById('agent-shift-role').textContent = ROLE_EMOJI[agentInfo.role] || '🛠️';
+  document.getElementById('agent-shift-name').textContent = agentInfo.nom;
+  renderMyTasks();
+  renderRoleActions();
+  renderAgentMessages();
+  toast(`Bon poste, ${agentInfo.nom.split(' ')[0]} ! (${agentInfo.role})`, 'success');
+}
+
+function loginAgentDemo(nom, role) {
+  document.getElementById('ag-nom').value = nom;
+  document.getElementById('ag-role').value = role;
+  loginAgent();
+}
+
+function logoutAgent() {
+  if (!confirm('Confirmer la fin de poste ?')) return;
+  agentInfo = null;
+  document.getElementById('agent-dashboard').classList.add('hidden');
+  document.getElementById('agent-shift-chip').classList.add('hidden');
+  document.getElementById('agent-login-section').classList.remove('hidden');
+  toast('Fin de poste enregistrée. Bonne journée !', 'info');
+}
+
+// ── Mes tâches (synchro portail pro via cadema_tasks) ──
+function getTasks() {
+  try { return JSON.parse(localStorage.getItem('cadema_tasks') || '[]'); }
+  catch { return []; }
+}
+function saveTasks(t) { localStorage.setItem('cadema_tasks', JSON.stringify(t)); }
+
+function renderMyTasks() {
+  const el = document.getElementById('my-tasks-list');
+  if (!el || !agentInfo) return;
+  const mine = getTasks().filter(t => t.agent === agentInfo.nom);
+  const active = mine.filter(t => t.status !== 'done');
+  document.getElementById('my-task-count').textContent = active.length;
+
+  if (!mine.length) {
+    el.innerHTML = '<div class="no-reports">Aucune tâche assignée pour l\'instant.<br><small>Les tâches créées par la régulation sur le portail pro apparaissent ici.</small></div>';
+    return;
+  }
+  const prioDot = { high:'🔴', medium:'🟡', low:'🟢' };
+  const stBadge = {
+    todo:      '<span class="sig-status-badge open">📥 À faire</span>',
+    inprogress:'<span class="sig-status-badge" style="background:#fef3c7;color:#b45309">⚙️ En cours</span>',
+    done:      '<span class="sig-status-badge resolved">✅ Terminé</span>'
+  };
+  el.innerHTML = mine.map(t => `
+    <div class="report-card ${t.status === 'done' ? 'sig-resolved' : ''}">
+      <div class="report-card-header">
+        <strong>${prioDot[t.priorite] || ''} ${t.titre}</strong>
+        ${stBadge[t.status] || ''}
+        ${t.echeance ? `<span class="report-time">📅 ${new Date(t.echeance).toLocaleDateString('fr-FR')}</span>` : ''}
+      </div>
+      ${t.desc ? `<div class="report-desc">${t.desc}</div>` : ''}
+      <div class="report-actions" style="margin-top:10px">
+        ${t.status === 'todo' ? `<button class="btn-portal btn-sm btn-outline" onclick="setMyTaskStatus(${t.id},'inprogress')">▶ Commencer</button>` : ''}
+        ${t.status !== 'done' ? `<button class="btn-portal btn-sm btn-outline" style="color:#059669;border-color:#059669" onclick="setMyTaskStatus(${t.id},'done')">✓ Terminer</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function setMyTaskStatus(id, status) {
+  const all = getTasks();
+  const t = all.find(x => x.id === id);
+  if (!t) return;
+  t.status = status;
+  saveTasks(all);
+  renderMyTasks();
+  // Prévient l'équipe quand une tâche est terminée
+  if (status === 'done') {
+    pushMessage(`✅ Tâche terminée : « ${t.titre} »`, 'ok');
+    toast('Tâche terminée — équipe informée.', 'success');
+  } else {
+    toast('Tâche démarrée.', 'info');
+  }
+}
+
+// ── Missions types ──
+function renderRoleActions() {
+  document.getElementById('role-actions-title').textContent =
+    `⚡ Missions types — ${agentInfo.role}`;
+  const acts = ROLE_ACTIONS[agentInfo.role] || [];
+  document.getElementById('role-actions').innerHTML = acts.map(a => `
+    <button type="button" class="task-sug-chip" onclick="reportMission('${a.replace(/'/g,"\\'")}')">${a}</button>`).join('');
+}
+function reportMission(mission) {
+  pushMessage(`🛠️ Mission réalisée : ${mission}`, 'ok');
+  toast('Mission signalée à l\'équipe.', 'success');
+}
+
+// ── Communication équipe (stockage partagé cadema_messages) ──
+function getMessages() {
+  try { return JSON.parse(localStorage.getItem('cadema_messages') || '[]'); }
+  catch { return []; }
+}
+function pushMessage(text, type) {
+  const msgs = getMessages();
+  msgs.unshift({
+    id: 'MSG-' + Date.now(),
+    from: 'agent',
+    auteur: `${agentInfo.nom} · ${agentInfo.role}`,
+    ligne: 'TEAM',
+    type: type || 'info',
+    text,
+    time: new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }),
+    date: new Date().toLocaleDateString('fr-FR')
+  });
+  localStorage.setItem('cadema_messages', JSON.stringify(msgs));
+  renderAgentMessages();
+}
+
+function sendAgentMessage(e) {
+  e.preventDefault();
+  pushMessage(document.getElementById('am-text').value.trim());
+  e.target.reset();
+  toast('Message transmis à l\'équipe et à la régulation.', 'success');
+}
+
+// Messages visibles par un agent : diffusion générale, équipe, et messages d'agents
+function renderAgentMessages() {
+  const el = document.getElementById('agent-messages');
+  if (!el || !agentInfo) return;
+  const visible = getMessages().filter(m =>
+    m.ligne === 'ALL' || m.ligne === 'TEAM' || m.from === 'agent'
+  );
+  const cls = { info:'msg-info', warning:'msg-warning', ok:'msg-ok' };
+  const ico = { info:'ℹ️', warning:'⚠️', ok:'✅' };
+  const isMe = (m) => m.from === 'agent' && m.auteur.startsWith(agentInfo.nom);
+  el.innerHTML = visible.map(m => `
+    <div class="message-item ${isMe(m) ? 'msg-self' : (cls[m.type] || 'msg-info')}">
+      <div class="msg-icon">${m.from === 'pro' ? '🎛️' : m.from === 'chauffeur' ? '🚌' : isMe(m) ? '🛠️' : '👥'}</div>
+      <div>
+        <div class="msg-text">${m.text}</div>
+        <div class="msg-time">${m.date} à ${m.time} · ${isMe(m) ? 'Moi' : m.auteur}</div>
+      </div>
+    </div>`).join('') || '<div class="no-reports">Aucun message pour l\'instant.</div>';
+}
+
+// ── Temps réel entre onglets ──
+window.addEventListener('storage', (e) => {
+  if (!agentInfo) return;
+  if (e.key === 'cadema_messages') {
+    renderAgentMessages();
+    const last = getMessages()[0];
+    if (last && !last.auteur.startsWith(agentInfo.nom) && (last.ligne === 'ALL' || last.ligne === 'TEAM')) {
+      toast(`💬 ${last.auteur} : ${last.text.slice(0, 90)}`, last.type === 'warning' ? 'warning' : 'info');
+      if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+    }
+  }
+  if (e.key === 'cadema_tasks') {
+    renderMyTasks();
+    toast('📋 Vos tâches ont été mises à jour par la régulation.', 'info');
+  }
+});
+
+// ── Toast ──
+function toast(msg, type='success') {
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', ()=>el.remove()); }, 3500);
+}
+</script>
+</body>
+</html>
