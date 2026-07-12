@@ -109,6 +109,7 @@
     <button class="pro-tab" onclick="switchTab('agents', this)">👥 Agents &amp; Affectations</button>
     <button class="pro-tab" onclick="switchTab('signalements', this)">🚨 Signalements chauffeurs</button>
     <button class="pro-tab" onclick="switchTab('candidatures', this)">🧑‍✈️ Candidatures <span class="cand-badge" id="cand-count-badge">0</span></button>
+    <button class="pro-tab" onclick="switchTab('comm', this)">📡 Communication <span class="cand-badge" id="comm-count-badge" style="background:#059669">0</span></button>
   </div>
 
   <!-- ── KANBAN ── -->
@@ -206,6 +207,50 @@
       <button class="btn-portal btn-pro-primary" onclick="openAdhesionModal()">+ Demande d'adhésion chauffeur</button>
     </div>
     <div class="candidatures-list" id="candidatures-list"></div>
+  </div>
+
+  <!-- ── COMMUNICATION RÉGULATION ↔ CHAUFFEURS ── -->
+  <div id="tab-comm" class="pro-tab-content">
+    <div class="comm-layout">
+      <div class="comm-compose-card">
+        <h3 class="section-label">📤 Transmettre une information aux chauffeurs</h3>
+        <form onsubmit="sendProMessage(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Destinataires</label>
+              <select id="m-ligne">
+                <option value="ALL">🌐 Tous les chauffeurs</option>
+                <option value="L1">Ligne L1</option>
+                <option value="L2">Ligne L2</option>
+                <option value="L3">Ligne L3</option>
+                <option value="L4">Ligne L4</option>
+                <option value="L5">Ligne L5</option>
+                <option value="L6">Ligne L6</option>
+                <option value="L7">Ligne L7</option>
+                <option value="L8">Ligne L8</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Nature du message</label>
+              <select id="m-type">
+                <option value="info">ℹ️ Information</option>
+                <option value="warning">⚠️ Alerte / Consigne</option>
+                <option value="ok">✅ Bonne nouvelle</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="m-text" rows="3" placeholder="ex : Travaux RN1 dès 14h, itinéraire de délestage via M'Tsapéré pour les lignes L1 et L3…" required></textarea>
+          </div>
+          <button type="submit" class="btn-portal btn-pro-primary" style="width:100%">📡 Envoyer aux chauffeurs</button>
+        </form>
+      </div>
+      <div class="comm-thread-card">
+        <h3 class="section-label">💬 Fil des échanges</h3>
+        <div class="comm-thread" id="comm-thread"></div>
+      </div>
+    </div>
   </div>
 
 </main>
@@ -416,6 +461,12 @@ function applyPoste() {
   // Recharge les vues qui dépendent de la ligne prise en charge
   renderSignalements();
   updateKPIs();
+
+  // Pré-cible la ligne du poste dans le formulaire de communication
+  const mLigne = document.getElementById('m-ligne');
+  if (mLigne && proInfo.ligne !== 'ALL') mLigne.value = proInfo.ligne;
+  renderCommThread();
+  updateCommBadge();
 }
 
 function logoutPro() {
@@ -473,6 +524,7 @@ function switchTab(id, btn) {
   if (id === 'agents')        renderAgents();
   if (id === 'signalements')  renderSignalements();
   if (id === 'candidatures')  { renderCandidatures(); updateCandBadge(); }
+  if (id === 'comm')          { renderCommThread(); markCommRead(); }
 }
 
 // ── KPIs ──
@@ -882,6 +934,66 @@ function submitAdhesion(e) {
   toast(`Demande d'adhésion ${ref} enregistrée.`, 'success');
 }
 
+// ── Communication régulation ↔ chauffeurs ──
+function getMessages() {
+  try { return JSON.parse(localStorage.getItem('cadema_messages') || '[]'); }
+  catch { return []; }
+}
+function saveMessages(m) { localStorage.setItem('cadema_messages', JSON.stringify(m)); }
+
+let commReadCount = getMessages().length; // messages déjà vus
+
+function sendProMessage(e) {
+  e.preventDefault();
+  const msgs = getMessages();
+  msgs.unshift({
+    id: 'MSG-' + Date.now(),
+    from: 'pro',
+    auteur: proInfo ? `${proInfo.nom} · ${proInfo.role}` : 'Régulation',
+    ligne: document.getElementById('m-ligne').value,
+    type: document.getElementById('m-type').value,
+    text: document.getElementById('m-text').value.trim(),
+    time: new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }),
+    date: new Date().toLocaleDateString('fr-FR')
+  });
+  saveMessages(msgs);
+  commReadCount = msgs.length;
+  e.target.reset();
+  // Re-cible la ligne du poste par défaut
+  if (proInfo && proInfo.ligne !== 'ALL') document.getElementById('m-ligne').value = proInfo.ligne;
+  renderCommThread();
+  toast('📡 Message transmis aux chauffeurs.', 'success');
+}
+
+function renderCommThread() {
+  const el = document.getElementById('comm-thread');
+  if (!el) return;
+  const msgs = getMessages();
+  if (!msgs.length) {
+    el.innerHTML = '<div class="no-reports">Aucun échange pour l\'instant.<br><small>Les réponses des chauffeurs apparaîtront ici.</small></div>';
+    return;
+  }
+  const typeIcon = { info:'ℹ️', warning:'⚠️', ok:'✅' };
+  el.innerHTML = msgs.map(m => `
+    <div class="comm-msg ${m.from === 'pro' ? 'comm-out' : 'comm-in'} comm-${m.type || 'info'}">
+      <div class="comm-msg-head">
+        <span>${m.from === 'pro' ? '🎛️ ' + m.auteur : '🚌 ' + m.auteur}</span>
+        <span class="comm-msg-target">${m.ligne === 'ALL' ? '🌐 Tous' : '→ ' + m.ligne}</span>
+      </div>
+      <div class="comm-msg-text">${typeIcon[m.type] || ''} ${m.text}</div>
+      <div class="comm-msg-time">${m.date} · ${m.time}</div>
+    </div>`).join('');
+}
+
+function updateCommBadge() {
+  const unread = Math.max(0, getMessages().length - commReadCount);
+  const b = document.getElementById('comm-count-badge');
+  if (!b) return;
+  b.textContent = unread;
+  b.style.display = unread ? 'inline-flex' : 'none';
+}
+function markCommRead() { commReadCount = getMessages().length; updateCommBadge(); }
+
 // ── Init ──
 updateKPIs();
 renderKanban();
@@ -981,6 +1093,22 @@ window.addEventListener('storage', (e) => {
     renderCandidatures();
     updateCandBadge();
     toast('🧑‍✈️ Nouvelle candidature chauffeur reçue.', 'info');
+  }
+  if (e.key === 'cadema_messages') {
+    renderCommThread();
+    updateCommBadge();
+    const msgs = getMessages();
+    const last = msgs[0];
+    if (last && last.from === 'chauffeur') {
+      toast(`💬 Message de ${last.auteur} : ${last.text.slice(0, 80)}`, 'warning');
+      urgentBeep();
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const n = new Notification(`💬 Message chauffeur — ${last.auteur}`, {
+          body: last.text.slice(0, 140), icon: 'icon-192.png', tag: last.id
+        });
+        n.onclick = () => { window.focus(); document.querySelectorAll('.pro-tab')[5].click(); n.close(); };
+      }
+    }
   }
 });
 

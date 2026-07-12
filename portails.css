@@ -1245,3 +1245,60 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
   .driver-line-tag { flex-direction: row; gap: 8px; min-width: 0; width: 100%; justify-content: center; padding: 8px 12px; }
   .driver-line-dest { font-size: 12px; }
 }
+
+/* ══════════════════════════════════════════════════════
+   COMMUNICATION RÉGULATION ↔ CHAUFFEURS
+══════════════════════════════════════════════════════ */
+.comm-layout {
+  display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start;
+}
+@media (max-width: 860px) { .comm-layout { grid-template-columns: 1fr; } }
+
+.comm-compose-card, .comm-thread-card {
+  background: var(--bg, #fff); border-radius: 14px; padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+}
+[data-theme="dark"] .comm-compose-card,
+[data-theme="dark"] .comm-thread-card { background: #1e293b; }
+
+.comm-thread { display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; }
+
+.comm-msg {
+  border-radius: 12px; padding: 12px 14px; max-width: 92%;
+  border: 1px solid var(--border, #e5e7eb);
+}
+.comm-out { align-self: flex-end; background: rgba(5,150,105,.07); border-color: rgba(5,150,105,.25); }
+.comm-in  { align-self: flex-start; background: rgba(37,99,235,.06); border-color: rgba(37,99,235,.22); }
+.comm-warning { border-left: 4px solid #f59e0b; }
+.comm-msg-head {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: .75rem; font-weight: 700; margin-bottom: 5px;
+  color: var(--gray-500, #6b7280);
+}
+.comm-msg-target { color: #d97706; white-space: nowrap; }
+.comm-msg-text { font-size: .88rem; line-height: 1.5; color: var(--text, #111827); }
+[data-theme="dark"] .comm-msg-text { color: #f1f5f9; }
+.comm-msg-time { font-size: .7rem; color: var(--gray-500, #94a3b8); margin-top: 6px; }
+
+/* Réponse chauffeur */
+.driver-reply-form {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+.driver-reply-form input {
+  flex: 1; padding: 12px 15px; border-radius: 11px;
+  border: 1.5px solid var(--border, #e5e7eb);
+  background: var(--bg, #fff); color: var(--text, #111827);
+  font-size: 16px; outline: none;
+}
+[data-theme="dark"] .driver-reply-form input { background: #0f172a; border-color: #334155; color: #f1f5f9; }
+.driver-reply-form input:focus { border-color: #2563eb; }
+.driver-reply-form .btn-portal { white-space: nowrap; }
+@media (max-width: 560px) {
+  .driver-reply-form { flex-direction: column; }
+}
+
+/* Message envoyé par le chauffeur lui-même */
+.message-item.msg-self {
+  background: rgba(30,64,175,.06);
+  border-left: 4px solid #1e40af;
+}

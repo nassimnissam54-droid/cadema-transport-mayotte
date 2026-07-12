@@ -314,6 +314,14 @@
     <!-- Messages de la régulation -->
     <section class="messages-section">
       <h3 class="section-label">📡 Messages de la régulation</h3>
+
+      <!-- Répondre / contacter la régulation -->
+      <form class="driver-reply-form" onsubmit="sendDriverMessage(event)">
+        <input type="text" id="dm-text" placeholder="Écrire à la régulation… (question, info terrain, besoin)" required maxlength="300">
+        <button type="submit" class="btn-portal btn-driver-primary">📤 Envoyer</button>
+      </form>
+
+      <div class="messages-list" id="messages-live"></div>
       <div class="messages-list" id="messages-list">
         <div class="message-item msg-info">
           <div class="msg-icon">ℹ️</div>
@@ -393,6 +401,7 @@ function loginDriver(e) {
   document.getElementById('driver-id-section').classList.add('hidden');
   document.getElementById('driver-dashboard').classList.remove('hidden');
   shiftActive = true;
+  renderDriverMessages();
   toast(`Bonne prise de service sur la ligne ${driverInfo.ligne}, ${driverInfo.nom.split(' ')[0]} !`, 'success');
 }
 
@@ -484,6 +493,63 @@ function renderReports() {
 function resetForm() {
   document.querySelector('.report-form').reset();
 }
+
+// ── Communication avec la régulation ──────────────
+function getMessages() {
+  try { return JSON.parse(localStorage.getItem('cadema_messages') || '[]'); }
+  catch { return []; }
+}
+
+function sendDriverMessage(e) {
+  e.preventDefault();
+  if (!driverInfo.nom) { toast('Identifiez-vous d\'abord.', 'warning'); return; }
+  const msgs = getMessages();
+  msgs.unshift({
+    id: 'MSG-' + Date.now(),
+    from: 'chauffeur',
+    auteur: `${driverInfo.nom} (${driverInfo.badge} · ${driverInfo.ligne})`,
+    ligne: driverInfo.ligne,
+    type: 'info',
+    text: document.getElementById('dm-text').value.trim(),
+    time: new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }),
+    date: new Date().toLocaleDateString('fr-FR')
+  });
+  localStorage.setItem('cadema_messages', JSON.stringify(msgs));
+  e.target.reset();
+  renderDriverMessages();
+  toast('Message transmis à la régulation.', 'success');
+}
+
+// Messages qui concernent ce chauffeur : diffusion générale ou sa ligne, + ses propres envois
+function renderDriverMessages() {
+  const el = document.getElementById('messages-live');
+  if (!el) return;
+  const mine = getMessages().filter(m =>
+    m.from === 'chauffeur' ? m.auteur.includes(driverInfo.badge || '§§')
+                           : (m.ligne === 'ALL' || m.ligne === driverInfo.ligne)
+  );
+  const cls = { info:'msg-info', warning:'msg-warning', ok:'msg-ok' };
+  const ico = { info:'ℹ️', warning:'⚠️', ok:'✅' };
+  el.innerHTML = mine.map(m => `
+    <div class="message-item ${m.from === 'chauffeur' ? 'msg-self' : (cls[m.type] || 'msg-info')}">
+      <div class="msg-icon">${m.from === 'chauffeur' ? '🚌' : (ico[m.type] || 'ℹ️')}</div>
+      <div>
+        <div class="msg-text">${m.text}</div>
+        <div class="msg-time">${m.date} à ${m.time} · ${m.from === 'chauffeur' ? 'Moi' : m.auteur}${m.ligne !== 'ALL' && m.from === 'pro' ? ' · ciblé ' + m.ligne : ''}</div>
+      </div>
+    </div>`).join('');
+}
+
+// Réception en direct pendant le poste (régulation dans un autre onglet)
+window.addEventListener('storage', (e) => {
+  if (e.key !== 'cadema_messages' || !driverInfo.nom) return;
+  renderDriverMessages();
+  const last = getMessages()[0];
+  if (last && last.from === 'pro' && (last.ligne === 'ALL' || last.ligne === driverInfo.ligne)) {
+    toast(`📡 Régulation : ${last.text.slice(0, 90)}`, last.type === 'warning' ? 'warning' : 'info');
+    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+  }
+});
 
 // ── Compte démo ───────────────────────────────────
 function loginDemo() {
