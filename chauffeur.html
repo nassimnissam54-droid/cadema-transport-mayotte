@@ -27,6 +27,10 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
+      <div class="pro-shift-chip hidden" id="driver-shift-chip">
+        <span class="pro-shift-line" id="driver-shift-line">—</span>
+        <span class="pro-shift-name" id="driver-shift-name">—</span>
+      </div>
       <div class="portal-clock" id="driver-clock">--:--:--</div>
       <button class="dark-toggle" onclick="toggleDark()" id="ch-dark-btn" title="Mode sombre">🌙</button>
     </div>
@@ -52,22 +56,22 @@
             <input type="text" id="d-badge" placeholder="ex: CH-042" required>
           </div>
           <div class="form-group">
-            <label>Ligne affectée</label>
-            <select id="d-ligne">
-              <option value="L1">L1 — Mamoudzou / Koungou</option>
-              <option value="L2">L2 — Mamoudzou / Bandraboua</option>
-              <option value="L3">L3 — Mamoudzou / Bouéni</option>
-              <option value="L4">L4 — Mamoudzou / Kani-Kéli</option>
-              <option value="L5">L5 — Mamoudzou / Sada</option>
-              <option value="L6">L6 — Dzaoudzi / Pamandzi</option>
-              <option value="L7">L7 — Koungou / Mtsangamouji</option>
-              <option value="L8">L8 — Mamoudzou / Ouangani</option>
-            </select>
+            <label>N° de véhicule</label>
+            <input type="text" id="d-bus" placeholder="ex: BUS-14" required>
           </div>
         </div>
         <div class="form-group">
-          <label>N° de véhicule</label>
-          <input type="text" id="d-bus" placeholder="ex: BUS-14" required>
+          <label class="label-highlight">🚍 Ligne occupée durant le poste</label>
+          <select id="d-ligne" required>
+            <option value="L1">L1 — Mamoudzou / Koungou</option>
+            <option value="L2">L2 — Mamoudzou / Bandraboua</option>
+            <option value="L3">L3 — Mamoudzou / Bouéni</option>
+            <option value="L4">L4 — Mamoudzou / Kani-Kéli</option>
+            <option value="L5">L5 — Mamoudzou / Sada</option>
+            <option value="L6">L6 — Dzaoudzi / Pamandzi</option>
+            <option value="L7">L7 — Koungou / Mtsangamouji</option>
+            <option value="L8">L8 — Mamoudzou / Ouangani</option>
+          </select>
         </div>
         <button type="submit" class="btn-portal btn-driver-primary">
           <span>✓</span> Confirmer et accéder
@@ -204,6 +208,10 @@
           <strong id="d-nom-display">—</strong>
           <span id="d-meta-display">—</span>
         </div>
+      </div>
+      <div class="driver-line-tag" id="driver-line-tag" title="Ligne occupée durant le poste">
+        <span class="driver-line-num" id="d-line-num">—</span>
+        <span class="driver-line-dest" id="d-line-dest">—</span>
       </div>
       <div class="driver-shift">
         <span class="shift-badge" id="shift-badge">⬤ Prise de service</span>
@@ -351,25 +359,41 @@ function toggleDark() {
   document.getElementById('ch-dark-btn').textContent = dark ? '🌙' : '☀️';
 }
 
+const LIGNE_DEST = {
+  L1:'Mamoudzou / Koungou', L2:'Mamoudzou / Bandraboua', L3:'Mamoudzou / Bouéni',
+  L4:'Mamoudzou / Kani-Kéli', L5:'Mamoudzou / Sada', L6:'Dzaoudzi / Pamandzi',
+  L7:'Koungou / Mtsangamouji', L8:'Mamoudzou / Ouangani'
+};
+
 let driverInfo = {};
 let sessionReports = [];
 let shiftActive = false;
 
 function loginDriver(e) {
   e.preventDefault();
+  const ligne = document.getElementById('d-ligne').value;
   driverInfo = {
     nom:   document.getElementById('d-nom').value,
     badge: document.getElementById('d-badge').value,
-    ligne: document.getElementById('d-ligne').value,
+    ligne,
+    dest:  LIGNE_DEST[ligne] || '',
     bus:   document.getElementById('d-bus').value,
   };
   document.getElementById('d-avatar-display').textContent = driverInfo.nom.slice(0,2).toUpperCase();
   document.getElementById('d-nom-display').textContent    = driverInfo.nom;
-  document.getElementById('d-meta-display').textContent   = `${driverInfo.badge} · ${driverInfo.ligne} · ${driverInfo.bus}`;
+  document.getElementById('d-meta-display').textContent   = `${driverInfo.badge} · ${driverInfo.bus}`;
+
+  // Ligne occupée : tag dans la barre de profil + chip dans l'en-tête
+  document.getElementById('d-line-num').textContent  = driverInfo.ligne;
+  document.getElementById('d-line-dest').textContent = driverInfo.dest;
+  document.getElementById('driver-shift-line').textContent = driverInfo.ligne;
+  document.getElementById('driver-shift-name').textContent = driverInfo.nom;
+  document.getElementById('driver-shift-chip').classList.remove('hidden');
+
   document.getElementById('driver-id-section').classList.add('hidden');
   document.getElementById('driver-dashboard').classList.remove('hidden');
   shiftActive = true;
-  toast(`Bonne prise de service, ${driverInfo.nom.split(' ')[0]} !`, 'success');
+  toast(`Bonne prise de service sur la ligne ${driverInfo.ligne}, ${driverInfo.nom.split(' ')[0]} !`, 'success');
 }
 
 function toggleShift() {
@@ -378,6 +402,7 @@ function toggleShift() {
     document.getElementById('shift-badge').textContent = '⬤ Fin de service';
     document.getElementById('shift-badge').style.background = '#fee2e2';
     document.getElementById('shift-badge').style.color = '#b91c1c';
+    document.getElementById('driver-shift-chip').classList.add('hidden');
     toast('Fin de service enregistrée. Bonne journée !', 'info');
   }
 }

@@ -1225,3 +1225,23 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
 .cand-section.hidden,
 .cand-form.hidden,
 .cand-success.hidden { display: none !important; }
+
+/* ── Ligne occupée durant le poste (chauffeur) ── */
+.label-highlight {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #d97706 !important; font-weight: 800 !important;
+}
+.driver-line-tag {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 8px 16px; border-radius: 14px;
+  background: linear-gradient(135deg, #f59e0b, #e67e00);
+  color: #061a35; text-align: center; min-width: 120px;
+}
+.driver-line-num  { font-size: 18px; font-weight: 900; line-height: 1; }
+.driver-line-dest { font-size: 10.5px; font-weight: 600; opacity: .85; }
+
+@media (max-width: 640px) {
+  .driver-profile-bar { flex-wrap: wrap; }
+  .driver-line-tag { flex-direction: row; gap: 8px; min-width: 0; width: 100%; justify-content: center; padding: 8px 12px; }
+  .driver-line-dest { font-size: 12px; }
+}
