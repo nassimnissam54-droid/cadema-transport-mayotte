@@ -14,6 +14,14 @@
 </head>
 <body class="portal-body-wrap">
 
+<!-- Formulaire statique pour la détection Netlify Forms (candidatures réellement reçues) -->
+<form name="candidature-chauffeur" netlify netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="ref"><input name="nom"><input name="tel">
+  <input name="email"><input name="commune"><input name="permis"><input name="fimo">
+  <textarea name="experience"></textarea><textarea name="motivation"></textarea>
+  <input name="documents">
+</form>
+
 <!-- HEADER CHAUFFEUR -->
 <header class="portal-header driver-header">
   <div class="portal-header-inner">
@@ -637,6 +645,20 @@ function submitCandidature(e) {
     cands[0].docs = Object.fromEntries(Object.entries(candDocs).map(([k, d]) => [k, { name: d.name, size: d.size, type: d.type }]));
     localStorage.setItem('cadema_candidatures', JSON.stringify(cands));
   }
+  // Transmission réelle au dashboard Netlify Forms (en plus de la copie locale)
+  netlifySubmit('candidature-chauffeur', {
+    ref,
+    nom:        cands[0].nom,
+    tel:        cands[0].tel,
+    email:      cands[0].email,
+    commune:    cands[0].commune,
+    permis:     cands[0].permis,
+    fimo:       cands[0].fimo,
+    experience: cands[0].exp,
+    motivation: cands[0].motiv,
+    documents:  Object.entries(candDocs).map(([k, d]) => `${k}: ${d.name} (${(d.size/1024).toFixed(0)} Ko)`).join(' | ')
+  });
+
   document.getElementById('cand-ref').textContent = ref;
   document.getElementById('cand-form').classList.add('hidden');
   document.getElementById('cand-success').classList.remove('hidden');

@@ -43,6 +43,20 @@ function populateLineSelect(sel, opts) {
     CADEMA_LINES.map(l => `<option value="${l.code}">Ligne ${l.code} — ${l.name}</option>`).join('');
 }
 
+// ── Netlify Forms : envoi réel des formulaires vers le dashboard Netlify ──
+// Nécessite un <form name="..." netlify hidden> statique correspondant dans la page.
+// Silencieux en local (pas de serveur Netlify) : le localStorage reste la copie de démo.
+function netlifySubmit(formName, fields) {
+  try {
+    const body = new URLSearchParams({ 'form-name': formName, ...fields }).toString();
+    return fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    }).catch(() => {});
+  } catch { return Promise.resolve(); }
+}
+
 // ── Hachage de mot de passe (WebCrypto SHA-256) ──
 // Évite le stockage en clair. NB : sans backend + sel unique, reste une mesure
 // d'hygiène locale, pas une protection de niveau serveur.

@@ -14,6 +14,12 @@
 </head>
 <body class="portal-body-wrap">
 
+<!-- Formulaire statique pour la détection Netlify Forms (inscriptions réellement reçues) -->
+<form name="inscription-agent" netlify netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="ref"><input name="nom"><input name="tel">
+  <input name="email"><input name="role"><textarea name="experience"></textarea>
+</form>
+
 <!-- HEADER AGENTS -->
 <header class="portal-header agent-header">
   <div class="portal-header-inner">
@@ -423,6 +429,15 @@ function submitInscription(e) {
     statut: 'nouvelle'
   });
   localStorage.setItem('cadema_agent_inscriptions', JSON.stringify(inscriptions));
+  // Transmission réelle au dashboard Netlify Forms
+  netlifySubmit('inscription-agent', {
+    ref,
+    nom:        inscriptions[0].nom,
+    tel:        inscriptions[0].tel,
+    email:      inscriptions[0].email,
+    role:       inscriptions[0].role,
+    experience: inscriptions[0].exp
+  });
   document.getElementById('inscription-ref').textContent = ref;
   document.getElementById('inscription-form').classList.add('hidden');
   document.getElementById('inscription-success').classList.remove('hidden');

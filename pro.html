@@ -1076,6 +1076,13 @@ function submitAdhesion(e) {
     cands[0].docs = Object.fromEntries(Object.entries(candDocs).map(([k, d]) => [k, { name: d.name, size: d.size, type: d.type }]));
     saveCandidatures(cands);
   }
+  // Transmission réelle au dashboard Netlify Forms (même canal que le portail chauffeur)
+  netlifySubmit('candidature-chauffeur', {
+    ref, nom: cands[0].nom, tel: cands[0].tel, email: cands[0].email,
+    commune: cands[0].commune, permis: cands[0].permis, fimo: cands[0].fimo,
+    experience: cands[0].exp, motivation: 'Saisie via portail pro',
+    documents: Object.entries(candDocs).map(([k, d]) => `${k}: ${d.name}`).join(' | ')
+  });
   Object.keys(candDocs).forEach(k => delete candDocs[k]);
   e.target.reset();
   document.querySelectorAll('#adhesion-modal .doc-drop').forEach(d => d.classList.remove('filled'));
