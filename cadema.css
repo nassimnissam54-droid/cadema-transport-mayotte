@@ -2588,3 +2588,29 @@ input:focus, select:focus, textarea:focus {
 .auth-form { text-align: left; display: flex; flex-direction: column; gap: 14px; }
 .auth-form.hidden { display: none; }
 .auth-submit { width: 100%; padding: 13px; font-size: 14.5px; margin-top: 4px; }
+
+/* ══════════════════════════════════════════════════════
+   ACCESSIBILITÉ — focus clavier & réduction de mouvement
+══════════════════════════════════════════════════════ */
+/* Anneau de focus visible et cohérent au clavier (n'affecte pas la souris) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respecte le réglage système "réduire les animations" */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

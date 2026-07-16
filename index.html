@@ -16,6 +16,7 @@
   <meta property="og:title" content="CADEMA — Réseau de Transport de Mayotte">
   <meta property="og:description" content="Itinéraires, horaires, tarifs et info trafic du réseau Caribus à Mayotte.">
   <meta property="og:image" content="navette-cadema.jpg">
+  <meta property="og:image:alt" content="Bus du réseau Caribus à Mayotte">
   <meta property="og:locale" content="fr_FR">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,6 +28,23 @@
   <link rel="stylesheet" href="portails.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "GovernmentService",
+    "name": "CADEMA — Réseau de transport Caribus",
+    "serviceType": "Transport public par autobus",
+    "areaServed": { "@type": "AdministrativeArea", "name": "Mayotte (976)" },
+    "provider": {
+      "@type": "GovernmentOrganization",
+      "name": "CADEMA — Communauté d'Agglomération Dembéni-Mamoudzou"
+    },
+    "availableChannel": {
+      "@type": "ServiceChannel",
+      "serviceUrl": "https://earnest-cranachan-23a5b9.netlify.app/"
+    }
+  }
+  </script>
 </head>
 <body>
 

@@ -1397,3 +1397,29 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
   margin-bottom: 10px;
 }
 [data-theme="dark"] .conv-thread-head { color: #f1f5f9; }
+
+/* ══════════════════════════════════════════════════════
+   ACCESSIBILITÉ — focus clavier & réduction de mouvement
+══════════════════════════════════════════════════════ */
+/* Anneau de focus visible et cohérent au clavier (n'affecte pas la souris) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respecte le réglage système "réduire les animations" */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
