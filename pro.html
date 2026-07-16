@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="fr" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -422,10 +422,11 @@ function toggleDark() {
   localStorage.setItem('cadema_theme', dark ? 'light' : 'dark');
 }
 (function initTheme() {
-  const theme = localStorage.getItem('cadema_theme') === 'light' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', theme);
-  const b = document.getElementById('pro-dark-btn');
-  if (b) b.textContent = theme === 'dark' ? '☀️' : '🌙';
+  if (localStorage.getItem('cadema_theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme','dark');
+    const b = document.getElementById('pro-dark-btn');
+    if (b) b.textContent = '☀️';
+  }
 })();
 
 // ── Prise de poste (identification + ligne prise en charge) ──

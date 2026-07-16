@@ -417,12 +417,12 @@ function toggleDark() {
   updateDrawerDarkBtn();
 }
 (function initTheme() {
-  // Transit dark : sombre par défaut, clair seulement si l'utilisateur l'a choisi
   const saved = localStorage.getItem('cadema_theme');
-  const theme = saved === 'light' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', theme);
-  const btn = document.getElementById('dark-btn');
-  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme','dark');
+    const btn = document.getElementById('dark-btn');
+    if (btn) btn.textContent = '☀️';
+  }
 })();
 
 // ── Scroll effects ────────────────────────────────
