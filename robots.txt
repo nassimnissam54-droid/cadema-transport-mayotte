@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /$
+Allow: /index.html
+Allow: /widget.html
+# Espaces internes : non indexés
+Disallow: /pro.html
+Disallow: /chauffeur.html
+Disallow: /agent.html
+
+Sitemap: https://earnest-cranachan-23a5b9.netlify.app/sitemap.xml

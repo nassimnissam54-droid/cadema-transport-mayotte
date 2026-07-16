@@ -16,15 +16,35 @@
   <meta property="og:title" content="CADEMA — Réseau de Transport de Mayotte">
   <meta property="og:description" content="Itinéraires, horaires, tarifs et info trafic du réseau Caribus à Mayotte.">
   <meta property="og:image" content="navette-cadema.jpg">
+  <meta property="og:image:alt" content="Bus du réseau Caribus à Mayotte">
   <meta property="og:locale" content="fr_FR">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous"/>
   <link rel="stylesheet" href="cadema.css">
   <link rel="stylesheet" href="portails.css">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "GovernmentService",
+    "name": "CADEMA — Réseau de transport Caribus",
+    "serviceType": "Transport public par autobus",
+    "areaServed": { "@type": "AdministrativeArea", "name": "Mayotte (976)" },
+    "provider": {
+      "@type": "GovernmentOrganization",
+      "name": "CADEMA — Communauté d'Agglomération Dembéni-Mamoudzou"
+    },
+    "availableChannel": {
+      "@type": "ServiceChannel",
+      "serviceUrl": "https://earnest-cranachan-23a5b9.netlify.app/"
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -910,10 +930,10 @@
       </div>
       <div class="footer-col">
         <strong>Informations</strong>
-        <a href="#">À propos du réseau</a>
-        <a href="#">Contact opérateurs</a>
-        <a href="#">Documentation</a>
-        <a href="#">Accessibilité</a>
+        <a href="#" onclick="showSection('lignes')">À propos du réseau</a>
+        <a href="legales.html">Mentions légales</a>
+        <a href="legales.html#confidentialite">Confidentialité (RGPD)</a>
+        <a href="legales.html">Accessibilité</a>
       </div>
       <div class="footer-col">
         <strong>Territoire</strong>
@@ -925,7 +945,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 CADEMA · Communauté d'Agglomération Dembéni-Mamoudzou · Usage interne uniquement</span>
+    <span>© 2026 CADEMA · Communauté d'Agglomération Dembéni-Mamoudzou · <a href="legales.html" style="color:inherit;text-decoration:underline">Mentions légales</a></span>
     <span>v2.0 · Site opérateur</span>
   </div>
 </footer>
@@ -1307,6 +1327,7 @@
   </button>
 </nav>
 
+<script src="shared.js"></script>
 <script src="cadema.js"></script>
 </body>
 </html>

@@ -2,8 +2,13 @@
 <html lang="fr" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>CADEMA — Portail Professionnel</title>
+  <meta name="description" content="Espace interne de pilotage du réseau Caribus : tâches, agents, signalements et communication. Accès réservé au personnel CADEMA.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#064e3b">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="cadema.css">
   <link rel="stylesheet" href="portails.css">
 </head>
@@ -418,6 +423,7 @@
   </div>
 </div>
 
+<script src="shared.js"></script>
 <script>
 'use strict';
 
@@ -579,10 +585,10 @@ function renderKanban() {
           <span class="kc-cat">${catIcons[t.categorie]||'📋'} ${t.categorie}</span>
           <span class="kc-prio prio-pill-${t.priorite}">${t.priorite==='high'?'🔴':t.priorite==='medium'?'🟡':'🟢'}</span>
         </div>
-        <div class="kc-titre">${t.titre}</div>
-        ${t.desc ? `<div class="kc-desc">${t.desc.slice(0,60)}${t.desc.length>60?'…':''}</div>` : ''}
+        <div class="kc-titre">${esc(t.titre)}</div>
+        ${t.desc ? `<div class="kc-desc">${esc(t.desc.slice(0,60))}${t.desc.length>60?'…':''}</div>` : ''}
         <div class="kc-footer">
-          <span class="kc-agent" title="${t.agent}">👤 ${t.agent.split(' ')[0]}</span>
+          <span class="kc-agent" title="${esc(t.agent)}">👤 ${esc(t.agent.split(' ')[0])}</span>
           ${t.echeance ? `<span class="kc-date ${isOverdue(t)&&t.status!=='done'?'overdue':''}">${fmtDate(t.echeance)}</span>` : ''}
         </div>
         <div class="kc-actions" onclick="event.stopPropagation()">
@@ -625,9 +631,9 @@ function renderTasksList() {
   const stLabel   = { todo:'<span class="pill pill-gray">À faire</span>', inprogress:'<span class="pill pill-blue">En cours</span>', done:'<span class="pill pill-green">Terminé</span>' };
   tbody.innerHTML = list.map(t => `
     <tr>
-      <td style="font-weight:600;max-width:200px">${catIcons[t.categorie]||'📋'} ${t.titre}</td>
-      <td>${t.categorie}</td>
-      <td>👤 ${t.agent}</td>
+      <td style="font-weight:600;max-width:200px">${catIcons[t.categorie]||'📋'} ${esc(t.titre)}</td>
+      <td>${esc(t.categorie)}</td>
+      <td>👤 ${esc(t.agent)}</td>
       <td>${prioLabel[t.priorite]||t.priorite}</td>
       <td class="${isOverdue(t)&&t.status!=='done'?'overdue-text':''}">${t.echeance ? fmtDate(t.echeance) : '—'}</td>
       <td>${stLabel[t.status]||t.status}</td>
@@ -653,15 +659,15 @@ function renderAgents() {
       <div class="agent-card-top">
         <div class="agent-card-avatar">${a.avatar}</div>
         <div>
-          <div class="agent-card-name">${a.nom}</div>
-          <div class="agent-card-role">${a.role}</div>
+          <div class="agent-card-name">${esc(a.nom)}</div>
+          <div class="agent-card-role">${esc(a.role)}</div>
         </div>
         <span class="agent-status-dot ${a.actif ? 'actif':'inactif'}">${a.actif?'En service':'Hors service'}</span>
       </div>
       <div class="agent-tasks-label">Tâches en cours (${myTasks.length})</div>
       <div class="agent-tasks-list">
         ${myTasks.length
-          ? myTasks.map(t => `<div class="agent-task-item prio-${t.priorite}"><span>${catIcons[t.categorie]||''} ${t.titre}</span><span class="kc-prio prio-pill-${t.priorite}">${t.priorite==='high'?'🔴':t.priorite==='medium'?'🟡':'🟢'}</span></div>`).join('')
+          ? myTasks.map(t => `<div class="agent-task-item prio-${t.priorite}"><span>${catIcons[t.categorie]||''} ${esc(t.titre)}</span><span class="kc-prio prio-pill-${t.priorite}">${t.priorite==='high'?'🔴':t.priorite==='medium'?'🟡':'🟢'}</span></div>`).join('')
           : '<div class="agent-no-task">Aucune tâche active</div>'}
       </div>
       <button class="btn-portal btn-sm btn-outline" style="width:100%;margin-top:12px" onclick="openTaskModal('todo','${a.nom}')">+ Assigner une tâche</button>
@@ -705,9 +711,9 @@ function renderSignalements(filter) {
         <span class="sig-time">${s.date ? s.date + ' ' : ''}${s.time}</span>
         <span class="sig-status-badge ${s.status==='resolved'?'resolved':'open'}">${s.status==='resolved'?'✅ Traité':'🔴 Non traité'}</span>
       </div>
-      <div class="sig-chauffeur">🚌 ${s.chauffeur} · ${s.badge} · Ligne ${s.ligne} · ${s.bus}</div>
-      <div class="sig-lieu">📍 ${s.lieu}</div>
-      <div class="sig-desc">${s.desc}</div>
+      <div class="sig-chauffeur">🚌 ${esc(s.chauffeur)} · ${esc(s.badge)} · Ligne ${esc(s.ligne)} · ${esc(s.bus)}</div>
+      <div class="sig-lieu">📍 ${esc(s.lieu)}</div>
+      <div class="sig-desc">${esc(s.desc)}</div>
       ${s.renfort && s.renfort !== 'non' ? `<div class="renfort-badge">${renfortBadge[s.renfort] || s.renfort}</div>` : ''}
       ${s.status === 'open' ? `
       <div class="sig-actions">
@@ -897,7 +903,8 @@ function toast(msg, type='success') {
   const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span></span>`;
+  el.lastElementChild.textContent = msg;
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', ()=>el.remove()); }, 3500);
 }
@@ -945,21 +952,21 @@ function renderCandidatures() {
   el.innerHTML = cands.map(c => `
     <div class="report-card cand-review-card">
       <div class="report-card-header">
-        <span class="report-id">${c.ref}</span>
-        <strong>${c.nom}</strong>
+        <span class="report-id">${esc(c.ref)}</span>
+        <strong>${esc(c.nom)}</strong>
         ${statutPill[c.statut] || ''}
-        <span class="report-time">${c.date}</span>
+        <span class="report-time">${esc(c.date)}</span>
       </div>
-      <div class="report-lieu">📍 ${c.commune} · 📞 ${c.tel} · ✉️ ${c.email}</div>
+      <div class="report-lieu">📍 ${esc(c.commune)} · 📞 ${esc(c.tel)} · ✉️ ${esc(c.email)}</div>
       <div class="report-desc">
-        Permis D n° <strong>${c.permis}</strong> · ${fimoLabel[c.fimo] || ''}
-        ${c.exp ? `<br>💼 ${c.exp}` : ''}
-        ${c.motiv ? `<br>💬 ${c.motiv}` : ''}
+        Permis D n° <strong>${esc(c.permis)}</strong> · ${fimoLabel[c.fimo] || ''}
+        ${c.exp ? `<br>💼 ${esc(c.exp)}` : ''}
+        ${c.motiv ? `<br>💬 ${esc(c.motiv)}` : ''}
       </div>
       <div class="cand-docs-row">
         ${Object.entries(c.docs || {}).map(([k, d]) => d.dataUrl
-          ? `<a class="cand-doc-chip" href="${d.dataUrl}" target="_blank" title="${d.name}">${docLabels[k] || k} 👁</a>`
-          : `<span class="cand-doc-chip" title="${d.name}">${docLabels[k] || k} ✓</span>`
+          ? `<a class="cand-doc-chip" href="${esc(d.dataUrl)}" target="_blank" rel="noopener" title="${esc(d.name)}">${docLabels[k] || k} 👁</a>`
+          : `<span class="cand-doc-chip" title="${esc(d.name)}">${docLabels[k] || k} ✓</span>`
         ).join('')}
       </div>
       <div class="report-actions" style="margin-top:10px">
@@ -1012,13 +1019,13 @@ function renderAgentInscriptions() {
   el.innerHTML = inscriptions.map(i => `
     <div class="report-card">
       <div class="report-card-header">
-        <span class="report-id">${i.ref}</span>
-        <strong>${i.nom}</strong>
+        <span class="report-id">${esc(i.ref)}</span>
+        <strong>${esc(i.nom)}</strong>
         ${statutPill[i.statut] || ''}
-        <span class="report-time">${i.date}</span>
+        <span class="report-time">${esc(i.date)}</span>
       </div>
-      <div class="report-lieu">🧰 ${i.role} · 📞 ${i.tel} · ✉️ ${i.email}</div>
-      ${i.exp ? `<div class="report-desc">💼 ${i.exp}</div>` : ''}
+      <div class="report-lieu">🧰 ${esc(i.role)} · 📞 ${esc(i.tel)} · ✉️ ${esc(i.email)}</div>
+      ${i.exp ? `<div class="report-desc">💼 ${esc(i.exp)}</div>` : ''}
       <div class="report-actions" style="margin-top:10px">
         ${i.statut === 'nouvelle' ? `
           <button class="btn-portal btn-sm btn-outline" style="color:#059669;border-color:#059669" onclick="setInscStatut('${i.ref}','validee')">✅ Valider le compte</button>
@@ -1171,7 +1178,7 @@ function renderConvList() {
       <button class="conv-item ${conv === activeConv ? 'active' : ''}" onclick="setActiveConv('${conv}')">
         <span class="conv-item-name">${convLabel(conv)}</span>
         <span class="conv-item-count">${convMsgs.length}</span>
-        <span class="conv-item-preview">${preview}</span>
+        <span class="conv-item-preview">${esc(preview)}</span>
       </button>`;
   }).join('');
 }
@@ -1192,9 +1199,9 @@ function renderCommThread() {
   el.innerHTML = [...msgs].reverse().map(m => `
     <div class="comm-msg ${m.from === 'pro' ? 'comm-out' : 'comm-in'} comm-${m.type || 'info'}">
       <div class="comm-msg-head">
-        <span>${m.from === 'pro' ? '🎛️ ' + m.auteur : (m.from === 'agent' ? '🛠️ ' + m.auteur : '🚌 ' + m.auteur)}</span>
+        <span>${m.from === 'pro' ? '🎛️ ' + esc(m.auteur) : (m.from === 'agent' ? '🛠️ ' + esc(m.auteur) : '🚌 ' + esc(m.auteur))}</span>
       </div>
-      <div class="comm-msg-text">${typeIcon[m.type] || ''} ${m.text}</div>
+      <div class="comm-msg-text">${typeIcon[m.type] || ''} ${esc(m.text)}</div>
       <div class="comm-msg-time">${m.date} · ${m.time}</div>
     </div>`).join('');
   el.scrollTop = el.scrollHeight;
