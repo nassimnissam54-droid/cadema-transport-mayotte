@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>CADEMA — Mentions légales & Confidentialité</title>
+  <meta name="description" content="Mentions légales, politique de confidentialité (RGPD) et déclaration d'accessibilité du site du réseau Caribus, CADEMA Mayotte.">
+  <meta name="theme-color" content="#061a35">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="stylesheet" href="cadema.css">
+  <style>
+    .legal-wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+    .legal-wrap h1 { font-size: clamp(26px, 5vw, 36px); font-weight: 800; margin-bottom: 8px; }
+    .legal-wrap .legal-sub { color: var(--text-muted, #64748b); margin-bottom: 32px; }
+    .legal-wrap h2 { font-size: 20px; font-weight: 700; margin: 32px 0 12px; padding-top: 16px; border-top: 1px solid var(--border, #e2e8f0); }
+    .legal-wrap p, .legal-wrap li { line-height: 1.7; color: var(--text, #1e293b); }
+    .legal-wrap ul { padding-left: 22px; margin: 10px 0; }
+    .legal-wrap a { color: var(--blue, #1a56c4); }
+    .legal-back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 24px; text-decoration: none; color: var(--blue, #1a56c4); font-weight: 600; }
+    .legal-note { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); border-radius: 12px; padding: 14px 16px; font-size: 14px; margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <div class="legal-wrap">
+    <a class="legal-back" href="index.html">← Retour au site</a>
+    <h1>Mentions légales & Confidentialité</h1>
+    <p class="legal-sub">Dernière mise à jour : juillet 2026</p>
+
+    <h2>1. Éditeur du site</h2>
+    <p>Ce site présente le réseau de transport <strong>Caribus</strong>, exploité sous l'autorité de la
+    <strong>CADEMA</strong> (Communauté d'Agglomération Dembéni-Mamoudzou), Mayotte (976).</p>
+    <p class="legal-note">⚠️ Démonstration : ce site est un prototype. Les coordonnées officielles de
+    l'éditeur (raison sociale complète, SIRET, directeur de publication, hébergeur) doivent être
+    complétées avant toute mise en production réelle.</p>
+
+    <h2>2. Hébergement</h2>
+    <p>Le site est hébergé par Netlify (site statique). Aucune donnée n'est traitée sur un serveur
+    applicatif de l'éditeur.</p>
+
+    <h2 id="confidentialite">3. Données personnelles (RGPD)</h2>
+    <p>Ce site fonctionne <strong>sans base de données serveur</strong>. Les informations que vous
+    saisissez (compte voyageur, favoris, candidatures, signalements, messages) sont stockées
+    <strong>uniquement dans votre navigateur</strong> (localStorage), sur votre appareil.</p>
+    <ul>
+      <li><strong>Aucune donnée n'est transmise à un serveur</strong> de l'éditeur ni à des tiers
+      publicitaires.</li>
+      <li><strong>Aucun cookie de suivi</strong> ni traceur analytique n'est déposé.</li>
+      <li>Vos données restent sous votre contrôle : vous pouvez les effacer à tout moment en vidant
+      les données du site dans votre navigateur.</li>
+    </ul>
+    <p class="legal-note">Pour un déploiement officiel avec traitement de candidatures ou de comptes
+    côté serveur, un registre des traitements, une base légale et un circuit d'exercice des droits
+    (accès, rectification, effacement) devront être mis en place conformément au RGPD.</p>
+
+    <h2>4. Services externes</h2>
+    <p>Pour afficher les cartes et rechercher des adresses, le site fait appel à :</p>
+    <ul>
+      <li><strong>OpenStreetMap</strong> (fonds de carte) et <strong>Nominatim</strong> (recherche
+      d'adresse) — votre requête de recherche transite par leurs serveurs.</li>
+      <li><strong>Leaflet</strong> et <strong>Google Fonts</strong> (bibliothèques d'affichage).</li>
+    </ul>
+    <p>La géolocalisation (alerte de descente) n'est activée qu'avec votre autorisation explicite et
+    n'est jamais enregistrée ni transmise.</p>
+
+    <h2>5. Accessibilité</h2>
+    <p>Le site vise le niveau <strong>WCAG 2.1 AA</strong> : navigation au clavier avec focus visible,
+    respect du réglage « réduire les animations », contrastes renforcés et cibles tactiles adaptées au
+    mobile. Une anomalie d'accessibilité ? Signalez-la via la page contact du réseau.</p>
+
+    <h2>6. Propriété intellectuelle</h2>
+    <p>La marque « Caribus », les logos et les contenus du réseau appartiennent à la CADEMA. Les fonds
+    de carte sont © OpenStreetMap (licence ODbL).</p>
+  </div>
+</body>
+</html>
