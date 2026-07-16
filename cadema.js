@@ -203,7 +203,7 @@ function switchAuthTab(tab) {
   document.getElementById('auth-form-signup').classList.toggle('hidden', tab !== 'signup');
 }
 
-function signupUser(e) {
+async function signupUser(e) {
   e.preventDefault();
   const nom   = document.getElementById('signup-nom').value.trim();
   const email = document.getElementById('signup-email').value.trim().toLowerCase();
@@ -216,7 +216,9 @@ function signupUser(e) {
     document.getElementById('login-email').value = email;
     return;
   }
-  users.push({ nom, email, tel, pass });
+  // Le mot de passe n'est jamais stocké en clair
+  const passHash = await hashPassword(pass);
+  users.push({ nom, email, tel, passHash });
   saveUsers(users);
   localStorage.setItem(userCompteKey(email), JSON.stringify(emptyCompte(nom, email)));
   localStorage.setItem('cadema_session', email);
@@ -224,25 +226,32 @@ function signupUser(e) {
   toast(`Bienvenue ${nom.split(' ')[0]} ! Votre compte est créé. 🎉`, 'success');
 }
 
-function loginUserAccount(e) {
+async function loginUserAccount(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const pass  = document.getElementById('login-pass').value;
   const user  = getUsers().find(u => u.email === email);
-  if (!user || user.pass !== pass) {
-    toast('Email ou mot de passe incorrect.', 'error');
-    return;
+  if (!user) { toast('Email ou mot de passe incorrect.', 'error'); return; }
+  const passHash = await hashPassword(pass);
+  // Compatibilité : anciens comptes stockés en clair (champ `pass`)
+  const ok = user.passHash ? user.passHash === passHash : user.pass === pass;
+  if (!ok) { toast('Email ou mot de passe incorrect.', 'error'); return; }
+  // Migre à la volée un ancien compte en clair vers le hachage
+  if (!user.passHash) {
+    user.passHash = passHash; delete user.pass;
+    const users = getUsers().map(u => u.email === email ? user : u);
+    saveUsers(users);
   }
   localStorage.setItem('cadema_session', email);
   applyAuthState();
   toast(`Content de vous revoir, ${user.nom.split(' ')[0]} !`, 'success');
 }
 
-function loginDemoUser() {
+async function loginDemoUser() {
   // Crée le compte démo à la première utilisation (avec données d'exemple)
   const users = getUsers();
   if (!users.some(u => u.email === 'demo@cadema.yt')) {
-    users.push({ nom:'Ali Démo', email:'demo@cadema.yt', tel:'0639000000', pass:'demo123' });
+    users.push({ nom:'Ali Démo', email:'demo@cadema.yt', tel:'0639000000', passHash: await hashPassword('demo123') });
     saveUsers(users);
     const demo = defaultCompte();
     demo.nom = 'Ali Démo'; demo.email = 'demo@cadema.yt'; demo.role = 'Voyageur';
