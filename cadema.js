@@ -300,7 +300,8 @@ function toast(msg, type='success') {
   const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span></span>`;
+  el.lastElementChild.textContent = msg;
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', ()=>el.remove()); }, 3000);
 }
@@ -769,7 +770,7 @@ function renderSuggestions(side, val, stopHits, addrHits) {
       <div class="itin-suggestion-item sug-address"
         onmousedown="selectItinAddress('${side}','${a.name.replace(/'/g,"\\'")}',${a.lat},${a.lng})">
         <div class="sug-icon">📍</div>
-        <span class="sug-name">${a.name}</span>
+        <span class="sug-name">${esc(a.name)}</span>
         <span class="sug-line sug-addr-tag">adresse</span>
       </div>`).join('');
   }
@@ -1096,7 +1097,7 @@ function renderFavChips() {
   box.innerHTML = favs.length
     ? favs.map(f => `
       <button class="fav-chip" onclick="loadFavRoute('${f.from.replace(/'/g,"\\'")}','${f.to.replace(/'/g,"\\'")}')">
-        ⭐ ${f.from} → ${f.to}
+        ⭐ ${esc(f.from)} → ${esc(f.to)}
       </button>`).join('')
     : '';
 }
@@ -1290,7 +1291,7 @@ function renderTripDetail(from, to, route, line, busMins, walkIn, walkOut) {
       </div>
       <div class="trip-step-body">
         <div class="trip-step-label"><span class="trip-step-walk-icon">🚶</span>Marche jusqu'à l'arrêt ${from.icon || '🚏'} ${from.name}</div>
-        <div class="trip-step-meta">${walkIn.label ? `Depuis ${walkIn.label} · ` : ''}${walkIn.metres} m · ${fmt(walkIn.mins)} à pied</div>
+        <div class="trip-step-meta">${walkIn.label ? `Depuis ${esc(walkIn.label)} · ` : ''}${walkIn.metres} m · ${fmt(walkIn.mins)} à pied</div>
       </div>
     </div>`;
 
@@ -1321,7 +1322,7 @@ function renderTripDetail(from, to, route, line, busMins, walkIn, walkOut) {
         <div class="trip-step-dot end" style="background:var(--gold);box-shadow:0 0 0 3px rgba(245,158,11,.3)"></div>
       </div>
       <div class="trip-step-body" style="padding-bottom:0;">
-        <div class="trip-step-label"><span class="trip-step-walk-icon">🚶</span>Marche jusqu'à ${walkOut.label || 'destination'}</div>
+        <div class="trip-step-label"><span class="trip-step-walk-icon">🚶</span>Marche jusqu'à ${esc(walkOut.label) || 'destination'}</div>
         <div class="trip-step-meta">${walkOut.metres} m · ${fmt(walkOut.mins)} à pied · arrivée +${totalMins} min</div>
       </div>
     </div>`;
@@ -1388,7 +1389,7 @@ function renderItinMap(from, to, route, line, walkIn, walkOut) {
   // Point de départ piéton (point A réel de l'utilisateur)
   const mWalkStart = L.marker([walkIn.point.lat, walkIn.point.lng], {
     icon: makeIcon(`<div class="map-marker-walk">🚶</div>`, 30)
-  }).addTo(itinMap).bindPopup(`<b>📍 ${walkIn.label || 'Point de départ'}</b><br>${walkIn.metres} m à pied jusqu'à l'arrêt`);
+  }).addTo(itinMap).bindPopup(`<b>📍 ${esc(walkIn.label) || 'Point de départ'}</b><br>${walkIn.metres} m à pied jusqu'à l'arrêt`);
   itinLayers.push(mWalkStart);
 
   // Marqueur arrêt départ bus
@@ -1406,7 +1407,7 @@ function renderItinMap(from, to, route, line, walkIn, walkOut) {
   // Point d'arrivée piéton final (destination réelle)
   const mWalkEnd = L.marker([walkOut.point.lat, walkOut.point.lng], {
     icon: makeIcon(`<div class="map-marker-walk-end">🏁</div>`, 30)
-  }).addTo(itinMap).bindPopup(`<b>🏁 ${walkOut.label || 'Destination'}</b><br>${walkOut.metres} m à pied depuis l'arrêt`);
+  }).addTo(itinMap).bindPopup(`<b>🏁 ${esc(walkOut.label) || 'Destination'}</b><br>${walkOut.metres} m à pied depuis l'arrêt`);
   itinLayers.push(mWalkEnd);
 
   // Zoom sur le trajet complet (marche + bus + marche)
@@ -1710,7 +1711,7 @@ function renderTitres() {
       <div class="titre-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
       <div class="titre-info">
         <div class="titre-name">${titreLabels[t.type]||t.type}</div>
-        <div class="titre-meta">N° ${t.num}</div>
+        <div class="titre-meta">N° ${esc(t.num)}</div>
       </div>
       ${expiryBadge(t.expiry)}
       <button class="delete-btn" onclick="deleteTitre(${t.id})" title="Supprimer">×</button>
@@ -1740,8 +1741,8 @@ function renderLieux() {
     <div class="lieu-item">
       <div class="lieu-icon">${lieuEmojis[l.type]||'📍'}</div>
       <div class="lieu-info">
-        <div class="lieu-name">${l.nom}</div>
-        <div class="lieu-adresse">${l.adresse}</div>
+        <div class="lieu-name">${esc(l.nom)}</div>
+        <div class="lieu-adresse">${esc(l.adresse)}</div>
       </div>
       <button class="delete-btn" onclick="deleteLieu(${l.id})" title="Supprimer">×</button>
     </div>`).join('');
@@ -1769,10 +1770,10 @@ function renderTrajets() {
   el.innerHTML = compte.trajets.map(t => `
     <div class="trajet-card">
       <div class="trajet-card-header">
-        <span class="trajet-card-name">${t.nom}</span>
+        <span class="trajet-card-name">${esc(t.nom)}</span>
         <button class="delete-btn" onclick="deleteTrajet(${t.id})">×</button>
       </div>
-      <div class="trajet-route"><span>${t.from}</span><span class="trajet-arrow">→</span><span>${t.to}</span></div>
+      <div class="trajet-route"><span>${esc(t.from)}</span><span class="trajet-arrow">→</span><span>${esc(t.to)}</span></div>
       <div class="trajet-meta">
         <span class="trajet-badge">${t.line}</span>
         <span class="trajet-badge" style="background:var(--purple-light);color:var(--purple)">${t.heure}</span>

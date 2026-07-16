@@ -353,6 +353,7 @@
 <!-- Toast -->
 <div class="toast-container" id="toast-container"></div>
 
+<script src="shared.js"></script>
 <script>
 // Clock
 setInterval(() => {
@@ -484,8 +485,8 @@ function renderReports() {
         <span class="urgence-pill ${urgClass[r.urgence]}">${r.urgence === 'high' ? '🔴 Élevé' : r.urgence === 'medium' ? '🟡 Moyen' : '🟢 Faible'}</span>
         <span class="report-time">${r.time}</span>
       </div>
-      <div class="report-lieu">📍 ${r.lieu}</div>
-      <div class="report-desc">${r.desc}</div>
+      <div class="report-lieu">📍 ${esc(r.lieu)}</div>
+      <div class="report-desc">${esc(r.desc)}</div>
       ${r.renfort !== 'non' ? `<div class="renfort-badge">${r.renfort === 'urgence' ? '🚨 Secours demandés' : '🚌 Bus de remplacement demandé'}</div>` : ''}
     </div>`).join('');
 }
@@ -534,8 +535,8 @@ function renderDriverMessages() {
     <div class="message-item ${m.from === 'chauffeur' ? 'msg-self' : (cls[m.type] || 'msg-info')}">
       <div class="msg-icon">${m.from === 'chauffeur' ? '🚌' : (ico[m.type] || 'ℹ️')}</div>
       <div>
-        <div class="msg-text">${m.text}</div>
-        <div class="msg-time">${m.date} à ${m.time} · ${m.from === 'chauffeur' ? 'Moi' : m.auteur}${m.ligne !== 'ALL' && m.from === 'pro' ? ' · ciblé ' + m.ligne : ''}</div>
+        <div class="msg-text">${esc(m.text)}</div>
+        <div class="msg-time">${esc(m.date)} à ${esc(m.time)} · ${m.from === 'chauffeur' ? 'Moi' : esc(m.auteur)}${m.ligne !== 'ALL' && m.from === 'pro' ? ' · ciblé ' + esc(m.ligne) : ''}</div>
       </div>
     </div>`).join('');
 }
@@ -646,7 +647,8 @@ function toast(msg, type='success') {
   const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span></span>`;
+  el.lastElementChild.textContent = msg;
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', ()=>el.remove()); }, 3500);
 }
