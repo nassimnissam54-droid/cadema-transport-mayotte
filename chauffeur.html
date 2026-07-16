@@ -67,16 +67,8 @@
         </div>
         <div class="form-group">
           <label class="label-highlight">🚍 Ligne occupée durant le poste</label>
-          <select id="d-ligne" required>
-            <option value="L1">L1 — Mamoudzou / Koungou</option>
-            <option value="L2">L2 — Mamoudzou / Bandraboua</option>
-            <option value="L3">L3 — Mamoudzou / Bouéni</option>
-            <option value="L4">L4 — Mamoudzou / Kani-Kéli</option>
-            <option value="L5">L5 — Mamoudzou / Sada</option>
-            <option value="L6">L6 — Dzaoudzi / Pamandzi</option>
-            <option value="L7">L7 — Koungou / Mtsangamouji</option>
-            <option value="L8">L8 — Mamoudzou / Ouangani</option>
-          </select>
+          <!-- Options injectées depuis CADEMA_LINES (shared.js) : source unique -->
+          <select id="d-ligne" required></select>
         </div>
         <button type="submit" class="btn-portal btn-driver-primary">
           <span>✓</span> Confirmer et accéder
@@ -561,10 +553,13 @@ window.addEventListener('storage', (e) => {
 function loginDemo() {
   document.getElementById('d-nom').value   = 'Ibrahim DEMO';
   document.getElementById('d-badge').value = 'CH-000';
-  document.getElementById('d-ligne').value = 'L1';
+  document.getElementById('d-ligne').value = '1N';
   document.getElementById('d-bus').value   = 'BUS-01';
   loginDriver({ preventDefault() {} });
 }
+
+// Lignes officielles injectées depuis la source unique (shared.js)
+populateLineSelect(document.getElementById('d-ligne'));
 
 // ── Candidature chauffeur ─────────────────────────
 const candDocs = {}; // clé → { name, size, type, dataUrl? }
