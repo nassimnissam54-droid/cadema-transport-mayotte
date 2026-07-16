@@ -65,17 +65,8 @@
       </div>
       <div class="form-group">
         <label>Ligne prise en charge pour ce poste</label>
-        <select id="p-ligne" required>
-          <option value="ALL">🌐 Tout le réseau (supervision globale)</option>
-          <option value="L1">L1 — Mamoudzou / Koungou</option>
-          <option value="L2">L2 — Mamoudzou / Bandraboua</option>
-          <option value="L3">L3 — Mamoudzou / Bouéni</option>
-          <option value="L4">L4 — Mamoudzou / Kani-Kéli</option>
-          <option value="L5">L5 — Mamoudzou / Sada</option>
-          <option value="L6">L6 — Dzaoudzi / Pamandzi</option>
-          <option value="L7">L7 — Koungou / Mtsangamouji</option>
-          <option value="L8">L8 — Mamoudzou / Ouangani</option>
-        </select>
+        <!-- Options injectées depuis CADEMA_LINES (shared.js) : source unique -->
+        <select id="p-ligne" required></select>
       </div>
       <button type="submit" class="btn-portal btn-pro-primary">✓ Démarrer mon poste</button>
     </form>
@@ -211,7 +202,7 @@
       </select>
       <button class="btn-portal btn-pro-primary" onclick="openAdhesionModal()">+ Demande d'adhésion chauffeur</button>
     </div>
-    <h3 class="section-label" style="margin-top:26px">📝 Inscriptions Espace Agents <span class="cand-badge" id="insc-count-badge" style="background:#7c3aed">0</span></h3>
+    <h3 class="section-label" style="margin-top:26px">📝 Inscriptions Espace Agents <span class="cand-badge" id="insc-count-badge" style="background:#0e7490">0</span></h3>
     <div class="candidatures-list" id="inscriptions-list"></div>
 
     <h3 class="section-label" style="margin-top:26px">🚌 Candidatures chauffeurs</h3>
@@ -227,18 +218,8 @@
           <div class="form-row">
             <div class="form-group">
               <label>Destinataires</label>
-              <select id="m-ligne" onchange="setActiveConv(this.value)">
-                <option value="ALL">🌐 Tous les chauffeurs</option>
-                <option value="TEAM">👥 Équipe agents (technique, contrôle, entretien…)</option>
-                <option value="L1">Ligne L1</option>
-                <option value="L2">Ligne L2</option>
-                <option value="L3">Ligne L3</option>
-                <option value="L4">Ligne L4</option>
-                <option value="L5">Ligne L5</option>
-                <option value="L6">Ligne L6</option>
-                <option value="L7">Ligne L7</option>
-                <option value="L8">Ligne L8</option>
-              </select>
+              <!-- Options injectées depuis CADEMA_LINES (shared.js) -->
+              <select id="m-ligne" onchange="setActiveConv(this.value)"></select>
             </div>
             <div class="form-group">
               <label>Nature du message</label>
@@ -441,11 +422,12 @@ function toggleDark() {
 }
 
 // ── Prise de poste (identification + ligne prise en charge) ──
-const LIGNE_LABELS = {
-  ALL:'Tout le réseau', L1:'Mamoudzou / Koungou', L2:'Mamoudzou / Bandraboua',
-  L3:'Mamoudzou / Bouéni', L4:'Mamoudzou / Kani-Kéli', L5:'Mamoudzou / Sada',
-  L6:'Dzaoudzi / Pamandzi', L7:'Koungou / Mtsangamouji', L8:'Mamoudzou / Ouangani'
-};
+// Lignes officielles : CADEMA_LINES (shared.js) — plus de liste locale divergente.
+populateLineSelect(document.getElementById('p-ligne'),
+  { extra: [{ value:'ALL', label:'🌐 Tout le réseau (supervision globale)' }] });
+populateLineSelect(document.getElementById('m-ligne'),
+  { extra: [{ value:'ALL', label:'🌐 Tous les chauffeurs' },
+            { value:'TEAM', label:'👥 Équipe agents (technique, contrôle, entretien…)' }] });
 let proInfo = null;
 
 function loginPro(e) {
@@ -462,7 +444,7 @@ function loginPro(e) {
 function loginProDemo() {
   document.getElementById('p-nom').value = 'Marie DEMO';
   document.getElementById('p-role').value = 'Régulateur réseau';
-  document.getElementById('p-ligne').value = 'L3';
+  document.getElementById('p-ligne').value = '3';
   loginPro();
 }
 
@@ -541,10 +523,10 @@ const agents = [
 ];
 
 const signalements = [
-  { id:'SIG-001', time:'07:42', chauffeur:'Ahmed Ben Said', badge:'CH-008', ligne:'L3', bus:'BUS-03', type:'retard',    urgence:'medium', lieu:'RN1 — km 4 Dembéni',      desc:'Accident sur la RN1 bloquant la circulation. Retard estimé 25 min.', status:'open' },
-  { id:'SIG-002', time:'09:15', chauffeur:'Noura Abdou',    badge:'CH-014', ligne:'L7', bus:'BUS-07', type:'route',     urgence:'high',   lieu:'Route Koungou — Tsoundzou', desc:'Route impraticable suite aux pluies. Demande de suspension temporaire.', status:'open' },
-  { id:'SIG-003', time:'11:03', chauffeur:'Ismail Saïd',   badge:'CH-042', ligne:'L1', bus:'BUS-14', type:'panne',     urgence:'high',   lieu:'Arrêt Kawéni Nord',         desc:'Panne mécanique — moteur surchauffé. Bus immobilisé. Remplacement demandé.', status:'open' },
-  { id:'SIG-004', time:'14:30', chauffeur:'Halima Attoumani', badge:'CH-021', ligne:'L2', bus:'BUS-05', type:'passager', urgence:'low', lieu:'Mamoudzou Centre',          desc:'Passager sans titre de transport refusant de descendre. Incident clos.', status:'resolved' },
+  { id:'SIG-001', time:'07:42', chauffeur:'Ahmed Ben Said', badge:'CH-008', ligne:'3', bus:'BUS-03', type:'retard',    urgence:'medium', lieu:'RN1 — km 4 Dembéni',      desc:'Accident sur la RN1 bloquant la circulation. Retard estimé 25 min.', status:'open' },
+  { id:'SIG-002', time:'09:15', chauffeur:'Noura Abdou',    badge:'CH-014', ligne:'2H', bus:'BUS-07', type:'route',     urgence:'high',   lieu:'Route Koungou — Tsoundzou', desc:'Route impraticable suite aux pluies. Demande de suspension temporaire.', status:'open' },
+  { id:'SIG-003', time:'11:03', chauffeur:'Ismail Saïd',   badge:'CH-042', ligne:'1N', bus:'BUS-14', type:'panne',     urgence:'high',   lieu:'Arrêt Kawéni Nord',         desc:'Panne mécanique — moteur surchauffé. Bus immobilisé. Remplacement demandé.', status:'open' },
+  { id:'SIG-004', time:'14:30', chauffeur:'Halima Attoumani', badge:'CH-021', ligne:'1S', bus:'BUS-05', type:'passager', urgence:'low', lieu:'Mamoudzou Centre',          desc:'Passager sans titre de transport refusant de descendre. Incident clos.', status:'resolved' },
 ];
 
 // ── Tabs ──
@@ -1012,7 +994,7 @@ function renderAgentInscriptions() {
     return;
   }
   const statutPill = {
-    nouvelle: '<span class="urgence-pill" style="background:#ede9fe;color:#6d28d9">🟣 Nouvelle</span>',
+    nouvelle: '<span class="urgence-pill" style="background:#cffafe;color:#0e7490">🟣 Nouvelle</span>',
     validee:  '<span class="urgence-pill urg-low">✅ Validée</span>',
     refusee:  '<span class="urgence-pill urg-high">❌ Refusée</span>'
   };
@@ -1094,6 +1076,13 @@ function submitAdhesion(e) {
     cands[0].docs = Object.fromEntries(Object.entries(candDocs).map(([k, d]) => [k, { name: d.name, size: d.size, type: d.type }]));
     saveCandidatures(cands);
   }
+  // Transmission réelle au dashboard Netlify Forms (même canal que le portail chauffeur)
+  netlifySubmit('candidature-chauffeur', {
+    ref, nom: cands[0].nom, tel: cands[0].tel, email: cands[0].email,
+    commune: cands[0].commune, permis: cands[0].permis, fimo: cands[0].fimo,
+    experience: cands[0].exp, motivation: 'Saisie via portail pro',
+    documents: Object.entries(candDocs).map(([k, d]) => `${k}: ${d.name}`).join(' | ')
+  });
   Object.keys(candDocs).forEach(k => delete candDocs[k]);
   e.target.reset();
   document.querySelectorAll('#adhesion-modal .doc-drop').forEach(d => d.classList.remove('filled'));

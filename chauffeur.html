@@ -14,6 +14,14 @@
 </head>
 <body class="portal-body-wrap">
 
+<!-- Formulaire statique pour la détection Netlify Forms (candidatures réellement reçues) -->
+<form name="candidature-chauffeur" netlify netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="ref"><input name="nom"><input name="tel">
+  <input name="email"><input name="commune"><input name="permis"><input name="fimo">
+  <textarea name="experience"></textarea><textarea name="motivation"></textarea>
+  <input name="documents">
+</form>
+
 <!-- HEADER CHAUFFEUR -->
 <header class="portal-header driver-header">
   <div class="portal-header-inner">
@@ -67,16 +75,8 @@
         </div>
         <div class="form-group">
           <label class="label-highlight">🚍 Ligne occupée durant le poste</label>
-          <select id="d-ligne" required>
-            <option value="L1">L1 — Mamoudzou / Koungou</option>
-            <option value="L2">L2 — Mamoudzou / Bandraboua</option>
-            <option value="L3">L3 — Mamoudzou / Bouéni</option>
-            <option value="L4">L4 — Mamoudzou / Kani-Kéli</option>
-            <option value="L5">L5 — Mamoudzou / Sada</option>
-            <option value="L6">L6 — Dzaoudzi / Pamandzi</option>
-            <option value="L7">L7 — Koungou / Mtsangamouji</option>
-            <option value="L8">L8 — Mamoudzou / Ouangani</option>
-          </select>
+          <!-- Options injectées depuis CADEMA_LINES (shared.js) : source unique -->
+          <select id="d-ligne" required></select>
         </div>
         <button type="submit" class="btn-portal btn-driver-primary">
           <span>✓</span> Confirmer et accéder
@@ -561,10 +561,13 @@ window.addEventListener('storage', (e) => {
 function loginDemo() {
   document.getElementById('d-nom').value   = 'Ibrahim DEMO';
   document.getElementById('d-badge').value = 'CH-000';
-  document.getElementById('d-ligne').value = 'L1';
+  document.getElementById('d-ligne').value = '1N';
   document.getElementById('d-bus').value   = 'BUS-01';
   loginDriver({ preventDefault() {} });
 }
+
+// Lignes officielles injectées depuis la source unique (shared.js)
+populateLineSelect(document.getElementById('d-ligne'));
 
 // ── Candidature chauffeur ─────────────────────────
 const candDocs = {}; // clé → { name, size, type, dataUrl? }
@@ -642,6 +645,20 @@ function submitCandidature(e) {
     cands[0].docs = Object.fromEntries(Object.entries(candDocs).map(([k, d]) => [k, { name: d.name, size: d.size, type: d.type }]));
     localStorage.setItem('cadema_candidatures', JSON.stringify(cands));
   }
+  // Transmission réelle au dashboard Netlify Forms (en plus de la copie locale)
+  netlifySubmit('candidature-chauffeur', {
+    ref,
+    nom:        cands[0].nom,
+    tel:        cands[0].tel,
+    email:      cands[0].email,
+    commune:    cands[0].commune,
+    permis:     cands[0].permis,
+    fimo:       cands[0].fimo,
+    experience: cands[0].exp,
+    motivation: cands[0].motiv,
+    documents:  Object.entries(candDocs).map(([k, d]) => `${k}: ${d.name} (${(d.size/1024).toFixed(0)} Ko)`).join(' | ')
+  });
+
   document.getElementById('cand-ref').textContent = ref;
   document.getElementById('cand-form').classList.add('hidden');
   document.getElementById('cand-success').classList.remove('hidden');

@@ -394,6 +394,8 @@ function subscribeNewsletter(e) {
   e.preventDefault();
   const input = e.target.querySelector('input[type="email"]');
   const btn   = e.target.querySelector('button');
+  // Inscription réellement reçue côté Netlify Forms
+  netlifySubmit('newsletter', { email: input.value.trim() });
   btn.textContent = '✓ Inscrit !';
   btn.style.background = '#059669';
   input.value = '';

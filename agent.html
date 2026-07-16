@@ -6,13 +6,19 @@
   <title>CADEMA — Espace Agents</title>
   <meta name="description" content="Espace agents du réseau Caribus : tâches assignées, missions et communication d'équipe. Accès réservé au personnel CADEMA.">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#5b21b6">
+  <meta name="theme-color" content="#0e7490">
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="cadema.css">
   <link rel="stylesheet" href="portails.css">
 </head>
 <body class="portal-body-wrap">
+
+<!-- Formulaire statique pour la détection Netlify Forms (inscriptions réellement reçues) -->
+<form name="inscription-agent" netlify netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="ref"><input name="nom"><input name="tel">
+  <input name="email"><input name="role"><textarea name="experience"></textarea>
+</form>
 
 <!-- HEADER AGENTS -->
 <header class="portal-header agent-header">
@@ -165,7 +171,7 @@
 
     <!-- Mes tâches (synchronisées avec le portail pro) -->
     <section class="report-form-section">
-      <h3 class="section-label">📋 Mes tâches <span class="cand-badge" id="my-task-count" style="background:#7c3aed">0</span></h3>
+      <h3 class="section-label">📋 Mes tâches <span class="cand-badge" id="my-task-count" style="background:#0e7490">0</span></h3>
       <div id="my-tasks-list" class="my-tasks-list"></div>
     </section>
 
@@ -423,6 +429,15 @@ function submitInscription(e) {
     statut: 'nouvelle'
   });
   localStorage.setItem('cadema_agent_inscriptions', JSON.stringify(inscriptions));
+  // Transmission réelle au dashboard Netlify Forms
+  netlifySubmit('inscription-agent', {
+    ref,
+    nom:        inscriptions[0].nom,
+    tel:        inscriptions[0].tel,
+    email:      inscriptions[0].email,
+    role:       inscriptions[0].role,
+    experience: inscriptions[0].exp
+  });
   document.getElementById('inscription-ref').textContent = ref;
   document.getElementById('inscription-form').classList.add('hidden');
   document.getElementById('inscription-success').classList.remove('hidden');
