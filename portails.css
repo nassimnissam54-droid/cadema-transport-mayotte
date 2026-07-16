@@ -418,7 +418,7 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: linear-gradient(135deg, #2563eb, #0891b2);
   color: #fff;
   font-weight: 800;
   font-size: 1rem;
@@ -747,7 +747,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: linear-gradient(135deg, #2563eb, #0891b2);
   color: #fff;
   font-weight: 800;
   font-size: 1rem;
@@ -822,7 +822,7 @@
 .quick-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.12); }
 .qb-panne:hover    { border-color: #ef4444; color: #dc2626; background: #fef2f2; }
 .qb-retard:hover   { border-color: #f59e0b; color: #d97706; background: #fffbeb; }
-.qb-passager:hover { border-color: #8b5cf6; color: #7c3aed; background: #f5f3ff; }
+.qb-passager:hover { border-color: #06b6d4; color: #0e7490; background: #ecfeff; }
 .qb-route:hover    { border-color: #f97316; color: #ea580c; background: #fff7ed; }
 .qb-accident:hover { border-color: #dc2626; color: #b91c1c; background: #fef2f2; }
 .qb-autre:hover    { border-color: #6b7280; color: #4b5563; background: #f9fafb; }
@@ -1328,13 +1328,13 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
 /* ══════════════════════════════════════════════════════
    ESPACE AGENTS
 ══════════════════════════════════════════════════════ */
-.agent-header { background: linear-gradient(135deg, #5b21b6 0%, #6d28d9 100%); }
+.agent-header { background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%); }
 
 .portal-agent {
-  background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%);
-  box-shadow: 0 4px 20px rgba(124,58,237,.3);
+  background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%);
+  box-shadow: 0 4px 20px rgba(8,145,178,.3);
 }
-.portal-agent:hover { box-shadow: 0 8px 30px rgba(124,58,237,.45); }
+.portal-agent:hover { box-shadow: 0 8px 30px rgba(8,145,178,.45); }
 .portal-badge-agent { background: rgba(255,255,255,.2); }
 
 .agent-demo-grid {
@@ -1342,18 +1342,18 @@ a.cand-doc-chip:hover { background: rgba(37,99,235,.16); }
   gap: 8px; margin-top: 4px;
 }
 .agent-demo-btn {
-  background: #7c3aed; color: #fff; border: none;
+  background: #0e7490; color: #fff; border: none;
   padding: 10px 8px; border-radius: 10px;
   font-size: 12px; font-weight: 700; cursor: pointer;
   transition: background .15s, transform .15s;
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.agent-demo-btn:hover { background: #6d28d9; transform: translateY(-1px); }
+.agent-demo-btn:hover { background: #155e75; transform: translateY(-1px); }
 
 .my-tasks-list { display: flex; flex-direction: column; gap: 12px; }
 
-.label-highlight { color: #7c3aed; font-weight: 800; }
+.label-highlight { color: #0e7490; font-weight: 800; }
 
 .agent-login-section.hidden { display: none !important; }
 
