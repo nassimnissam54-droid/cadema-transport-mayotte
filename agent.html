@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -212,7 +212,14 @@ function toggleDark() {
   const dark = html.getAttribute('data-theme') === 'dark';
   html.setAttribute('data-theme', dark ? 'light' : 'dark');
   document.getElementById('ag-dark-btn').textContent = dark ? '🌙' : '☀️';
+  localStorage.setItem('cadema_theme', dark ? 'light' : 'dark');
 }
+(function initTheme() {
+  const theme = localStorage.getItem('cadema_theme') === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  const b = document.getElementById('ag-dark-btn');
+  if (b) b.textContent = theme === 'dark' ? '☀️' : '🌙';
+})();
 
 let agentInfo = null;
 

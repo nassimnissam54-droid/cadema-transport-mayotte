@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -371,13 +371,20 @@ function toggleDark() {
   const dark = html.getAttribute('data-theme') === 'dark';
   html.setAttribute('data-theme', dark ? 'light' : 'dark');
   document.getElementById('ch-dark-btn').textContent = dark ? '🌙' : '☀️';
+  localStorage.setItem('cadema_theme', dark ? 'light' : 'dark');
 }
+(function initTheme() {
+  const theme = localStorage.getItem('cadema_theme') === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  const b = document.getElementById('ch-dark-btn');
+  if (b) b.textContent = theme === 'dark' ? '☀️' : '🌙';
+})();
 
-const LIGNE_DEST = {
-  L1:'Mamoudzou / Koungou', L2:'Mamoudzou / Bandraboua', L3:'Mamoudzou / Bouéni',
-  L4:'Mamoudzou / Kani-Kéli', L5:'Mamoudzou / Sada', L6:'Dzaoudzi / Pamandzi',
-  L7:'Koungou / Mtsangamouji', L8:'Mamoudzou / Ouangani'
-};
+// Destination d'une ligne depuis la source unique (shared.js : CADEMA_LINES)
+function lineDest(code) {
+  const l = (typeof CADEMA_LINES !== 'undefined') && CADEMA_LINES.find(x => x.code === code);
+  return l ? l.name : '';
+}
 
 let driverInfo = {};
 let sessionReports = [];
@@ -390,7 +397,7 @@ function loginDriver(e) {
     nom:   document.getElementById('d-nom').value,
     badge: document.getElementById('d-badge').value,
     ligne,
-    dest:  LIGNE_DEST[ligne] || '',
+    dest:  lineDest(ligne),
     bus:   document.getElementById('d-bus').value,
   };
   document.getElementById('d-avatar-display').textContent = driverInfo.nom.slice(0,2).toUpperCase();

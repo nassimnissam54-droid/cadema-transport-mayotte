@@ -66,6 +66,15 @@
   /* ── Layout ── */
   --max-w: 1280px;
   --header-h: 72px;
+
+  /* ── Alias sémantiques (surface/texte/bordure) ──
+     Pointent vers les tokens neutres, eux-mêmes remappés en dark :
+     ces alias s'adaptent donc automatiquement au thème. */
+  --surface:     var(--white);
+  --surface-alt: var(--gray-50);
+  --border:      var(--gray-200);
+  --text:        var(--gray-900);
+  --text-muted:  var(--gray-500);
 }
 
 /* ── Dark mode ── */
@@ -90,6 +99,11 @@
   --shadow-sm:   0 1px 3px rgba(0,0,0,.4);
   --shadow-md:   0 4px 16px rgba(0,0,0,.5);
   --shadow-lg:   0 12px 40px rgba(0,0,0,.6);
+
+  /* Surfaces élevées (Transit dark) : les cartes ressortent du fond #061326 */
+  --surface:     #0f2547;
+  --surface-alt: #0d1f3c;
+  --border:      #1e3560;
 }
 
 html { scroll-behavior: smooth; }
