@@ -1,5 +1,5 @@
 // CADEMA — Service Worker : mode hors-ligne (horaires & pages en cache)
-const CACHE = 'cadema-v4';
+const CACHE = 'cadema-v5';
 const PRECACHE = [
   './',
   './index.html',
@@ -29,34 +29,21 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// Stratégie : network-first pour nos fichiers (toujours à jour si en ligne),
-// cache-first pour les ressources externes (tuiles carte, fonts, Leaflet CDN).
+// Stratégie : network-first pour NOS fichiers uniquement (toujours à jour en ligne,
+// disponibles hors-ligne). Les ressources externes (tuiles de carte OpenStreetMap,
+// fonts, géocodage) ne sont PAS interceptées : elles vont directement au réseau.
+// (Les intercepter et les mettre en cache pouvait figer des tuiles cassées.)
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
-  if (e.request.method !== 'GET') return;
+  if (e.request.method !== 'GET' || url.origin !== location.origin) return;
 
-  if (url.origin === location.origin) {
-    e.respondWith(
-      fetch(e.request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-          return res;
-        })
-        .catch(() => caches.match(e.request).then((m) => m || caches.match('./index.html')))
-    );
-  } else {
-    e.respondWith(
-      caches.match(e.request).then((m) =>
-        m || fetch(e.request).then((res) => {
-          // Ne met en cache que les ressources statiques utiles (fonts, leaflet, tuiles)
-          if (/tile\.openstreetmap\.org|unpkg\.com|fonts\.(googleapis|gstatic)\.com/.test(url.host)) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, copy));
-          }
-          return res;
-        })
-      )
-    );
-  }
+  e.respondWith(
+    fetch(e.request)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        return res;
+      })
+      .catch(() => caches.match(e.request).then((m) => m || caches.match('./index.html')))
+  );
 });
