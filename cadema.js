@@ -1425,8 +1425,16 @@ function renderItinMap(from, to, route, line, walkIn, walkOut) {
   const bounds = L.latLngBounds(latlngs);
   bounds.extend([walkIn.point.lat, walkIn.point.lng]);
   bounds.extend([walkOut.point.lat, walkOut.point.lng]);
-  itinMap.fitBounds(bounds, { padding: [40, 40] });
-  setTimeout(() => itinMap.invalidateSize(), 100);
+  // invalidateSize AVANT fitBounds : si le conteneur vient d'être affiché,
+  // Leaflet a une taille cachée à 0 et fitBounds partirait au zoom max (rue).
+  // maxZoom plafonne le zoom pour garder tout le trajet visible.
+  itinMap.invalidateSize();
+  itinMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+  // Second passe après le rendu, au cas où la mise en page ne serait pas finalisée.
+  setTimeout(() => {
+    itinMap.invalidateSize();
+    itinMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+  }, 150);
 }
 
 function showItinResult() {
