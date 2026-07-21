@@ -129,6 +129,12 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
   border-bottom: 1px solid rgba(255,255,255,.08);
   transition: all .3s var(--ease);
 }
+/* Filet d'accent aux couleurs Caribus (orange → teal) */
+.header::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: linear-gradient(90deg, var(--gold) 0%, #ec6a1e 35%, var(--teal) 100%);
+  opacity: .9;
+}
 
 .header.scrolled {
   background: rgba(6,26,53,.95);
@@ -146,9 +152,20 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
 }
 
 /* Logo */
-.logo { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-.logo-name { display: block; font-size: 22px; font-weight: 900; color: #fff; letter-spacing: -.2px; }
-.logo-sub  { display: block; font-size: 9.5px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: 1.8px; }
+.logo { display: flex; align-items: center; gap: 14px; flex-shrink: 0; text-decoration: none; }
+.logo-img {
+  height: 45px; width: auto; display: block;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.35));
+  transition: transform .25s var(--ease);
+}
+.logo:hover .logo-img { transform: scale(1.04); }
+.logo-sub {
+  display: block; font-size: 10px; line-height: 1.35;
+  color: rgba(255,255,255,.62); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  padding-left: 14px; border-left: 1px solid rgba(255,255,255,.18);
+}
+.logo-name { display: none; }
 
 /* Nav */
 .main-nav { display: flex; align-items: center; gap: 2px; flex: 1; }
@@ -1651,9 +1668,9 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
   border-image: linear-gradient(90deg, var(--blue-mid), var(--teal), var(--gold)) 1;
 }
 .footer-inner { max-width: var(--max-w); margin: 0 auto; padding: 0 32px 48px; display: grid; grid-template-columns: 300px 1fr; gap: 56px; }
-.footer-brand { display: flex; align-items: flex-start; gap: 14px; }
-.footer-brand-name { font-size: 20px; font-weight: 900; color: #fff; letter-spacing: -.2px; }
-.footer-brand-sub  { font-size: 12px; color: rgba(255,255,255,.35); margin-top: 3px; }
+.footer-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.footer-logo-img { height: 52px; width: auto; display: block; }
+.footer-brand-sub  { font-size: 12px; line-height: 1.6; color: rgba(255,255,255,.45); }
 .footer-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
 .footer-col { display: flex; flex-direction: column; gap: 11px; }
 .footer-col strong { color: rgba(255,255,255,.85); font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
@@ -1993,7 +2010,7 @@ input:focus, select:focus, textarea:focus {
   /* Header mobile simplifié */
   .header-inner { padding: 0 16px; gap: 12px; }
   .logo-sub { display: none; }
-  .logo-name { font-size: 18px; }
+  .logo-img { height: 38px; }
   .main-nav { display: none !important; }
   .agent-chip { display: none; }
   .live-clock { display: none; }
