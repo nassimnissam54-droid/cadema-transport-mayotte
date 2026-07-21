@@ -1425,16 +1425,18 @@ function renderItinMap(from, to, route, line, walkIn, walkOut) {
   const bounds = L.latLngBounds(latlngs);
   bounds.extend([walkIn.point.lat, walkIn.point.lng]);
   bounds.extend([walkOut.point.lat, walkOut.point.lng]);
-  // invalidateSize AVANT fitBounds : si le conteneur vient d'être affiché,
-  // Leaflet a une taille cachée à 0 et fitBounds partirait au zoom max (rue).
-  // maxZoom plafonne le zoom pour garder tout le trajet visible.
-  itinMap.invalidateSize();
-  itinMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-  // Second passe après le rendu, au cas où la mise en page ne serait pas finalisée.
-  setTimeout(() => {
+  // NB : fitBounds() se révèle capricieux quand le conteneur vient d'être
+  // affiché (il n'applique pas le zoom). On calcule donc le zoom nous-mêmes
+  // via getBoundsZoom() — fiable — puis setView() sans animation.
+  const fitToRoute = () => {
     itinMap.invalidateSize();
-    itinMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-  }, 150);
+    if (!bounds.isValid()) return;
+    const z = Math.min(itinMap.getBoundsZoom(bounds), 15);
+    itinMap.setView(bounds.getCenter(), z, { animate: false });
+  };
+  fitToRoute();
+  // Seconde passe après finalisation de la mise en page.
+  setTimeout(fitToRoute, 150);
 }
 
 function showItinResult() {
