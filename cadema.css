@@ -2656,3 +2656,46 @@ textarea:focus-visible,
     scroll-behavior: auto !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════
+   INFO TRAFIC — Incidents usagers (vue publique)
+══════════════════════════════════════════════════════ */
+.inner-page-sub { font-size: 13.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; max-width: 620px; }
+
+.inc-notice {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--blue-xlight); border: 1px solid var(--blue-light);
+  border-left: 3px solid var(--blue-mid);
+  border-radius: var(--r-md); padding: 13px 16px; margin: 16px 0 18px;
+  font-size: 13px; color: var(--text); line-height: 1.55;
+}
+[data-theme="dark"] .inc-notice { background: rgba(26,86,196,.1); }
+
+.inc-verified-tag {
+  font-size: 10.5px; font-weight: 800; letter-spacing: .02em;
+  padding: 3px 9px; border-radius: 100px;
+  background: rgba(5,150,105,.12); color: var(--green);
+}
+
+.inc-modal-note {
+  background: var(--blue-xlight); border: 1px solid var(--blue-light);
+  border-radius: var(--r-md); padding: 11px 14px; margin-bottom: 16px;
+  font-size: 12.5px; color: var(--text); line-height: 1.5;
+}
+[data-theme="dark"] .inc-modal-note { background: rgba(26,86,196,.1); }
+
+/* Mes signalements (usager connecté) */
+.my-inc-reports:empty { display: none; }
+.my-inc-reports { margin-top: 24px; }
+.my-inc-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+.my-inc-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 13px 15px; margin-bottom: 10px;
+}
+.my-inc-line { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-left: 6px; }
+.my-inc-desc { font-size: 13.5px; color: var(--text); margin: 6px 0 4px; line-height: 1.5; }
+.my-inc-date { font-size: 11.5px; color: var(--text-muted); }
+.inc-rp-pill { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 100px; }
+.inc-rp-pending { background: var(--gold-light); color: var(--gold-dark); }
+.inc-rp-ok      { background: var(--green-light); color: var(--green); }
+.inc-rp-no      { background: var(--red-light); color: var(--red); }

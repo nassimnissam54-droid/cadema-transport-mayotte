@@ -106,6 +106,7 @@
     <button class="pro-tab" onclick="switchTab('signalements', this)">🚨 Signalements chauffeurs</button>
     <button class="pro-tab" onclick="switchTab('candidatures', this)">🧑‍✈️ Candidatures <span class="cand-badge" id="cand-count-badge">0</span></button>
     <button class="pro-tab" onclick="switchTab('comm', this)">📡 Communication <span class="cand-badge" id="comm-count-badge" style="background:#059669">0</span></button>
+    <button class="pro-tab" onclick="switchTab('incidents', this)">🚧 Incidents usagers <span class="cand-badge" id="userinc-badge" style="background:#dc2626">0</span></button>
   </div>
 
   <!-- ── KANBAN ── -->
@@ -244,6 +245,20 @@
         <div class="comm-thread" id="comm-thread"></div>
       </div>
     </div>
+  </div>
+
+  <!-- ── INCIDENTS USAGERS À VÉRIFIER ── -->
+  <div id="tab-incidents" class="pro-tab-content">
+    <div class="sig-toolbar">
+      <select class="filter-select" onchange="filterUserIncidents(this.value)">
+        <option value="pending">🕐 À vérifier</option>
+        <option value="validated">✅ Validés</option>
+        <option value="rejected">❌ Rejetés</option>
+        <option value="all">Tous</option>
+      </select>
+      <span class="userinc-hint" id="userinc-scope">Signalements des voyageurs · votre ligne</span>
+    </div>
+    <div class="candidatures-list" id="userinc-list"></div>
   </div>
 
 </main>
@@ -467,6 +482,8 @@ function applyPoste() {
 
   // Recharge les vues qui dépendent de la ligne prise en charge
   renderSignalements();
+  renderUserIncidents();
+  updateUserIncBadge();
   updateKPIs();
 
   // Pré-cible la ligne du poste dans le formulaire de communication
@@ -549,6 +566,7 @@ function switchTab(id, btn) {
   if (id === 'signalements')  renderSignalements();
   if (id === 'candidatures')  { renderCandidatures(); updateCandBadge(); renderAgentInscriptions(); }
   if (id === 'comm')          { renderConvList(); renderCommThread(); markCommRead(); }
+  if (id === 'incidents')     { renderUserIncidents(); markUserIncSeen(); }
 }
 
 // ── KPIs ──
@@ -987,6 +1005,93 @@ function getAgentInscriptions() {
   catch { return []; }
 }
 
+// ── Incidents usagers : vérification par les pros de la ligne ──
+let userIncFilter = 'pending';
+
+function getIncidentReports() {
+  try { return JSON.parse(localStorage.getItem('cadema_incident_reports') || '[]'); }
+  catch { return []; }
+}
+function saveIncidentReports(r) { localStorage.setItem('cadema_incident_reports', JSON.stringify(r)); }
+
+// Un pro ne voit que les signalements de SA ligne (ou tous si supervision réseau)
+function concernsMyLine(r) {
+  return !proInfo || proInfo.ligne === 'ALL' || r.line === proInfo.ligne;
+}
+
+function filterUserIncidents(v) { userIncFilter = v; renderUserIncidents(); }
+
+function updateUserIncBadge() {
+  const pending = getIncidentReports().filter(r => r.status === 'pending' && concernsMyLine(r)).length;
+  const b = document.getElementById('userinc-badge');
+  if (!b) return;
+  b.textContent = pending;
+  b.style.display = pending ? 'inline-flex' : 'none';
+}
+
+function renderUserIncidents() {
+  const el = document.getElementById('userinc-list');
+  if (!el) return;
+  const scope = document.getElementById('userinc-scope');
+  if (scope) scope.textContent = (proInfo && proInfo.ligne !== 'ALL')
+    ? `Signalements des voyageurs · ligne ${proInfo.ligne}`
+    : 'Signalements des voyageurs · tout le réseau';
+
+  let list = getIncidentReports().filter(concernsMyLine);
+  if (userIncFilter !== 'all') list = list.filter(r => r.status === userIncFilter);
+
+  if (!list.length) {
+    el.innerHTML = `<div class="no-reports">Aucun signalement ${userIncFilter === 'pending' ? 'à vérifier' : 'dans ce statut'} pour votre périmètre.<br><small>Les signalements envoyés par les voyageurs depuis l'accueil apparaissent ici.</small></div>`;
+    return;
+  }
+  const sevPill = {
+    high:   '<span class="urg-pill urg-high">🔴 Élevée</span>',
+    medium: '<span class="urg-pill urg-medium">🟡 Moyenne</span>',
+    low:    '<span class="urg-pill urg-low">🟢 Faible</span>'
+  };
+  const statutPill = {
+    pending:   '<span class="urgence-pill urg-medium">🕐 À vérifier</span>',
+    validated: '<span class="urgence-pill urg-low">✅ Validé — publié</span>',
+    rejected:  '<span class="urgence-pill urg-high">❌ Rejeté</span>'
+  };
+  el.innerHTML = list.map(r => `
+    <div class="report-card">
+      <div class="report-card-header">
+        <span class="report-id">${r.id}</span>
+        <span class="sig-type">🚌 Ligne ${r.line}</span>
+        ${sevPill[r.severity] || ''}
+        ${statutPill[r.status] || ''}
+        <span class="report-time">${r.date} · ${r.time}</span>
+      </div>
+      <div class="report-desc">${r.desc}</div>
+      <div class="report-lieu">👤 Signalé par ${r.reporterName || 'un voyageur'}</div>
+      ${r.status === 'pending' ? `
+      <div class="report-actions" style="margin-top:10px">
+        <button class="btn-portal btn-sm btn-outline" style="color:#059669;border-color:#059669" onclick="validateUserIncident('${r.id}')">✅ Valider & publier</button>
+        <button class="btn-portal btn-sm btn-outline" style="color:#b91c1c;border-color:#b91c1c" onclick="rejectUserIncident('${r.id}')">❌ Rejeter</button>
+      </div>` : `
+      <div class="report-actions" style="margin-top:10px">
+        <button class="btn-portal btn-sm btn-outline" onclick="reopenUserIncident('${r.id}')">↩︎ Remettre à vérifier</button>
+      </div>`}
+    </div>`).join('');
+}
+
+function setUserIncStatus(id, status) {
+  const reports = getIncidentReports();
+  const r = reports.find(x => x.id === id);
+  if (!r) return;
+  r.status = status;
+  r.verifiedBy = proInfo ? proInfo.nom : 'Régulation';
+  saveIncidentReports(reports);
+  renderUserIncidents();
+  updateUserIncBadge();
+}
+function validateUserIncident(id) { setUserIncStatus(id, 'validated'); toast('Signalement validé — désormais visible dans l\'info trafic publique. ✅', 'success'); }
+function rejectUserIncident(id)   { setUserIncStatus(id, 'rejected');  toast('Signalement rejeté — non publié.', 'warning'); }
+function reopenUserIncident(id)   { setUserIncStatus(id, 'pending');   toast('Signalement remis en file de vérification.', 'info'); }
+
+function markUserIncSeen() { updateUserIncBadge(); }
+
 function renderAgentInscriptions() {
   const el = document.getElementById('inscriptions-list');
   if (!el) return;
@@ -1222,6 +1327,8 @@ renderSignalements();
 renderCandidatures();
 updateCandBadge();
 renderAgentInscriptions();
+renderUserIncidents();
+updateUserIncBadge();
 
 // ── Notifications selon le degré d'urgence ──
 let knownSigIds = new Set(getLiveSignalements().map(s => s.id));
@@ -1317,6 +1424,12 @@ window.addEventListener('storage', (e) => {
   if (e.key === 'cadema_agent_inscriptions') {
     renderAgentInscriptions();
     toast('📝 Nouvelle inscription Espace Agents reçue.', 'info');
+  }
+  if (e.key === 'cadema_incident_reports') {
+    renderUserIncidents();
+    updateUserIncBadge();
+    const pending = getIncidentReports().filter(r => r.status === 'pending' && concernsMyLine(r));
+    if (pending.length) toast('🚧 Nouveau signalement usager à vérifier.', 'warning');
   }
   if (e.key === 'cadema_messages') {
     renderConvList();

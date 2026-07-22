@@ -650,7 +650,7 @@ function animateCounter(el, target, duration=1200) {
 }
 
 function updateHeroKPIs() {
-  const openCnt   = incidents.filter(i => i.status === 'open').length;
+  const openCnt   = publicIncidents().filter(i => i.status === 'open').length;
   const activeCnt = lines.filter(l => l.status === 'active').length;
   const incEl  = document.getElementById('hkpi-incidents');
   const lineEl = document.getElementById('hkpi-lines');
@@ -1528,13 +1528,31 @@ function activeIncidentFilter() {
   return document.getElementById('inc-filter-select')?.value || 'all';
 }
 
+// ── Signalements usagers (stockage partagé avec le portail pro) ──
+// Un usager connecté signale → statut 'pending' → un professionnel de la
+// ligne valide (→ 'validated', publié) ou rejette (→ 'rejected').
+function getIncidentReports() {
+  try { return JSON.parse(localStorage.getItem('cadema_incident_reports') || '[]'); }
+  catch { return []; }
+}
+
+// Incidents visibles publiquement : officiels (jeu de démo) + signalements validés
+function publicIncidents() {
+  // Un signalement validé par un pro devient une perturbation active ('open')
+  const validated = getIncidentReports()
+    .filter(r => r.status === 'validated')
+    .map(r => ({ ...r, status: 'open', fromUser: true }));
+  return [...validated, ...incidents];
+}
+
 function renderIncidentTimeline(filter='all') {
   const el = document.getElementById('incident-timeline');
   if (!el) return;
-  const filtered = filter === 'all' ? incidents
-    : incidents.filter(i => filter === 'open' ? i.status === 'open' : i.status === 'resolved');
+  const all = publicIncidents();
+  const filtered = filter === 'all' ? all
+    : all.filter(i => filter === 'open' ? i.status === 'open' : i.status === 'resolved');
   if (!filtered.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div><p>Aucun incident pour ce filtre.</p></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div><p>Aucune perturbation signalée. Bon voyage sur le réseau Caribus !</p></div>`;
     return;
   }
   el.innerHTML = filtered.map((inc, idx) => `
@@ -1545,56 +1563,91 @@ function renderIncidentTimeline(filter='all') {
       </div>
       <div class="timeline-body">
         <div class="timeline-top">
-          <span class="timeline-id">${inc.id}</span>
           ${severityPill(inc.severity)}
           ${incStatusPill(inc.status)}
+          ${inc.fromUser ? '<span class="inc-verified-tag">✓ Signalé par un usager · vérifié</span>' : ''}
         </div>
-        <div class="timeline-desc">${inc.desc}</div>
+        <div class="timeline-desc">${esc(inc.desc)}</div>
         <div class="timeline-meta">
           <span>📅 ${inc.date} à ${inc.time}</span>
-          <span>🚌 Ligne ${inc.line}</span>
-          ${inc.status === 'open'
-            ? `<button class="btn btn-sm btn-primary" style="margin-left:auto" onclick="resolveIncident('${inc.id}')">✓ Résoudre</button>`
-            : `<span style="color:var(--green);font-size:12px;font-weight:700;margin-left:auto">✓ Résolu</span>`}
+          <span>🚌 Ligne ${esc(inc.line)}</span>
+          ${inc.status === 'resolved'
+            ? `<span style="color:var(--green);font-size:12px;font-weight:700;margin-left:auto">✓ Rétabli</span>`
+            : `<span style="color:var(--gold);font-size:12px;font-weight:700;margin-left:auto">● En cours</span>`}
         </div>
       </div>
     </div>`).join('');
+  renderMyIncidentReports();
+}
+
+// Signalements de l'usager connecté (ses propres reports, tous statuts)
+function renderMyIncidentReports() {
+  const box = document.getElementById('my-inc-reports');
+  if (!box) return;
+  const email = (typeof currentUserEmail === 'function') ? currentUserEmail() : null;
+  if (!email) { box.innerHTML = ''; return; }
+  const mine = getIncidentReports().filter(r => r.reporterEmail === email);
+  if (!mine.length) { box.innerHTML = ''; return; }
+  const statut = {
+    pending:   '<span class="inc-rp-pill inc-rp-pending">🕐 En vérification</span>',
+    validated: '<span class="inc-rp-pill inc-rp-ok">✅ Publié</span>',
+    rejected:  '<span class="inc-rp-pill inc-rp-no">❌ Non retenu</span>'
+  };
+  box.innerHTML = `
+    <div class="my-inc-title">Mes signalements</div>
+    ${mine.map(r => `
+      <div class="my-inc-item">
+        <div>${statut[r.status] || ''} <span class="my-inc-line">Ligne ${esc(r.line)}</span></div>
+        <div class="my-inc-desc">${esc(r.desc)}</div>
+        <div class="my-inc-date">${r.date} à ${r.time}</div>
+      </div>`).join('')}`;
 }
 
 function filterIncidents(val) { renderIncidentTimeline(val); }
 
-function resolveIncident(id) {
-  const inc = incidents.find(i => i.id === id);
-  if (!inc) return;
-  inc.status = 'resolved';
-  renderIncidentTimeline(activeIncidentFilter());
-  updateHeroKPIs();
-  renderTicker();
-  toast(`Incident ${id} marqué comme résolu.`, 'success');
+// Clic sur "Signaler un incident" : réservé aux comptes usagers
+function openIncidentReport() {
+  const email = (typeof currentUserEmail === 'function') ? currentUserEmail() : null;
+  if (!email) {
+    toast('Créez un compte ou connectez-vous pour signaler un incident.', 'warning', '🔒');
+    showSection('compte');
+    return;
+  }
+  openModal('add-incident-modal');
 }
 
 function addIncident(e) {
   e.preventDefault();
+  const email = (typeof currentUserEmail === 'function') ? currentUserEmail() : null;
+  if (!email) { toast('Connectez-vous pour signaler un incident.', 'warning', '🔒'); return; }
+
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
-  incIdCounter++;
-  const newInc = {
-    id:       'INC-' + String(incIdCounter).padStart(3,'0'),
-    date:     `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`,
-    time:     `${pad(now.getHours())}:${pad(now.getMinutes())}`,
-    line:     document.getElementById('new-inc-line').value,
-    desc:     document.getElementById('new-inc-desc').value,
-    severity: document.getElementById('new-inc-severity').value,
-    status:   'open',
+  const reports = getIncidentReports();
+  const ref = 'SIG-U' + String(reports.length + 1).padStart(3,'0');
+  const report = {
+    id:            ref,
+    date:          `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`,
+    time:          `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+    line:          document.getElementById('new-inc-line').value,
+    desc:          document.getElementById('new-inc-desc').value.trim(),
+    severity:      document.getElementById('new-inc-severity').value,
+    status:        'pending',
+    reporterEmail: email,
+    reporterName:  (compte && compte.nom) || email
   };
-  incidents.unshift(newInc);
+  reports.unshift(report);
+  localStorage.setItem('cadema_incident_reports', JSON.stringify(reports));
   e.target.reset();
   closeModal('add-incident-modal');
   renderIncidentTimeline(activeIncidentFilter());
-  updateHeroKPIs();
-  renderTicker();
-  toast(`Incident ${newInc.id} signalé.`, 'warning');
+  toast('Merci ! Votre signalement sera vérifié par un professionnel de la ligne avant publication.', 'success', '📨');
 }
+
+// Mise à jour en direct quand un pro valide/rejette (autre onglet)
+window.addEventListener('storage', (e) => {
+  if (e.key === 'cadema_incident_reports') renderIncidentTimeline(activeIncidentFilter());
+});
 
 // ── Stats & charts ────────────────────────────────
 function animateStats() {

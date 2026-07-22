@@ -172,7 +172,7 @@
       <span class="drawer-item-label">Planifier un itinéraire</span>
     </a>
 
-    <a class="drawer-item drawer-item-action" onclick="closeDrawer();showSection('incidents');openModal('add-incident-modal')">
+    <a class="drawer-item drawer-item-action" onclick="closeDrawer();showSection('incidents');openIncidentReport()">
       <span class="drawer-item-icon">🚨</span>
       <span class="drawer-item-label">Signaler un incident</span>
     </a>
@@ -451,7 +451,7 @@
           <div class="service-body"><h3>Agents en service</h3><p>Visualisez le nombre d'agents actuellement en service par secteur.</p></div>
           <span class="service-link">Accéder →</span>
         </div>
-        <div class="service-card" onclick="openModal('add-incident-modal')">
+        <div class="service-card" onclick="showSection('incidents');openIncidentReport()">
           <div class="service-icon sicon-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg></div>
           <div class="service-body"><h3>Signaler un incident</h3><p>Déclarez rapidement une perturbation pour alerter les équipes terrain.</p></div>
           <span class="service-link">Signaler →</span>
@@ -706,19 +706,30 @@
 <div id="section-incidents" class="page">
   <div class="inner-page">
     <div class="inner-page-header">
-      <h2>Suivi des incidents</h2>
-      <button class="btn btn-danger" onclick="openModal('add-incident-modal')">⚠ Signaler un incident</button>
+      <div>
+        <h2>Info trafic — Incidents & perturbations</h2>
+        <p class="inner-page-sub">Retards, déviations et perturbations en cours sur le réseau Caribus. Informations vérifiées par nos équipes.</p>
+      </div>
+      <button class="btn btn-danger" onclick="openIncidentReport()">⚠ Signaler un incident</button>
     </div>
+
+    <div class="inc-notice">
+      🔒 Le signalement d'incident est réservé aux voyageurs disposant d'un compte. Chaque signalement est <strong>vérifié par un professionnel de la ligne concernée</strong> avant d'être publié ici.
+    </div>
+
     <div class="toolbar">
       <select class="filter-select" id="inc-filter-select" onchange="filterIncidents(this.value)">
-        <option value="all">Tous les incidents</option>
-        <option value="open">🔴 En cours</option>
-        <option value="resolved">✅ Résolus</option>
+        <option value="all">Toutes les perturbations</option>
+        <option value="open">● En cours</option>
+        <option value="resolved">✓ Rétablies</option>
       </select>
     </div>
     <div class="card">
       <div class="incident-timeline" id="incident-timeline"></div>
     </div>
+
+    <!-- Signalements de l'usager connecté -->
+    <div class="my-inc-reports" id="my-inc-reports"></div>
   </div>
 </div>
 
@@ -946,7 +957,7 @@
 </footer>
 
 <!-- Floating action button -->
-<button class="fab" onclick="openModal('add-incident-modal')" title="Signaler un incident">
+<button class="fab" onclick="showSection('incidents');openIncidentReport()" title="Signaler un incident">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
 </button>
 
@@ -985,14 +996,15 @@
   <div class="modal">
     <div class="modal-header"><h3>Signaler un incident</h3><button onclick="closeModal('add-incident-modal')">&times;</button></div>
     <form onsubmit="addIncident(event)">
+      <div class="inc-modal-note">📨 Votre signalement sera transmis aux professionnels de la ligne concernée. Il sera publié dans l'info trafic une fois <strong>vérifié et validé</strong>.</div>
       <div class="form-row">
         <div class="form-group"><label>Ligne concernée</label><select id="new-inc-line"></select></div>
-        <div class="form-group"><label>Gravité</label><select id="new-inc-severity"><option value="low">Faible</option><option value="medium">Moyenne</option><option value="high">Élevée</option></select></div>
+        <div class="form-group"><label>Type / gravité</label><select id="new-inc-severity"><option value="low">Faible — gêne mineure</option><option value="medium">Moyenne — retard notable</option><option value="high">Élevée — ligne interrompue</option></select></div>
       </div>
-      <div class="form-group"><label>Description de l'incident</label><textarea id="new-inc-desc" rows="3" placeholder="Décrivez précisément l'incident…" required></textarea></div>
+      <div class="form-group"><label>Que se passe-t-il ?</label><textarea id="new-inc-desc" rows="3" placeholder="ex : Bus non passé à l'arrêt Kawéni depuis 20 min ; forte affluence…" required></textarea></div>
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" onclick="closeModal('add-incident-modal')">Annuler</button>
-        <button type="submit" class="btn btn-danger">Signaler l'incident</button>
+        <button type="submit" class="btn btn-danger">📨 Envoyer mon signalement</button>
       </div>
     </form>
   </div>
