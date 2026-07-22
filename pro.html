@@ -1014,15 +1014,16 @@ function getIncidentReports() {
 }
 function saveIncidentReports(r) { localStorage.setItem('cadema_incident_reports', JSON.stringify(r)); }
 
-// Un pro ne voit que les signalements de SA ligne (ou tous si supervision réseau)
-function concernsMyLine(r) {
-  return !proInfo || proInfo.ligne === 'ALL' || r.line === proInfo.ligne;
+// Le signalement concerne-t-il la ligne prise en charge par ce pro ?
+function isMyLineInc(r) {
+  return proInfo && proInfo.ligne !== 'ALL' && r.line === proInfo.ligne;
 }
 
 function filterUserIncidents(v) { userIncFilter = v; renderUserIncidents(); }
 
 function updateUserIncBadge() {
-  const pending = getIncidentReports().filter(r => r.status === 'pending' && concernsMyLine(r)).length;
+  // Badge = tous les signalements en attente (le pro ne doit en rater aucun)
+  const pending = getIncidentReports().filter(r => r.status === 'pending').length;
   const b = document.getElementById('userinc-badge');
   if (!b) return;
   b.textContent = pending;
@@ -1034,14 +1035,16 @@ function renderUserIncidents() {
   if (!el) return;
   const scope = document.getElementById('userinc-scope');
   if (scope) scope.textContent = (proInfo && proInfo.ligne !== 'ALL')
-    ? `Signalements des voyageurs · ligne ${proInfo.ligne}`
+    ? `Signalements des voyageurs · votre ligne ${proInfo.ligne} en priorité`
     : 'Signalements des voyageurs · tout le réseau';
 
-  let list = getIncidentReports().filter(concernsMyLine);
+  // Tous les signalements sont visibles ; ceux de la ligne du pro remontent en tête
+  let list = getIncidentReports();
   if (userIncFilter !== 'all') list = list.filter(r => r.status === userIncFilter);
+  list = [...list].sort((a, b) => (isMyLineInc(b) - isMyLineInc(a)));
 
   if (!list.length) {
-    el.innerHTML = `<div class="no-reports">Aucun signalement ${userIncFilter === 'pending' ? 'à vérifier' : 'dans ce statut'} pour votre périmètre.<br><small>Les signalements envoyés par les voyageurs depuis l'accueil apparaissent ici.</small></div>`;
+    el.innerHTML = `<div class="no-reports">Aucun signalement ${userIncFilter === 'pending' ? 'à vérifier' : 'dans ce statut'}.<br><small>Les signalements envoyés par les voyageurs depuis l'accueil apparaissent ici.</small></div>`;
     return;
   }
   const sevPill = {
@@ -1055,10 +1058,11 @@ function renderUserIncidents() {
     rejected:  '<span class="urgence-pill urg-high">❌ Rejeté</span>'
   };
   el.innerHTML = list.map(r => `
-    <div class="report-card">
+    <div class="report-card ${isMyLineInc(r) ? 'sig-ma-ligne' : ''}">
       <div class="report-card-header">
         <span class="report-id">${r.id}</span>
         <span class="sig-type">🚌 Ligne ${r.line}</span>
+        ${isMyLineInc(r) ? '<span class="sig-ma-ligne-tag">⭐ Ma ligne</span>' : ''}
         ${sevPill[r.severity] || ''}
         ${statutPill[r.status] || ''}
         <span class="report-time">${r.date} · ${r.time}</span>
@@ -1428,8 +1432,7 @@ window.addEventListener('storage', (e) => {
   if (e.key === 'cadema_incident_reports') {
     renderUserIncidents();
     updateUserIncBadge();
-    const pending = getIncidentReports().filter(r => r.status === 'pending' && concernsMyLine(r));
-    if (pending.length) toast('🚧 Nouveau signalement usager à vérifier.', 'warning');
+    toast('🚧 Nouveau signalement usager à vérifier.', 'warning');
   }
   if (e.key === 'cadema_messages') {
     renderConvList();
