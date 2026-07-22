@@ -1,5 +1,5 @@
 // CADEMA — Service Worker : mode hors-ligne (horaires & pages en cache)
-const CACHE = 'cadema-v6';
+const CACHE = 'cadema-v7';
 const PRECACHE = [
   './',
   './index.html',

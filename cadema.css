@@ -115,6 +115,9 @@ body {
   background: var(--white);
   line-height: 1.6;
   transition: background .3s var(--ease), color .3s var(--ease);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 a { text-decoration: none; color: inherit; cursor: pointer; }
@@ -503,7 +506,15 @@ a { text-decoration: none; color: inherit; cursor: pointer; }
 }
 .hero-title span {
   color: var(--gold);
-  text-shadow: 0 0 40px rgba(245,158,11,.4);
+  position: relative;
+  white-space: nowrap;
+}
+/* Soulignement doré fin sous "Mayotte" — plus net qu'un halo diffus */
+.hero-title span::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: .08em;
+  height: 4px; border-radius: 4px;
+  background: linear-gradient(90deg, var(--gold), #ec6a1e);
+  opacity: .85;
 }
 
 .hero-sub {
